@@ -1,0 +1,12 @@
+FROM postgres
+
+USER postgres
+WORKDIR /app
+
+COPY code/jvm/src/sql/create-schema.sql /docker-entrypoint-initdb.d/1_create.sql
+COPY code/jvm/src/sql/insert-test-data.sql /docker-entrypoint-initdb.d/2_insert-test-data.sql
+
+COPY --chown=postgres:postgres ./code/jvm/tests/scripts/wait-for-postgres.sh ./bin/wait-for-postgres.sh
+RUN chmod +x ./bin/wait-for-postgres.sh
+
+EXPOSE 5432
