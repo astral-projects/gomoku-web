@@ -9,4 +9,4 @@ COPY code/jvm/src/sql/insert-test-data.sql /docker-entrypoint-initdb.d/2_insert-
 COPY --chown=postgres:postgres ./code/jvm/tests/scripts/wait-for-postgres.sh ./bin/wait-for-postgres.sh
 RUN chmod +x ./bin/wait-for-postgres.sh
 
-EXPOSE 5433
+EXPOSE 5432

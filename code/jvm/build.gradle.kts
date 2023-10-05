@@ -15,13 +15,20 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
 
+tasks {
+    test {
+        useJUnitPlatform()
+        environment("DB_URL", System.getenv("DB_URL"))
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // for JDBI
@@ -36,10 +43,10 @@ dependencies {
     // To get password encode
     implementation("org.springframework.security:spring-security-core:6.0.2")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
     // To use WebTestClient on tests
-    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
-    testImplementation(kotlin("test"))
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux:3.0.4")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
 }
 
 tasks.withType<KotlinCompile> {

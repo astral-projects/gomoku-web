@@ -286,7 +286,7 @@ class UserServiceTests {
 
         private val jdbi = Jdbi.create(
             PGSimpleDataSource().apply {
-                setURL("jdbc:postgresql://localhost:5433/db?user=dbuser&password=changeit")
+                setURL("jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit")
             }
         ).configureWithAppRequirements()
     }
