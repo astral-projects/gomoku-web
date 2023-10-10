@@ -97,12 +97,33 @@ The HTTP API should provide the functionality required for a front-end applicati
         "type": "https://example.com/probs/invalid-data",
         "title": "Invalid password confirmation",
         "instance": "/register",
-        "reason": "Register new user",
+        "detail": "Register new user",
         "data": {
           "message": "Please make sure that your password confirmation matches your password." 
         }
       }
       ```
+
+- Allow a user to obtain a user statistics.
+    - Request:
+        The user id comes in the path. Ex.: http://localhost:8080/users/1
+    - Response:
+  ```json
+    {
+      "status": "success",
+      "id": "C3D4E5F6G7H8I9J0K1A2B3C4",
+      "reason": "Obtain user details",
+      "data": {
+        "username": "Geralt of Rivia",
+        "email": "geralt@gmail.com",
+        "points": 5421,
+        "rank": 1,
+        "gamesPlayed": 256,
+        "gamesWon": 128,
+        "gamesLost": 128  
+      }
+    }
+    ```
 
 - Allow a user to express their desire to start a new game - users will enter a waiting lobby, where a matchmaking
   algorithm will select pairs of users and start games with them.
@@ -170,9 +191,6 @@ The HTTP API should provide the functionality required for a front-end applicati
         "reason": "Play a round",
         "data": {
           "gameId": 194,
-          "openingRule": "pro",
-          "variant": "omok",
-          "state": "inProgress",
           "move": {
             "player": {
               "userId": 15,
@@ -191,7 +209,7 @@ The HTTP API should provide the functionality required for a front-end applicati
         "type": "https://example.com/probs/invalid-data",
         "title": "Invalid position",
         "instance": "/play",
-        "reason": "Play a round",
+        "detail": "Play a round",
         "data": {
           "message": "The position you have chosen is already occupied. Please choose another position.",
           "timerLeftInSeconds": 15
