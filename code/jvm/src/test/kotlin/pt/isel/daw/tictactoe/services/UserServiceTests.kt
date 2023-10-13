@@ -1,16 +1,17 @@
 package pt.isel.daw.tictactoe.services
 
+import gomoku.services.UsersService
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import pt.isel.daw.tictactoe.TestClock
-import pt.isel.daw.tictactoe.domain.Sha256TokenEncoder
-import pt.isel.daw.tictactoe.domain.UsersDomain
-import pt.isel.daw.tictactoe.domain.UsersDomainConfig
-import pt.isel.daw.tictactoe.repository.jdbi.JdbiTransactionManager
-import pt.isel.daw.tictactoe.repository.jdbi.configureWithAppRequirements
-import pt.isel.daw.tictactoe.utils.Either
+import gomoku.domain.Sha256TokenEncoder
+import gomoku.domain.UsersDomain
+import gomoku.domain.UsersDomainConfig
+import gomoku.repository.jdbi.JdbiTransactionManager
+import gomoku.repository.jdbi.configureWithAppRequirements
+import gomoku.utils.Either
 import java.util.*
 import kotlin.random.Random
 import kotlin.test.assertEquals

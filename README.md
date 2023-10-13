@@ -127,6 +127,15 @@ The HTTP API should provide the functionality required for a front-end applicati
 
 - Allow a user to express their desire to start a new game - users will enter a waiting lobby, where a matchmaking
   algorithm will select pairs of users and start games with them.
+  - Request:
+    ```json
+    {
+      "variant": "omok",
+      "openingRule": "swap",
+      "size": 15
+    }
+    ```
+  - Response:
   ```json
   {
     "status": "success",
@@ -135,9 +144,8 @@ The HTTP API should provide the functionality required for a front-end applicati
     "data": {
       "message": "You have entered the waiting lobby. The matchmaking algorithm will pair you with an opponent. Please wait for the game to start.",
       "lobby": {
-        "id": 4,
-        "variant": "omok",  
-        "playersInQueue": 7
+        "variant": "omok", 
+        "openingRule": "swap"
       }
     }
   }

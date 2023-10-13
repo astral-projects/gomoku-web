@@ -1,36 +1,44 @@
--- Insert data into dbo.Lobby
-INSERT INTO dbo.Lobby (joined_at)
-VALUES ('2023-10-10 12:00:00'),
-       ('2023-10-11 14:30:00'),
-       ('2023-10-12 10:15:00');
+insert into dbo.Variant (variant)
+values ('FREESTYLE'),
+       ('RENJU'),
+       ('CARO'),
+       ('OMOK'),
+       ('NINUKI-RENJU'),
+       ('PENTE');
 
--- Insert data into dbo.Game
-INSERT INTO dbo.Game (state, board, size, variant, opening_rule)
-VALUES ('WAITING FOR PLAYERS',
-        '{"data": {"moves": [{"x": 1,"y": ''f'',"color": "BLACK"},{"x": 2,"y": ''e'',"color": "WHITE"}],"turn": "BLACK"}}',
-        15, 'FREESTYLE', 'PRO'),
-       ('PLAYING',
-        '{"data": {"moves": [{"x": 1,"y": ''f'',"color": "WHITE"},{"x": 2,"y": ''e'',"color": "BLACK"}],"turn": "WHITE"}}',
-        15, 'RENJU', 'LONG-PRO'),
-       ('FINISHED',
-        '{"data": {"moves": [{"x": 1,"y": ''f'',"color": "BLACK"},{"x": 2,"y": ''e'',"color": "WHITE"}],"turn": "BLACK"}}',
-        19, 'CARO', 'SWAP2');
+insert into dbo.Rule (rule)
+values ('PRO'),
+       ('LONG-PRO'),
+       ('SWAP'),
+       ('SWAP2');
 
--- Insert data into dbo.User
-INSERT INTO dbo.User (username, email, password_validation, lobby, game)
-VALUES ('user1', 'user1@example.com', 'password_hash_1', 1, 1),
-       ('user2', 'user2@example.com', 'password_hash_2', 1, 1),
-       ('user3', 'user3@example.com', 'password_hash_3', 2, 3);
+insert into dbo.BoardSize (size)
+values (15),
+       (19);
 
--- Insert data into dbo.Token
-INSERT INTO dbo.Token (token_validation, created_at, last_used_at, user_id)
-VALUES ('token_1', 1633824000, 1633904000, 1),
-       ('token_2', 1633910400, 1634004000, 2),
-       ('token_3', 1634090400, 1634184000, 3);
+insert into dbo.User (username, email, password_validation)
+values ('user1', 'user1@example.com', 'password_hash_1'),
+       ('user2', 'user2@example.com', 'password_hash_2'),
+       ('user3', 'user3@example.com', 'password_hash_3'),
+       ('user4', 'user4@example.com', 'password_hash_4'),
+       ('user5', 'user5@example.com', 'password_hash_5'),
 
--- Insert data into dbo.Statistic
-INSERT INTO dbo.Statistic (user_id, rank, points, games_played, games_won)
-VALUES (1, 1, 100, 10, 5),
-       (2, 2, 80, 8, 3),
-       (3, 3, 60, 6, 2);
+insert into dbo.Token (token_validation, created_at, last_used_at, user_id)
+values ('token_1', 1633824000, 1633904000, 1), ('token_2', 1633910400, 1634004000, 2), ('token_3', 1634090400, 1634184000, 3), ('token_4', 1634180400, 1634284000, 4), ('token_5', 1634280400, 1634384000, 5);
 
+insert into dbo.Statistic (user_id, points, games_played, games_won)
+values (1, 1000, 10, 5),
+       (2, 4350, 8, 3),
+       (3, 1303, 6, 2),
+       (4, 1531, 10, 5),
+       (5, 6122, 10, 5);
+
+insert into dbo.Lobby (host_id, variant, opening_rule, board_size)
+values (1, 'FREESTYLE', 'PRO', 15),
+       (2, 'RENJU', 'LONG-PRO', 19),
+       (3, 'OMOK', 'SWAP', 15);
+
+/*insert into dbo.Game (state, variant, opening_rule, size, board, created, updated, userA, userB)
+values ('FINISHED', 'FREESTYLE', 'PRO', 15, '{"grid": ["b-7f", "w-9c", "b-8d", "w-6a"], "turn": {"color": "black", "timerLeftInSeconds": 28}}', 1635835200, 1635835300, 1, 3),
+       ('IN-PROGRESS', 'RENJU', 'LONG-PRO', 15, '{"grid": ["b-7f", "w-9c", "b-8d", "w-6a"], "turn": {"color": "white", "timerLeftInSeconds": 13}}', 1635835200, 1635835300, 4, 5),
+*/

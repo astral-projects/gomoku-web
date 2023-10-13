@@ -5,10 +5,12 @@ import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
 import pt.isel.daw.tictactoe.TestClock
-import pt.isel.daw.tictactoe.domain.PasswordValidationInfo
-import pt.isel.daw.tictactoe.domain.Token
-import pt.isel.daw.tictactoe.domain.TokenValidationInfo
-import pt.isel.daw.tictactoe.domain.User
+import gomoku.domain.PasswordValidationInfo
+import gomoku.domain.Token
+import gomoku.domain.TokenValidationInfo
+import gomoku.domain.User
+import gomoku.repository.jdbi.JdbiUsersRepository
+import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.test.assertEquals
