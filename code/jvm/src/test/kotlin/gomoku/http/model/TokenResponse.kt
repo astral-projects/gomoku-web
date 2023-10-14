@@ -1,4 +1,4 @@
-package pt.isel.daw.tictactoe.http.model
+package gomoku.http.model
 
 class TokenResponse(
     val token: String

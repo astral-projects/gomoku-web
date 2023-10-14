@@ -1,4 +1,4 @@
-package pt.isel.daw.tictactoe
+package gomoku
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

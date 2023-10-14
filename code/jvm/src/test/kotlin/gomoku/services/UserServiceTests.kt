@@ -1,11 +1,10 @@
-package pt.isel.daw.tictactoe.services
+package gomoku.services
 
-import gomoku.services.UsersService
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import pt.isel.daw.tictactoe.TestClock
+import gomoku.TestClock
 import gomoku.domain.Sha256TokenEncoder
 import gomoku.domain.UsersDomain
 import gomoku.domain.UsersDomainConfig

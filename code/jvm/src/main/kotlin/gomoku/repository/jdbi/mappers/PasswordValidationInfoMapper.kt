@@ -1,8 +1,8 @@
 package gomoku.repository.jdbi.mappers
 
+import gomoku.domain.PasswordValidationInfo
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.StatementContext
-import gomoku.domain.PasswordValidationInfo
 import java.sql.ResultSet
 import java.sql.SQLException
 

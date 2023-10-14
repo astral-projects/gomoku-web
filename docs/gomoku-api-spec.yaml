@@ -1,0 +1,10 @@
+openapi: 3.0.3
+info:
+  title: Gomoku API
+  description: HTTP API for Gomoku Royale board game
+  version: 0.0.1
+servers:
+  - url: 'https://losthost:8080'
+    description: Local server
+paths:
+  

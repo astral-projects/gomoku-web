@@ -1,16 +1,14 @@
-package pt.isel.daw.tictactoe.repository.jdbi
+package gomoku.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
-import pt.isel.daw.tictactoe.TestClock
+import gomoku.TestClock
 import gomoku.domain.PasswordValidationInfo
 import gomoku.domain.Token
 import gomoku.domain.TokenValidationInfo
 import gomoku.domain.User
-import gomoku.repository.jdbi.JdbiUsersRepository
-import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.test.assertEquals

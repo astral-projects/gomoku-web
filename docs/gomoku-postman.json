@@ -1,0 +1,196 @@
+{
+  "info": {
+    "_postman_id": "8f5fce1b-63ce-4594-9b4b-36fa54c2ab9b",
+    "name": "Gomoku Royale",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30503610",
+    "_collection_link": "https://orange-astronaut-389554.postman.co/workspace/Team-Workspace~f107bcda-f139-4241-818e-ff146a581e6f/collection/30503610-8f5fce1b-63ce-4594-9b4b-36fa54c2ab9b?action=share&source=collection_link&creator=30503610"
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/users/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/users/:userId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "users",
+                ":userId"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Game",
+      "item": [
+        {
+          "name": "Observe game state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/game/:gameid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "game",
+                ":gameid"
+              ],
+              "variable": [
+                {
+                  "key": "gameid",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get games",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/games?limit=10&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "games"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create game",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/game",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "game"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Game Copy",
+      "item": [
+        {
+          "name": "Make a play",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api}}/game/:gameId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api}}",
+                "game",
+                ":gameId"
+              ],
+              "variable": [
+                {
+                  "key": "gameId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "api",
+      "value": "api"
+    },
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}

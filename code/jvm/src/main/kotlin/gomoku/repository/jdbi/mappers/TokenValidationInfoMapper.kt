@@ -1,8 +1,8 @@
 package gomoku.repository.jdbi.mappers
 
+import gomoku.domain.TokenValidationInfo
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.StatementContext
-import gomoku.domain.TokenValidationInfo
 import java.sql.ResultSet
 import java.sql.SQLException
 
