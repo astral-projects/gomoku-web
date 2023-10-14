@@ -65,7 +65,7 @@ create table dbo.Lobby
 create table dbo.Game
 (
     game_id      int generated always as identity primary key,
-    state        varchar(64) check (state in ('IN-PROGRESS', 'FINISHED')) not null,
+    state        varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
     game_variant varchar(64) references dbo.GameVariant (variant)         not null,
     opening_rule varchar(64) references dbo.OpeningRule (rule)            not null,
     board_size   int references dbo.BoardSize (size)                      not null,

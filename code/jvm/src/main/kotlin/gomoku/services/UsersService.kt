@@ -1,8 +1,5 @@
 package gomoku.services
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import org.springframework.stereotype.Component
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
@@ -10,6 +7,9 @@ import gomoku.repository.TransactionManager
 import gomoku.utils.Either
 import gomoku.utils.failure
 import gomoku.utils.success
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import org.springframework.stereotype.Component
 
 data class TokenExternalInfo(
     val tokenValue: String,

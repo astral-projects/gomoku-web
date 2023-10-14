@@ -1,10 +1,10 @@
 package gomoku.repository
 
-import kotlinx.datetime.Instant
-import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
+import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
+import kotlinx.datetime.Instant
 
 interface UsersRepository {
 
