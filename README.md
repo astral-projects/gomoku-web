@@ -16,7 +16,9 @@ This project is divided into two phases:
 The HTTP API should provide the functionality required for a front-end application to:
 
 - Obtain information about the system, such as the system authors and the system version, by an unauthenticated user.
-
+### 1.Get the infomation of the apllication
+- **URI:** `/api/info`
+- **Method:** `GET`
   ```json
   {
     "status": "success",

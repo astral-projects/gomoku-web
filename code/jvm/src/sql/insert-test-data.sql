@@ -1,4 +1,4 @@
--- Insert data into dbo.Lobby
+/*-- Insert data into dbo.Lobby
 INSERT INTO dbo.Lobby (joined_at)
 VALUES ('2023-10-10 12:00:00'),
        ('2023-10-11 14:30:00'),
@@ -33,4 +33,4 @@ INSERT INTO dbo.Statistic (user_id, rank, points, games_played, games_won)
 VALUES (1, 1, 100, 10, 5),
        (2, 2, 80, 8, 3),
        (3, 3, 60, 6, 2);
-
+*/

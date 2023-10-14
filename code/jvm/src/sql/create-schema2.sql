@@ -28,7 +28,8 @@ create table dbo.Lobby(
     variant varchar(64) check (variant in ('FREESTYLE', 'RENJU', 'CARO', 'OMOK', 'NINUKI-RENJU', 'PENTE')) not null,
     opening_rule varchar(64) check (opening_rule in ('PRO', 'LONG-PRO', 'SWAP', 'SWAP2')) not null,
     joined_at timestamp not null, --it is really need?
-    user int references dbo.User(user_id),
+    user1 int references dbo.User(user_id),
+    user2 int references dbo.User(user_id),
     primary key(lobby_id, user)
 );
 
