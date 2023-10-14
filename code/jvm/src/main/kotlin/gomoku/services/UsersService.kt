@@ -3,9 +3,9 @@ package gomoku.services
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
-import gomoku.domain.Token
-import gomoku.domain.User
-import gomoku.domain.UsersDomain
+import gomoku.domain.token.Token
+import gomoku.domain.user.User
+import gomoku.domain.user.UsersDomain
 import gomoku.repository.TransactionManager
 import gomoku.utils.Either
 import gomoku.utils.failure

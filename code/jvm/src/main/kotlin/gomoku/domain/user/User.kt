@@ -1,4 +1,4 @@
-package gomoku.domain
+package gomoku.domain.user
 
 data class User(
     val id: Int,

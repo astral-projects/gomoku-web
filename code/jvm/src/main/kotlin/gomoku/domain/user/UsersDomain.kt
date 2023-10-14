@@ -1,5 +1,8 @@
-package gomoku.domain
+package gomoku.domain.user
 
+import gomoku.domain.token.Token
+import gomoku.domain.token.TokenEncoder
+import gomoku.domain.token.TokenValidationInfo
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.security.crypto.password.PasswordEncoder

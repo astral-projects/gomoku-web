@@ -1,4 +1,6 @@
-package gomoku.domain
+package gomoku.domain.user
+
+import gomoku.domain.user.User
 
 class AuthenticatedUser(
     val user: User,

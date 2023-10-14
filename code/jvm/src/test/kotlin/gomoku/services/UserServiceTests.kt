@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import gomoku.TestClock
-import gomoku.domain.Sha256TokenEncoder
-import gomoku.domain.UsersDomain
-import gomoku.domain.UsersDomainConfig
+import gomoku.domain.token.Sha256TokenEncoder
+import gomoku.domain.user.UsersDomain
+import gomoku.domain.user.UsersDomainConfig
 import gomoku.repository.jdbi.JdbiTransactionManager
 import gomoku.repository.jdbi.configureWithAppRequirements
 import gomoku.utils.Either

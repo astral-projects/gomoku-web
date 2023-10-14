@@ -1,4 +1,4 @@
-package gomoku.domain
+package gomoku.domain.token
 
 import java.security.MessageDigest
 import java.util.*

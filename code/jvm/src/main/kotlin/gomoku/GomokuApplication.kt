@@ -12,8 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import gomoku.domain.Sha256TokenEncoder
-import gomoku.domain.UsersDomainConfig
+import gomoku.domain.token.Sha256TokenEncoder
+import gomoku.domain.user.UsersDomainConfig
 import gomoku.http.pipeline.AuthenticatedUserArgumentResolver
 import gomoku.http.pipeline.AuthenticationInterceptor
 import gomoku.repository.jdbi.configureWithAppRequirements

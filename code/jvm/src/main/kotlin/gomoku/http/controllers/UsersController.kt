@@ -1,4 +1,4 @@
-package gomoku.http
+package gomoku.http.controllers
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import gomoku.domain.AuthenticatedUser
+import gomoku.domain.user.AuthenticatedUser
+import gomoku.http.Uris
 import gomoku.http.model.Problem
-import gomoku.http.model.UserCreateInputModel
-import gomoku.http.model.UserCreateTokenInputModel
-import gomoku.http.model.UserHomeOutputModel
-import gomoku.http.model.UserTokenCreateOutputModel
+import gomoku.http.model.user.UserCreateInputModel
+import gomoku.http.model.user.UserCreateTokenInputModel
+import gomoku.http.model.user.UserHomeOutputModel
+import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.services.TokenCreationError
 import gomoku.services.UserCreationError
 import gomoku.services.UsersService

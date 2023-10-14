@@ -1,7 +1,7 @@
 package gomoku.http.pipeline
 
 import org.springframework.stereotype.Component
-import gomoku.domain.AuthenticatedUser
+import gomoku.domain.user.AuthenticatedUser
 import gomoku.services.UsersService
 
 @Component

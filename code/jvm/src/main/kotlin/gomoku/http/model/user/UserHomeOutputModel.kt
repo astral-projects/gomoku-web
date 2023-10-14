@@ -1,4 +1,4 @@
-package gomoku.http.model
+package gomoku.http.model.user
 
 class UserHomeOutputModel(
     val id: Int,
