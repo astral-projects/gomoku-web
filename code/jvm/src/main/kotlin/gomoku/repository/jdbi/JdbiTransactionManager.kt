@@ -1,9 +1,9 @@
 package gomoku.repository.jdbi
 
-import org.jdbi.v3.core.Jdbi
-import org.springframework.stereotype.Component
 import gomoku.repository.Transaction
 import gomoku.repository.TransactionManager
+import org.jdbi.v3.core.Jdbi
+import org.springframework.stereotype.Component
 
 @Component
 class JdbiTransactionManager(

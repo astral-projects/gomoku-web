@@ -3,12 +3,12 @@ values ('FREESTYLE'),
        ('RENJU'),
        ('CARO'),
        ('OMOK'),
-       ('NINUKI-RENJU'),
+       ('NINUKI_RENJU'),
        ('PENTE');
 
 insert into dbo.OpeningRule (rule)
 values ('PRO'),
-       ('LONG-PRO'),
+       ('LONG_PRO'),
        ('SWAP'),
        ('SWAP2');
 
@@ -39,10 +39,10 @@ values (1, 1000, 10, 5),
 
 insert into dbo.Lobby (host_id, game_variant, opening_rule, board_size)
 values (1, 'FREESTYLE', 'PRO', 15),
-       (2, 'RENJU', 'LONG-PRO', 19),
+       (2, 'RENJU', 'LONG_PRO', 19),
        (3, 'OMOK', 'SWAP', 15);
 
 insert into dbo.Game (state, game_variant, opening_rule, board_size, board, created, updated, host, guest)
 values ('FINISHED', 'FREESTYLE', 'PRO', 15, '{"grid": ["b-7f", "w-9c", "b-8d", "w-6a"], "turn": {"color": "black", "timerLeftInSeconds": 28}}', 1635835200, 1635835300, 1, 3),
-       ('IN-PROGRESS', 'RENJU', 'LONG-PRO', 15, '{"grid": ["b-7f", "w-9c", "b-8d", "w-6a"], "turn": {"color": "white", "timerLeftInSeconds": 13}}', 1635835200, 1635835300, 4, 5);
+       ('IN_PROGRESS', 'RENJU', 'LONG_PRO', 15, '{"grid": ["b-7f", "w-9c", "b-8d", "w-6a"], "turn": {"color": "white", "timerLeftInSeconds": 13}}', 1635835200, 1635835300, 4, 5);
 

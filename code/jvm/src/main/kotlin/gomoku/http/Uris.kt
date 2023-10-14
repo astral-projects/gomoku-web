@@ -22,4 +22,14 @@ object Uris {
         fun login(): URI = URI(TOKEN)
         fun register(): URI = URI(CREATE)
     }
+
+    object Games {
+        const val CREATE = "$PREFIX/games"
+        const val GET_BY_ID = "$PREFIX/games/{id}"
+        const val HOME = "$PREFIX/me"
+
+        fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
+        fun home(): URI = URI(HOME)
+        fun create(): URI = URI(CREATE)
+    }
 }

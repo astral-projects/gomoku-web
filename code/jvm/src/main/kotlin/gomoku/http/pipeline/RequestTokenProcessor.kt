@@ -1,8 +1,8 @@
 package gomoku.http.pipeline
 
-import org.springframework.stereotype.Component
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.services.UsersService
+import org.springframework.stereotype.Component
 
 @Component
 class RequestTokenProcessor(

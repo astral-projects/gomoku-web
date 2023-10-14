@@ -1,9 +1,5 @@
 package gomoku.services
 
-import org.jdbi.v3.core.Jdbi
-import org.junit.jupiter.api.Test
-import org.postgresql.ds.PGSimpleDataSource
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import gomoku.TestClock
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
@@ -11,6 +7,10 @@ import gomoku.domain.user.UsersDomainConfig
 import gomoku.repository.jdbi.JdbiTransactionManager
 import gomoku.repository.jdbi.configureWithAppRequirements
 import gomoku.utils.Either
+import org.jdbi.v3.core.Jdbi
+import org.junit.jupiter.api.Test
+import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
 import kotlin.random.Random
 import kotlin.test.assertEquals

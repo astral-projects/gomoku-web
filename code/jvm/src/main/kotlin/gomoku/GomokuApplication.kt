@@ -1,5 +1,10 @@
 package gomoku
 
+import gomoku.domain.token.Sha256TokenEncoder
+import gomoku.domain.user.UsersDomainConfig
+import gomoku.http.pipeline.AuthenticatedUserArgumentResolver
+import gomoku.http.pipeline.AuthenticationInterceptor
+import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
@@ -12,11 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import gomoku.domain.token.Sha256TokenEncoder
-import gomoku.domain.user.UsersDomainConfig
-import gomoku.http.pipeline.AuthenticatedUserArgumentResolver
-import gomoku.http.pipeline.AuthenticationInterceptor
-import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
@@ -62,7 +62,7 @@ class PipelineConfigurer(
 }
 
 fun main(args: Array<String>) {
-    val logger = LoggerFactory.getLogger("TicTacToeApplication")
+    val logger = LoggerFactory.getLogger("GomokoRoyaleApplication")
     logger.info("Starting application")
     logger.info("DB_URL: ${Environment.getDbUrl()}")
     runApplication<TicTacToeApplication>(*args)
