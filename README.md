@@ -15,8 +15,9 @@ This project is divided into two phases:
 
 The HTTP API should provide the functionality required for a front-end application to:
 
+
+## Get the information of the application
 - Obtain information about the system, such as the system authors and the system version, by an unauthenticated user.
-### 1.Get the infomation of the apllication
 - **URI:** `/api/info`
 - **Method:** `GET`
   ```json
@@ -38,40 +39,59 @@ The HTTP API should provide the functionality required for a front-end applicati
   }
   ```
 
+
+### Get Users Ranking (Users Ranking)
 - Obtain statistical and ranking information, such as number of played games and users ranking, by an unauthenticated
   user.
-  ```json
-  {
-    "status": "success",
-    "id": "J0K1A2B3C4D5E6F7G8H9I0J",
-    "reason": "Obtain statistical and ranking information",
-    "data": {
-      "items": [
-        {
-          "username": "Geralt of Rivia",
-          "rank": 1,
-          "points": 5421
-        },  
-        {
-          "username": "Arthur Morgan",
-          "rank": 2,
-          "points": 4956
-        },
-        {
-          "username": "Nathan Drake",
-          "rank": 3,
-          "points": 4874
-        }
-      ],
-      "totalItems": 256,
-      "currentPage" : 1,
-      "itemsPerPage": 3,
-      "totalPages": 86
+- We need to define the ranking system
+- **URI:** `/api/users/ranking`
+- **Method:** `GET`
+  - **Response:**
+    ```json 
+    { 
+      "status": "success",
+      "id": "J0K1A2B3C4D5E6F7G8H9I0J",
+      "reason": "Obtain statistical and ranking information",
+      "data": {
+        "items": [
+          {
+              "username": "user1",
+              "rank": 1,
+              "wins": 2,
+              "loses": 8,
+              "points": 1000,
+              "gamesPlayed": 10
+          },  
+          {
+            "username": "user2",
+            "rank": 4,
+            "wins": 2,
+            "loses": 18,
+            "points": 4874,
+            "gamesPlayed": 20
+          },
+          {
+            "username": "Nathan Drake",
+            "rank": 6,
+            "wins": 20,
+            "loses": 6,
+            "points": 10000,
+            "gamesPlayed": 26
+          }
+        ],
+        "totalItems": 256,
+        "currentPage" : 1,
+        "itemsPerPage": 3,
+        "totalPages": 86
+      }
     }
-  }
-  ```
-- Register a new user.
-    - Request:
+    ```
+
+### Register a new User (Sign Up)
+- Allow a user to register a new account. The user will provide a username, an email and a password.This will be done by a form in the frontend application.
+- **URI:** `/api/users`
+- **Method:** `POST`
+    - Request(Body information json):
       ```json
       {
         "username": "Arthur Morgan",
@@ -80,7 +100,7 @@ The HTTP API should provide the functionality required for a front-end applicati
         "passwordConfirmation": "redemption"
       }
       ```
-    - Response:
+    - Response with sucess:
       ```json
       {
         "status": "success",
@@ -91,45 +111,71 @@ The HTTP API should provide the functionality required for a front-end applicati
         }
       }
       ```
-
+    - Response (Error):    
       ```json
       {
-        "status": "error",
-        "id": "B2C3D4E5F6G7H8I9J0K1A2B3",
-        "type": "https://example.com/probs/invalid-data",
-        "title": "Invalid password confirmation",
-        "instance": "/register",
-        "detail": "Register new user",
+            "status": "error",
+            "id": "B2C3D4E5F6G7H8I9J0K1A2B3",
+            "type": "https://example.com/probs/invalid-data",
+            "title": "Invalid password confirmation",
+            "instance": "/register",
+            "detail": "Register new user",
+            "data": {
+              "message": "Please make sure that your password confirmation matches your password." 
+            }
+       }
+      ```
+
+### Get User Status 
+- Allow a user to obtain their own statistics.
+- **URI:** `/api/users/:userId`
+- **Method:** `GET`
+- **Headers:** `{ "Authorization": "Bearer abc123" }`
+  - Allow a user to obtain a user statistics.
+      - Request:
+          The user id comes in the path. Ex.: http://localhost:8080/users/1
+      - Response:
+    ```json
+      {
+        "status": "success",
+        "id": "C3D4E5F6G7H8I9J0K1A2B3C4",
+        "reason": "Obtain user details",
         "data": {
-          "message": "Please make sure that your password confirmation matches your password." 
+          "status": "online",
+          "username": "Geralt of Rivia",
+          "email": "geralt@gmail.com",
+          "points": 5421,
+          "rank": 1,
+          "gamesPlayed": 256,
+          "gamesWon": 128,
+          "gamesLost": 128  
         }
       }
       ```
-
-- Allow a user to obtain a user statistics.
-    - Request:
-        The user id comes in the path. Ex.: http://localhost:8080/users/1
-    - Response:
-  ```json
-    {
-      "status": "success",
-      "id": "C3D4E5F6G7H8I9J0K1A2B3C4",
-      "reason": "Obtain user details",
-      "data": {
-        "username": "Geralt of Rivia",
-        "email": "geralt@gmail.com",
-        "points": 5421,
-        "rank": 1,
-        "gamesPlayed": 256,
-        "gamesWon": 128,
-        "gamesLost": 128  
-      }
-    }
-    ```
-
-- Allow a user to express their desire to start a new game - users will enter a waiting lobby, where a matchmaking
-  algorithm will select pairs of users and start games with them.
-  - Request:
+      - Response(error)
+          -This functionally can produce a error for example de userID not being valid
+          ```json
+            {
+            "status": "error",
+            "id": "C3D4E5F6G7H8I9J0K1A2B3C4",
+            "type": "https://example.com/probs/invalid-data",
+            "title": "Invalid variant",
+            "instance": "/users",
+            "detail": "Obtain user details",
+            "data": {
+              "message": "The userId you have chosen is not valid. Please choose another userId."
+              }
+            }
+          ```
+        
+  
+### Search for a new Game with the desired options by the user
+- - Allow a user to express their desire to start a new game - users will enter a waiting lobby, where a matchmaking
+    algorithm will select pairs of users and start games with them.
+- **URI:** `/api/games?variant=15&&openingRule=swap&&size=15`
+- **Method:** `POST`
+- **Headers:** `{ "Authorization": "Bearer abc123" }`
+ - Request:
     ```json
     {
       "variant": "omok",
@@ -147,71 +193,101 @@ The HTTP API should provide the functionality required for a front-end applicati
       "message": "You have entered the waiting lobby. The matchmaking algorithm will pair you with an opponent. Please wait for the game to start.",
       "lobby": {
         "variant": "omok", 
-        "openingRule": "swap"
+        "openingRule": "swap",
+        "size": 15
       }
     }
   }
   ```
 
-- Allow a user to observe the game state.
-  ```json
+ - Response(error):
+    - This route can have multiple error.For example if the user put some invalid options or if the user is already in a game.
+    ```json
     {
-      "status": "success",
-      "id": "D4E5F6G7H8I9J0K1A2B3C4D5",
-      "reason": "Observe game state",
+      "status": "error",
+      "id": "C3D4E5F6G7H8I9J0K1A2B3C4",
+      "type": "https://example.com/probs/invalid-data",
+      "title": "Invalid variant",
+      "instance": "/games",
+      "detail": "Start new game",
       "data": {
-        "gameId": 73,
-        "openingRule": "swap",
-        "variant": "renju",
-        "state": "inProgress",
-        "turn": {
-          "current": "black",
-          "timerLeftInSeconds": 28         
-        },
-        "players": [
-          { 
-            "userId": 19,
-            "color": "black"
-          },
-          {
-            "userId": 15,
-            "color": "white"
-          }
-        ],
-        "board": {
-          "size": 15,
-          "grid": ["b-7f", "w-9c", "b-8d", "w-6a"]
-        }  
+        "message": "The variant you have chosen is not valid. Please choose another variant."
       }
     }
-    ```
+    ``` 
+
+### 3. Get Game Status
+- Allow a user to observe the game state.
+- **URI:** `/api/games/:gameId/status`
+- **Method:** `GET`
+- **Headers:** `{ "Authorization": "Bearer abc123" }`
+    - **Request**
+      The game id comes in the path. Ex.: http://localhost:8080/games/1
+    - **Response**
+      ```json
+        {
+          "status": "success",
+          "id": "D4E5F6G7H8I9J0K1A2B3C4D5",
+          "reason": "Observe game state",
+          "data": {
+            "gameId": 73,
+            "openingRule": "swap",
+            "variant": "renju",
+            "state": "inProgress",
+            "turn": {
+              "current": "black",
+              "timerLeftInSeconds": 28         
+            },
+            "players": [
+              { 
+                "userId": 19,
+                "color": "black"
+              },
+              {
+                "userId": 15,
+                "color": "white"
+              }
+            ],
+            "board": {
+              "size": 15,
+              "grid": ["b-7f", "w-9c", "b-8d", "w-6a"]
+            }  
+          }
+        }
+        ```
+### Make a move on the board
+- **URI:** `/api/games/:gameId/moves`
+- **Method:** `PUT`
+- **Headers:** `{ "Authorization": "Bearer abc123" }`
+- **Response**
+
 - Allow a user to play a round.
-    - Request:
+    - **Request**:
       ```json
       {
         "position": "7f",
         "gameId": 73
       }
       ```
-    - Response:
+    - **Response (Success)**
       ```json
       {
-        "status": "success",
-        "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
-        "reason": "Play a round",
-        "data": {
-          "gameId": 194,
-          "move": {
-            "player": {
-              "userId": 15,
-              "color": "black"
-            },
-            "position": "7f"
-          } 
-        }
+         "status": "success",
+         "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
+         "reason": "Play a round",
+          "data": {
+            "gameId": 194,
+              "move": {
+                "player": {
+                    "userId": 15,
+                    "color": "black"
+                },
+              "position": "7f"
+            } 
+          }
       }
       ```
-
+      - **Response (Error)**
       ```json
       {
         "status": "error",
@@ -222,10 +298,70 @@ The HTTP API should provide the functionality required for a front-end applicati
         "detail": "Play a round",
         "data": {
           "message": "The position you have chosen is already occupied. Please choose another position.",
-          "timerLeftInSeconds": 15
+        "timerLeftInSeconds": 15
         }
       }
       ```
+
+### Logout
+-This route will be used to logout the user
+- **URI:** `/api/users/logout`
+- **Method:** `POST`
+- **Headers:** `{ "Authoriztion" : "Bearer abc123"}`
+- **Response:**
+  ```json
+  {
+         "status": "success",
+         "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
+         "reason": "Logout",
+          "data": {
+               "message" : "User logged out with sucess"
+          } 
+  } 
+  ```
+
+### Exit a Game
+- This route will be used to exit a game, but you can only exit a game if you are in a game.
+- **URI:** `/api/games/:gameId/exit`
+- **Method:** `POST`
+- **Headers:** `{ "Authoriztion" : "Bearer abc123"}`
+- **Response:**
+  ```json
+  {
+    "status": "success",
+         "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
+         "reason": "Logout",
+          "data": {
+               "message" : "User exited the game with sucess"
+          }
+   }
+  ```
+
+### Edit User Profile
+- This route will be used to edit the user profile, but you can only edit the user profile if you are logged in.
+- **URI:** `/api/users/:userId`
+- **Method:** `PUT`
+- **Headers:** `{ "Authoriztion" : "Bearer abc123"}`
+- **Request**:
+   ```json
+   {
+     "username" : "user1",
+     "old-password" : "1234",
+     "new-password" : "12345"
+   }
+   ```
+- **Response**:
+    ```json
+    {
+      "status": "success",
+      "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
+      "reason": "Edit user profile",
+      "data": {
+         "message" : "User profile edited with sucess"
+      }
+    }
+    ```
+        
 
 ### Authors
 
