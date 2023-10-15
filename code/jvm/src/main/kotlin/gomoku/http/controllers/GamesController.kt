@@ -78,13 +78,20 @@ class GamesController(
     }
 
     @PostMapping(Uris.Games.EXIT_GAME)
-    fun exitGame(gameId: GameId): ResponseEntity<String> {
+    fun exitGame(@PathVariable id: Int, request: HttpServletRequest): ResponseEntity<String> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        TODO("Not yet implemented")
+        val token = getRidBearer(request.getHeader("Authorization"))
+        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+        val game = gamesService.exitGame(id, user)
+        return if (game) {
+            ResponseEntity.status(200).body("Game exited")
+        } else {
+            ResponseEntity.status(403).body("You are not part of this game")
+        }
     }
 
     @GetMapping(Uris.Games.GAME_STATUS)
-    fun gameStatus( @PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> {
+    fun gameStatus(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
         val token = getRidBearer(request.getHeader("Authorization"))
         val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")

@@ -48,7 +48,11 @@ class GamesService(
         TODO("Not yet implemented")
     }
 
-    fun exitGame(gameId: GameId): Boolean {
-        TODO("Not yet implemented")
+    fun exitGame(gameId: Int,user: User): Boolean {
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.exitGame(gameId,user)
+        }
+        return true
     }
 }

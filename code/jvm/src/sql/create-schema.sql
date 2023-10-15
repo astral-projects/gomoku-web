@@ -81,5 +81,6 @@ create table dbo.Games
 
 
 UPDATE dbo.Games
-SET host_id = 10
-WHERE host_id = 1 AND id = 1;
+SET state = 'IN_PROGRESS'
+WHERE id = 1;
+

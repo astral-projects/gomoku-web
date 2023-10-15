@@ -13,6 +13,6 @@ interface GamesRepository {
     fun deleteGame(game: Game):Boolean
     fun getSystemInfo(): SystemInfo
     fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean
-    fun exitGame(gameId: GameId): Boolean
+    fun exitGame(gameId: Int,user: User): Boolean
     fun getGameStatus(gameId: Int,user: User): String?
 }

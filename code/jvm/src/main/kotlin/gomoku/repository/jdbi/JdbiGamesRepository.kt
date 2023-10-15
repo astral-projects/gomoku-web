@@ -47,8 +47,17 @@ class JdbiGamesRepository(
         TODO("Not yet implemented")
     }
 
-    override fun exitGame(gameId: GameId): Boolean {
-        TODO("Not yet implemented")
+    override fun exitGame(gameId: Int,user: User): Boolean{
+        val r = handle.createUpdate("""
+        UPDATE dbo.Games 
+        SET state = 'FINISHED'
+        WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)
+    """)
+            .bind("gameId", gameId)
+            .bind("userId", user.id.value) // assumindo que o objeto 'user' tem um atributo 'id'
+            .execute()
+
+        return r == 1
     }
 
     override fun getGameStatus(gameId: Int ,user: User): String? =
