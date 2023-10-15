@@ -2,6 +2,7 @@ package gomoku.services
 
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
+import gomoku.domain.user.UserRankingInfo
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Either
@@ -104,8 +105,16 @@ class UsersService(
     fun revokeToken(token: String): Boolean {
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         return transactionManager.run {
-            it.usersRepository.removeTokenByValidationInfo(tokenValidationInfo)
+            it.usersRepository.logout(tokenValidationInfo)
             true
         }
+    }
+
+    fun getUsersRanking(): List<UserRankingInfo> {
+        TODO("Not yet implemented")
+    }
+
+    fun editUser(user: User): User {
+        TODO("Not yet implemented")
     }
 }

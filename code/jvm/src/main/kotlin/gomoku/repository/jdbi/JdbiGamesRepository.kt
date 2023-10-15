@@ -1,6 +1,10 @@
 package gomoku.repository.jdbi
 
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameId
+import gomoku.domain.game.SystemInfo
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.UserId
 import gomoku.repository.GamesRepository
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -35,5 +39,17 @@ class JdbiGamesRepository(
             .bind("gameId", game.id)
             .execute()
         return r == 1
+    }
+
+    override fun getSystemInfo(): SystemInfo {
+        TODO("Not yet implemented")
+    }
+
+    override fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun exitGame(gameId: GameId): Boolean {
+        TODO("Not yet implemented")
     }
 }

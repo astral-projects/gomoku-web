@@ -1,20 +1,15 @@
 package gomoku.http.controllers
 
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameId
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.UserId
 import gomoku.http.Uris
-import gomoku.http.model.Problem
 import gomoku.http.model.game.GameInputModel
 import gomoku.services.GamesService
-import gomoku.services.UserCreationError
-import gomoku.utils.Success
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class GamesController(
@@ -23,7 +18,7 @@ class GamesController(
 
     @GetMapping(Uris.Games.GET_BY_ID)
     fun getById(@PathVariable id: String): ResponseEntity<Game> {
-        logger.info("GET /games/$id")
+        logger.info("GET ${Uris.Games.GET_BY_ID}")
         val game = gamesService.getGameById(id.toInt())
         return if (game == null) {
             ResponseEntity.notFound().build()
@@ -34,6 +29,7 @@ class GamesController(
 
     @PostMapping(Uris.Games.CREATE)
     fun createGame(@RequestBody game: GameInputModel): ResponseEntity<String> {
+        logger.info("POST ${Uris.Games.CREATE}")
         val res = gamesService.createGame(game.gameVariant, game.openingRule, game.boardSize, game.host, game.guest)
         if (res != null) {
             return ResponseEntity.status(201)
@@ -48,6 +44,7 @@ class GamesController(
 
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
     fun deleteById(@PathVariable id: String): ResponseEntity<String> {
+        logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
         val game = gamesService.getGameById(id.toInt())
         return if (game == null) {
             ResponseEntity.notFound().build()
@@ -55,6 +52,24 @@ class GamesController(
             gamesService.deleteGame(game)
             ResponseEntity.ok("Game deleted")
         }
+    }
+
+    @GetMapping(Uris.Games.GET_SYSTEM_INFO)
+    fun getSystemInfo(): ResponseEntity<String> {
+        logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
+        TODO("Not yet implemented")
+    }
+
+    @PutMapping(Uris.Games.MAKE_MOVE)
+    fun makeMove(gameId: GameId, userId: UserId, square: Square): ResponseEntity<String> {
+        logger.info("PUT ${Uris.Games.MAKE_MOVE}")
+        TODO("Not yet implemented")
+    }
+
+    @PostMapping(Uris.Games.EXIT_GAME)
+    fun exitGame(gameId: GameId): ResponseEntity<String> {
+        logger.info("POST ${Uris.Games.EXIT_GAME}")
+        TODO("Not yet implemented")
     }
 
     companion object {
