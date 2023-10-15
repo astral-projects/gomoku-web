@@ -64,7 +64,7 @@ class UserServiceTests {
         assertNotNull(user)
 
         // and: has the expected name
-        assertEquals(username, user.username)
+        assertEquals(username, user.username.value)
     }
 
     @Test

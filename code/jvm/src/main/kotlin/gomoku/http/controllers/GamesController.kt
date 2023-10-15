@@ -1,20 +1,15 @@
 package gomoku.http.controllers
 
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameId
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.UserId
 import gomoku.http.Uris
-import gomoku.http.model.Problem
 import gomoku.http.model.game.GameInputModel
 import gomoku.services.GamesService
-import gomoku.services.UserCreationError
-import gomoku.utils.Success
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class GamesController(
@@ -55,6 +50,24 @@ class GamesController(
             gamesService.deleteGame(game)
             ResponseEntity.ok("Game deleted")
         }
+    }
+
+    @GetMapping(Uris.Games.GET_SYSTEM_INFO)
+    fun getSystemInfo(): ResponseEntity<String> {
+        // TODO("Not yet implemented")
+        return ResponseEntity.ok("System info")
+    }
+
+    @PutMapping(Uris.Games.MAKE_MOVE)
+    fun makeMove(gameId: GameId, userId: UserId, square: Square): ResponseEntity<String> {
+        // TODO("Not yet implemented")
+        return ResponseEntity.ok("Move made")
+    }
+
+    @PostMapping(Uris.Games.EXIT_GAME)
+    fun exitGame(gameId: GameId): ResponseEntity<String> {
+        // TODO("Not yet implemented")
+        return ResponseEntity.ok("Game exited")
     }
 
     companion object {

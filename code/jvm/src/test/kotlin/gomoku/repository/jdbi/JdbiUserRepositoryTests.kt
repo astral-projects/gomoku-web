@@ -5,6 +5,7 @@ import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
+import gomoku.domain.user.UserId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
@@ -36,9 +37,9 @@ class JdbiUserRepositoryTests {
 
         // then:
         assertNotNull(retrievedUser)
-        assertEquals(userName, retrievedUser.username)
+        assertEquals(userName, retrievedUser.username.value)
         assertEquals(passwordValidationInfo, retrievedUser.passwordValidation)
-        assertTrue(retrievedUser.id >= 0)
+        assertTrue(retrievedUser.id.value >= 0)
 
         // when: asking if the user exists
         val isUserIsStored = repo.isUserStoredByUsername(userName)
@@ -73,7 +74,7 @@ class JdbiUserRepositoryTests {
         val tokenCreationInstant = clock.now()
         val token = Token(
             testTokenValidationInfo,
-            userId,
+            UserId(userId),
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
@@ -89,7 +90,7 @@ class JdbiUserRepositoryTests {
         val (user, retrievedToken) = userAndToken ?: fail("token and associated user must exist")
 
         // and: ...
-        assertEquals(userName, user.username)
+        assertEquals(userName, user.username.value)
         assertEquals(testTokenValidationInfo.validationInfo, retrievedToken.tokenValidationInfo.validationInfo)
         assertEquals(tokenCreationInstant, retrievedToken.createdAt)
     }

@@ -1,7 +1,10 @@
 package gomoku.services
 
 import gomoku.domain.game.Game
-import gomoku.repository.TransactionManager
+import gomoku.domain.game.GameId
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.UserId
+import gomoku.repository.transaction.TransactionManager
 import org.springframework.stereotype.Component
 
 @Component
@@ -25,5 +28,18 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             gamesRepository.deleteGame(game)
         }
+    }
+
+    fun getSystemInfo() {
+        TODO("Not yet implemented")
+
+    }
+
+    fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    fun exitGame(gameId: GameId): Boolean {
+        TODO("Not yet implemented")
     }
 }

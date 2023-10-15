@@ -2,8 +2,7 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
-import gomoku.domain.user.PasswordValidationInfo
-import gomoku.domain.user.User
+import gomoku.domain.user.*
 import gomoku.repository.UsersRepository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
@@ -97,7 +96,7 @@ class JdbiUsersRepository(
             .singleOrNull()
             ?.userAndToken
 
-    override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
+    override fun logout(tokenValidationInfo: TokenValidationInfo): Int {
         return handle.createUpdate(
             """
                 delete from dbo.Tokens
@@ -118,13 +117,25 @@ class JdbiUsersRepository(
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
-            get() = User(id, username, email, passwordValidation) to
+            get() = User(UserId(id), Username(username), Email(email), passwordValidation) to
                     Token(
                         tokenValidation,
-                        id,
+                        UserId(id),
                         Instant.fromEpochSeconds(createdAt),
                         Instant.fromEpochSeconds(lastUsedAt)
                     )
+    }
+
+    override fun getUsersRanking(): List<UserRankingInfo> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUserStats(userId: Int): UserRankingInfo? {
+        TODO("Not yet implemented")
+    }
+
+    override fun editUser(user: User): Boolean {
+        TODO("Not yet implemented")
     }
 
     companion object {

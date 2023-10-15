@@ -1,6 +1,7 @@
 package gomoku.http.controllers
 
-import gomoku.domain.user.AuthenticatedUser
+import gomoku.domain.token.TokenValidationInfo
+import gomoku.domain.user.*
 import gomoku.http.Uris
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
@@ -65,16 +66,25 @@ class UsersController(
         userService.revokeToken(user.token)
     }
 
-    @GetMapping(Uris.Users.GET_BY_ID)
-    fun getById(@PathVariable id: String) {
-        TODO("TODO")
-    }
-
     @GetMapping(Uris.Users.HOME)
     fun getUserHome(userAuthenticatedUser: AuthenticatedUser): UserHomeOutputModel {
         return UserHomeOutputModel(
             id = userAuthenticatedUser.user.id,
             username = userAuthenticatedUser.user.username
         )
+    }
+
+    @GetMapping(Uris.Users.GET_BY_ID)
+    fun getById(@PathVariable id: String) {
+        TODO("TODO")
+    }
+
+    @GetMapping(Uris.Users.RANKING)
+    fun getUserRanking(): List<UserRankingInfo> {
+        TODO("Not yet implemented")
+    }
+
+    fun editUser(user: User): User {
+        TODO("Not yet implemented")
     }
 }

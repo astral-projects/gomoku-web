@@ -1,12 +1,17 @@
 package gomoku.repository
 
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameId
+import gomoku.domain.game.SystemInfo
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.UserId
 
 interface GamesRepository {
     fun getGameById(id: Int): Game?
     fun createGame(gameVariant:String,openingRule: String,boardSize: Int, host:Int, guest:Int): Int?
     fun deleteGame(game: Game):Boolean
-    // TODO:
-    // fun getGamesByPlayerId(playerId: Int): List<Game>
-    // fun getGames(limit: Int, offset: Int): List<Game>
+    fun getSystemInfo(): SystemInfo
+    fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean
+    fun exitGame(gameId: GameId): Boolean
+
 }
