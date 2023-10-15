@@ -11,7 +11,7 @@ object Uris {
     fun home(): URI = URI(HOME)
 
     object Users {
-        const val CREATE = "$PREFIX/users"
+        const val REGISTER = "$PREFIX/users/register"
         const val TOKEN = "$PREFIX/users/token"
         const val LOGOUT = "$PREFIX/logout"
         const val GET_BY_ID = "$PREFIX/users/{id}"
@@ -20,7 +20,7 @@ object Uris {
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun home(): URI = URI(HOME)
         fun login(): URI = URI(TOKEN)
-        fun register(): URI = URI(CREATE)
+        fun register(): URI = URI(REGISTER)
     }
 
     object Games {

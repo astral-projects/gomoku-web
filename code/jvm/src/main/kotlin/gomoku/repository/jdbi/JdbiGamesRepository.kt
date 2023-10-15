@@ -32,7 +32,7 @@ class JdbiGamesRepository(
 
     override fun deleteGame(game: Game):Boolean {
         val r = handle.createUpdate("delete from dbo.Game where game_id = :gameId")
-            .bind("gameId", game.game_id)
+            .bind("gameId", game.id)
             .execute()
         return r == 1
     }

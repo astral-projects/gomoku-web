@@ -1,7 +1,7 @@
 package gomoku.services
 
 import gomoku.domain.game.Game
-import gomoku.repository.TransactionManager
+import gomoku.repository.transaction.TransactionManager
 import org.springframework.stereotype.Component
 
 @Component
