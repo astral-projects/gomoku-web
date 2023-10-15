@@ -4,14 +4,15 @@ import gomoku.TestClock
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.repository.jdbi.JdbiTransactionManager
 import gomoku.repository.jdbi.configureWithAppRequirements
+import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.utils.Either
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
+import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -33,8 +34,9 @@ class UserServiceTests {
 
         // when: creating a user
         val username = newTestUserName()
+        val email = newTestEmail()
         val password = "changeit"
-        val createUserResult = userService.createUser(username, password)
+        val createUserResult = userService.createUser(username, email, password)
 
         // then: the creation is successful
         when (createUserResult) {
@@ -76,7 +78,8 @@ class UserServiceTests {
         // when: creating a user
         val username = newTestUserName()
         val password = "changeit"
-        val createUserResult = userService.createUser(username, password)
+        val email = newTestEmail()
+        val createUserResult = userService.createUser(username, email, password)
 
         // then: the creation is successful
         when (createUserResult) {
@@ -113,8 +116,9 @@ class UserServiceTests {
 
         // when: creating a user
         val username = newTestUserName()
+        val email = newTestEmail()
         val password = "changeit"
-        val createUserResult = userService.createUser(username, password)
+        val createUserResult = userService.createUser(username, email, password)
 
         // then: the creation is successful
         when (createUserResult) {
@@ -170,8 +174,9 @@ class UserServiceTests {
 
         // when: creating a user
         val username = newTestUserName()
+        val email = newTestEmail()
         val password = "changeit"
-        val createUserResult = userService.createUser(username, password)
+        val createUserResult = userService.createUser(username, email, password)
 
         // then: the creation is successful
         when (createUserResult) {
@@ -227,8 +232,9 @@ class UserServiceTests {
 
         // when: creating a user
         val username = newTestUserName()
+        val email = newTestEmail()
         val password = "changeit"
-        val createUserResult = userService.createUser(username, password)
+        val createUserResult = userService.createUser(username, email, password)
 
         // then: the creation is successful
         when (createUserResult) {
@@ -282,7 +288,9 @@ class UserServiceTests {
             testClock
         )
 
-        private fun newTestUserName() = "user-${Math.abs(Random.nextLong())}"
+        private fun newTestUserName() = "user-${abs(Random.nextLong())}"
+
+        private fun newTestEmail() = "email-${abs(Random.nextLong())}@example.com"
 
         private val jdbi = Jdbi.create(
             PGSimpleDataSource().apply {

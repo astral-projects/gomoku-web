@@ -1,6 +1,13 @@
 package gomoku.domain.game.board
 
 data class BoardTurn(
-    val turn: Player,
-    val timeLeftInSeconds: Int
-)
+    val player: Player,
+    val timeLeftInSec: Int
+) {
+    init {
+        require(timeLeftInSec >= 0) { "Time left must be non-negative" }
+    }
+
+    constructor() : this(Player.w, 0)
+
+}

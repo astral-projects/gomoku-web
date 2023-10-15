@@ -1,4 +1,7 @@
-package gomoku.repository
+package gomoku.repository.transaction
+
+import gomoku.repository.GamesRepository
+import gomoku.repository.UsersRepository
 
 interface Transaction {
 

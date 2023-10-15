@@ -1,7 +1,7 @@
 package gomoku.services
 
 import gomoku.domain.game.Game
-import gomoku.repository.TransactionManager
+import gomoku.repository.transaction.TransactionManager
 import org.springframework.stereotype.Component
 
 @Component
@@ -10,9 +10,8 @@ class GamesService(
 ) {
 
     fun getGameById(id: Int): Game? =
-        transactionManager.run { trans ->
-            val gamesRepository = trans.gamesRepository
-            gamesRepository.getGameById(id)
+        transactionManager.run {
+            it.gamesRepository.getGameById(id)
         }
 
 }

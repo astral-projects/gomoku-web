@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
-class TicTacToeApplication {
+class GomokuApplication {
     @Bean
     fun jdbi() = Jdbi.create(
         PGSimpleDataSource().apply {
@@ -44,6 +44,7 @@ class TicTacToeApplication {
         tokenRollingTtl = 1.hours,
         maxTokensPerUser = 3
     )
+
 }
 
 @Configuration
@@ -62,8 +63,8 @@ class PipelineConfigurer(
 }
 
 fun main(args: Array<String>) {
-    val logger = LoggerFactory.getLogger("GomokoRoyaleApplication")
+    val logger = LoggerFactory.getLogger("GomokuApplication")
     logger.info("Starting application")
     logger.info("DB_URL: ${Environment.getDbUrl()}")
-    runApplication<TicTacToeApplication>(*args)
+    runApplication<GomokuApplication>(*args)
 }

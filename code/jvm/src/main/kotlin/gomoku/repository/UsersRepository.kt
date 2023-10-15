@@ -10,6 +10,7 @@ interface UsersRepository {
 
     fun storeUser(
         username: String,
+        email: String,
         passwordValidation: PasswordValidationInfo
     ): Int
 

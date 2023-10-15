@@ -26,7 +26,7 @@ class UsersController(
 
     @PostMapping(Uris.Users.CREATE)
     fun create(@RequestBody input: UserCreateInputModel): ResponseEntity<*> {
-        val res = userService.createUser(input.username, input.password)
+        val res = userService.createUser(input.username, input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.status(201)
                 .header(

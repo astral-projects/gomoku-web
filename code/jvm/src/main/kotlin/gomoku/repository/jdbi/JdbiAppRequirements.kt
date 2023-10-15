@@ -1,8 +1,12 @@
 package gomoku.repository.jdbi
 
 import gomoku.repository.jdbi.mappers.BoardMapper
+import gomoku.repository.jdbi.mappers.BoardSizeMapper
+import gomoku.repository.jdbi.mappers.GameIdMapper
 import gomoku.repository.jdbi.mappers.GameStateMapper
+import gomoku.repository.jdbi.mappers.GameVariantMapper
 import gomoku.repository.jdbi.mappers.InstantMapper
+import gomoku.repository.jdbi.mappers.OpeningRuleMapper
 import gomoku.repository.jdbi.mappers.PasswordValidationInfoMapper
 import gomoku.repository.jdbi.mappers.TokenValidationInfoMapper
 import org.jdbi.v3.core.Jdbi
@@ -18,6 +22,10 @@ fun Jdbi.configureWithAppRequirements(): Jdbi {
     registerColumnMapper(InstantMapper())
     registerColumnMapper(BoardMapper())
     registerColumnMapper(GameStateMapper())
+    registerColumnMapper(GameVariantMapper())
+    registerColumnMapper(OpeningRuleMapper())
+    registerColumnMapper(BoardSizeMapper())
+    registerColumnMapper(GameIdMapper())
 
     return this
 }

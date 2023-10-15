@@ -1,8 +1,10 @@
-package gomoku.repository.jdbi
+package gomoku.repository.jdbi.transaction
 
 import gomoku.repository.GamesRepository
-import gomoku.repository.Transaction
 import gomoku.repository.UsersRepository
+import gomoku.repository.jdbi.JdbiGamesRepository
+import gomoku.repository.jdbi.JdbiUsersRepository
+import gomoku.repository.transaction.Transaction
 import org.jdbi.v3.core.Handle
 
 class JdbiTransaction(

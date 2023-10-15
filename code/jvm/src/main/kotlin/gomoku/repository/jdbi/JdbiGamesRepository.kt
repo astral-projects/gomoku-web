@@ -9,7 +9,7 @@ class JdbiGamesRepository(
     private val handle: Handle
 ) : GamesRepository {
     override fun getGameById(id: Int): Game? =
-        handle.createQuery("select * from dbo.Game where game_id = :id")
+        handle.createQuery("select * from dbo.Games where id = :id")
             .bind("id", id)
             .mapTo<Game>()
             .singleOrNull()
