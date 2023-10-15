@@ -13,10 +13,12 @@ import gomoku.services.UserCreationError
 import gomoku.services.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -27,6 +29,7 @@ class UsersController(
 
     @PostMapping(Uris.Users.CREATE)
     fun create(@RequestBody input: UserCreateInputModel): ResponseEntity<*> {
+        logger.info("POST ${Uris.Users.CREATE}")
         val res = userService.createUser(input.username, input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.status(201)
@@ -46,6 +49,7 @@ class UsersController(
     fun token(
         @RequestBody input: UserCreateTokenInputModel
     ): ResponseEntity<*> {
+        logger.info("POST ${Uris.Users.TOKEN}")
         val res = userService.createToken(input.username, input.password)
         return when (res) {
             is Success ->
@@ -60,14 +64,14 @@ class UsersController(
     }
 
     @PostMapping(Uris.Users.LOGOUT)
-    fun logout(
-        user: AuthenticatedUser
-    ) {
+    fun logout(user: AuthenticatedUser) {
+        logger.info("POST ${Uris.Users.LOGOUT}")
         userService.revokeToken(user.token)
     }
 
     @GetMapping(Uris.Users.HOME)
     fun getUserHome(userAuthenticatedUser: AuthenticatedUser): UserHomeOutputModel {
+        logger.info("GET ${Uris.Users.HOME}")
         return UserHomeOutputModel(
             id = userAuthenticatedUser.user.id,
             username = userAuthenticatedUser.user.username
@@ -76,15 +80,23 @@ class UsersController(
 
     @GetMapping(Uris.Users.GET_BY_ID)
     fun getById(@PathVariable id: String) {
+        logger.info("GET ${Uris.Users.GET_BY_ID}")
         TODO("TODO")
     }
 
     @GetMapping(Uris.Users.RANKING)
     fun getUserRanking(): List<UserRankingInfo> {
+        logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }
 
+    @PutMapping(Uris.Users.EDIT_USER_PROFILE)
     fun editUser(user: User): User {
+        logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
         TODO("Not yet implemented")
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(UsersController::class.java)
     }
 }

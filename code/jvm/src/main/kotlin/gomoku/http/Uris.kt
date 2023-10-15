@@ -15,6 +15,7 @@ object Uris {
         const val TOKEN = "$PREFIX/users/token"
         const val RANKING = "$PREFIX/users/ranking"
         const val GET_BY_ID = "$PREFIX/users/{id}"
+        const val EDIT_USER_PROFILE = "$PREFIX/users/{id}"
         const val HOME = "$PREFIX/me"
         const val LOGOUT = "$PREFIX/users/logout"
 
