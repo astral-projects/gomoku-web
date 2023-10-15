@@ -20,10 +20,10 @@ class GamesService(
             it.gamesRepository.getGameById(id)
         }
 
-    fun startGame(gameVariant:String, openingRule: String, boardSize: Int,user:User): Int? =
+    fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: User): Int? =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.startGame(gameVariant,openingRule,boardSize,user.id.value)
+            gamesRepository.startGame(gameVariant, openingRule, boardSize, user.id.value)
         }
 
     fun deleteGame(game: Game) {
@@ -32,6 +32,12 @@ class GamesService(
             gamesRepository.deleteGame(game)
         }
     }
+
+    fun getGameStatus(user: User, gameId: Int): String? =
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.getGameStatus(gameId,user)
+        }
 
     fun getSystemInfo() {
         TODO("Not yet implemented")

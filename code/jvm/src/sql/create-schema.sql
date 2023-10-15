@@ -78,3 +78,8 @@ create table dbo.Games
     constraint created_is_valid check (created_at > 0),
     constraint updated_is_valid check (updated_at > 0)
 );
+
+
+UPDATE dbo.Games
+SET host_id = 10
+WHERE host_id = 1 AND id = 1;

@@ -14,5 +14,5 @@ interface GamesRepository {
     fun getSystemInfo(): SystemInfo
     fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean
     fun exitGame(gameId: GameId): Boolean
-
+    fun getGameStatus(gameId: Int,user: User): String?
 }

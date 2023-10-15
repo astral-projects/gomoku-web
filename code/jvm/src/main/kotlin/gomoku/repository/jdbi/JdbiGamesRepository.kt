@@ -19,18 +19,20 @@ class JdbiGamesRepository(
             .mapTo<Game>()
             .singleOrNull()
 
-    override fun startGame(gameVariant:String, openingRule: String, boardSize: Int, user: Int): Int? =
-       handle.createUpdate("insert into dbo.Lobbies ( board_size, game_variant, opening_rule, host_id) " +
-               "values (:board_size, :game_variant, :opening_rule, :host_id)")
-           .bind("game_variant", gameVariant)
-           .bind("opening_rule", openingRule)
-           .bind("board_size", boardSize)
-           .bind("host_id", user)
-           .executeAndReturnGeneratedKeys()
-           .mapTo<Int>()
-           .one()
+    override fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: Int): Int? =
+        handle.createUpdate(
+            "insert into dbo.Lobbies ( board_size, game_variant, opening_rule, host_id) " +
+                    "values (:board_size, :game_variant, :opening_rule, :host_id)"
+        )
+            .bind("game_variant", gameVariant)
+            .bind("opening_rule", openingRule)
+            .bind("board_size", boardSize)
+            .bind("host_id", user)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .one()
 
-    override fun deleteGame(game: Game):Boolean {
+    override fun deleteGame(game: Game): Boolean {
         val r = handle.createUpdate("delete from dbo.Game where game_id = :gameId")
             .bind("gameId", game.id)
             .execute()
@@ -48,6 +50,13 @@ class JdbiGamesRepository(
     override fun exitGame(gameId: GameId): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun getGameStatus(gameId: Int ,user: User): String? =
+        handle.createQuery("select state from dbo.Games where id = :gameId AND (host_id = :id OR guest_id = :id)")
+            .bind("id", user.id.value)
+            .bind("gameId", gameId)
+            .mapTo<String>()
+            .one()
 }
 
 /*

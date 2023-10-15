@@ -8,8 +8,10 @@ import gomoku.http.Uris
 import gomoku.http.model.game.GameInputModel
 import gomoku.services.GamesService
 import gomoku.services.UsersService
+import gomoku.utils.getRidBearer
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -36,13 +38,7 @@ class GamesController(
     @PostMapping(Uris.Games.START_GAME)
     fun startGame(@RequestBody game: GameInputModel, request: HttpServletRequest): ResponseEntity<String> {
         logger.info("POST ${Uris.Games.START_GAME}")
-        //I want here to validate the token and get the user id
-        val authHeader = request.getHeader("Authorization")
-        val token = if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            authHeader.substring("Bearer ".length).trim()
-        } else {
-            return ResponseEntity.status(401).body("Invalid Token")
-        }
+        val token = getRidBearer(request.getHeader("Authorization"))
         val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
 
         val res = gamesService.startGame(game.gameVariant, game.openingRule, game.boardSize, user)
@@ -85,6 +81,19 @@ class GamesController(
     fun exitGame(gameId: GameId): ResponseEntity<String> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
         TODO("Not yet implemented")
+    }
+
+    @GetMapping(Uris.Games.GAME_STATUS)
+    fun gameStatus( @PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> {
+        logger.info("GET ${Uris.Games.GAME_STATUS}")
+        val token = getRidBearer(request.getHeader("Authorization"))
+        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+        val gameStatus = gamesService.getGameStatus(user, id.toInt())
+        return if (gameStatus == null) {
+            ResponseEntity.status(403).body("You are not part of this game")
+        } else {
+            ResponseEntity.status(200).body(gameStatus)
+        }
     }
 
     companion object {

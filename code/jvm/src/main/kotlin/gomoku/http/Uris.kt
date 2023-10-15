@@ -32,6 +32,7 @@ object Uris {
         const val HOME = "$PREFIX/me"
         const val GET_SYSTEM_INFO = "$PREFIX/info"
         const val MAKE_MOVE = "$PREFIX/games/{id}/move"
+        const val GAME_STATUS = "$PREFIX/games/{id}/status"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
