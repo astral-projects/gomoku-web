@@ -20,13 +20,14 @@ class JdbiUsersRepository(
             .mapTo<User>()
             .singleOrNull()
 
-    override fun storeUser(username: String, passwordValidation: PasswordValidationInfo): Int =
+    override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int =
         handle.createUpdate(
             """
-            insert into dbo.Users (username, password_validation) values (:username, :password_validation)
+            insert into dbo.Users (username, email, password_validation) values (:username, :email, :password_validation)
             """
         )
             .bind("username", username)
+            .bind("email", email)
             .bind("password_validation", passwordValidation.validationInfo)
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
@@ -110,21 +111,20 @@ class JdbiUsersRepository(
     private data class UserAndTokenModel(
         val id: Int,
         val username: String,
+        val email: String,
         val passwordValidation: PasswordValidationInfo,
         val tokenValidation: TokenValidationInfo,
         val createdAt: Long,
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
-            get() = Pair(
-                User(id, username, passwordValidation),
-                Token(
-                    tokenValidation,
-                    id,
-                    Instant.fromEpochSeconds(createdAt),
-                    Instant.fromEpochSeconds(lastUsedAt)
-                )
-            )
+            get() = User(id, username, email, passwordValidation) to
+                    Token(
+                        tokenValidation,
+                        id,
+                        Instant.fromEpochSeconds(createdAt),
+                        Instant.fromEpochSeconds(lastUsedAt)
+                    )
     }
 
     companion object {

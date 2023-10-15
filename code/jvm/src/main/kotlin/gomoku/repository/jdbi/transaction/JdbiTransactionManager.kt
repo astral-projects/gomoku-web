@@ -1,7 +1,7 @@
-package gomoku.repository.jdbi
+package gomoku.repository.jdbi.transaction
 
-import gomoku.repository.Transaction
-import gomoku.repository.TransactionManager
+import gomoku.repository.transaction.Transaction
+import gomoku.repository.transaction.TransactionManager
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 

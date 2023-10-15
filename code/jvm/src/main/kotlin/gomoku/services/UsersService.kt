@@ -3,7 +3,7 @@ package gomoku.services
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
-import gomoku.repository.TransactionManager
+import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Either
 import gomoku.utils.failure
 import gomoku.utils.success
@@ -16,6 +16,7 @@ data class TokenExternalInfo(
     val tokenExpiration: Instant
 )
 
+// TODO: add more error types, email validation, etc.
 sealed class UserCreationError {
     object UserAlreadyExists : UserCreationError()
     object InsecurePassword : UserCreationError()
@@ -34,7 +35,7 @@ class UsersService(
     private val clock: Clock
 ) {
 
-    fun createUser(username: String, password: String): UserCreationResult {
+    fun createUser(username: String, email: String, password: String): UserCreationResult {
         if (!usersDomain.isSafePassword(password)) {
             return failure(UserCreationError.InsecurePassword)
         }
@@ -46,7 +47,7 @@ class UsersService(
             if (usersRepository.isUserStoredByUsername(username)) {
                 failure(UserCreationError.UserAlreadyExists)
             } else {
-                val id = usersRepository.storeUser(username, passwordValidationInfo)
+                val id = usersRepository.storeUser(username, email, passwordValidationInfo)
                 success(id)
             }
         }

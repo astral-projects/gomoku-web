@@ -1,8 +1,6 @@
 package gomoku.services
 
 import gomoku.domain.game.Game
-import gomoku.domain.game.OpeningRule
-import gomoku.domain.game.board.BoardSize
 import gomoku.repository.TransactionManager
 import org.springframework.stereotype.Component
 
@@ -12,9 +10,8 @@ class GamesService(
 ) {
 
     fun getGameById(id: Int): Game? =
-        transactionManager.run { trans ->
-            val gamesRepository = trans.gamesRepository
-            gamesRepository.getGameById(id)
+        transactionManager.run {
+            it.gamesRepository.getGameById(id)
         }
 
     fun createGame(gameVariant:String,openingRule: String,boardSize: Int, host:Int, guest:Int): Int? =
