@@ -65,4 +65,6 @@ class UsersDomain(
     fun isSafePassword(password: String) = password.length >= 4
 
     val maxNumberOfTokensPerUser = config.maxTokensPerUser
+
+
 }

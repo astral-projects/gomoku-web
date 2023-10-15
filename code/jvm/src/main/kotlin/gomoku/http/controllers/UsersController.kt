@@ -29,7 +29,7 @@ class UsersController(
 
     @PostMapping(Uris.Users.REGISTER)
     fun create(@RequestBody input: UserCreateInputModel): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.CREATE}")
+        logger.info("POST ${Uris.Users.REGISTER}")
         val res = userService.createUser(input.username, input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.status(201)

@@ -26,7 +26,7 @@ object Uris {
     }
 
     object Games {
-        const val CREATE = "$PREFIX/games"
+        const val START_GAME = "$PREFIX/games"
         const val GET_BY_ID = "$PREFIX/games/{id}"
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
         const val HOME = "$PREFIX/me"
@@ -36,7 +36,7 @@ object Uris {
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun home(): URI = URI(HOME)
-        fun create(): URI = URI(CREATE)
+        fun create(): URI = URI(START_GAME)
 
         fun deleteById(id: Int) = UriTemplate(GET_BY_ID).expand(id)
     }
