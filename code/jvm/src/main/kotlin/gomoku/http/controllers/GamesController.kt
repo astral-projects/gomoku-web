@@ -9,8 +9,8 @@ import gomoku.http.Uris
 import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
-import gomoku.services.GamesService
-import gomoku.services.UsersService
+import gomoku.services.gameServices.GamesService
+import gomoku.services.userServices.UsersService
 import gomoku.utils.getRidBearer
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory

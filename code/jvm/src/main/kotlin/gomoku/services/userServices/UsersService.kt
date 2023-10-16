@@ -1,4 +1,4 @@
-package gomoku.services
+package gomoku.services.userServices
 
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
@@ -11,23 +11,6 @@ import gomoku.utils.success
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
-
-data class TokenExternalInfo(
-    val tokenValue: String,
-    val tokenExpiration: Instant
-)
-
-// TODO: add more error types, email validation, etc.
-sealed class UserCreationError {
-    object UserAlreadyExists : UserCreationError()
-    object InsecurePassword : UserCreationError()
-}
-typealias UserCreationResult = Either<UserCreationError, Int>
-
-sealed class TokenCreationError {
-    object UserOrPasswordAreInvalid : TokenCreationError()
-}
-typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
 
 @Component
 class UsersService(

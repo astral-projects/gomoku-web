@@ -1,4 +1,4 @@
-package gomoku.services
+package gomoku.services.gameServices
 
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameId

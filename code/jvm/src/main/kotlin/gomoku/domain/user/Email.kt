@@ -1,6 +1,6 @@
 package gomoku.domain.user
 
-class Email (
+class Email(
     val value: String
 ) {
 
