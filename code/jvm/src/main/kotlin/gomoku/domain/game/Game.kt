@@ -12,6 +12,6 @@ data class Game(
     val board: Board,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val hostId: Int,
-    val guestId: Int
+    val hostId: Id,
+    val guestId: Id
 ) : SerializableDomainModel

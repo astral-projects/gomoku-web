@@ -1,8 +1,6 @@
 package gomoku.services.user
 
-import gomoku.domain.Id
-import gomoku.domain.user.User
-import gomoku.repository.jdbi.model.users.JdbiUserModel
+import gomoku.repository.jdbi.model.user.JdbiUserModel
 import gomoku.utils.Either
 
 sealed class UserCreationError {

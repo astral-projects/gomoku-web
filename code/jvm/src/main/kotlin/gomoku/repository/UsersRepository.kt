@@ -6,7 +6,7 @@ import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
-import gomoku.repository.jdbi.model.users.JdbiUserModel
+import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
 
 interface UsersRepository {

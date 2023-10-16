@@ -1,4 +1,4 @@
-package gomoku.repository.jdbi.model.users
+package gomoku.repository.jdbi.model.user
 
 import gomoku.domain.Id
 import gomoku.domain.user.Email

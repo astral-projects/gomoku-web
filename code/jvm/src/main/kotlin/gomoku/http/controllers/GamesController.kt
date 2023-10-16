@@ -6,6 +6,7 @@ import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.http.Uris
 import gomoku.http.model.game.AuthorOutputModel
+import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
 import gomoku.services.game.GamesService
@@ -29,14 +30,16 @@ class GamesController(
 ) {
 
     @GetMapping(Uris.Games.GET_BY_ID)
-    // TODO(id should be Id and not String, make a interceptor to convert it)
-    fun getById(@PathVariable id: String): ResponseEntity<Game> {
+    // TODO(id should be Id and not String, make a ArgumentsResolver to convert it)
+    fun getById(@PathVariable id: String): ResponseEntity<GameOutputModel> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
         val game = gamesService.getGameById(Id(id.toInt()))
         return if (game == null) {
             ResponseEntity.notFound().build()
         } else {
-            ResponseEntity.ok(game)
+            val gameOutputModel = GameOutputModel.serializeFrom(game)
+            logger.info("Game: $gameOutputModel")
+            ResponseEntity.ok(gameOutputModel)
         }
     }
 

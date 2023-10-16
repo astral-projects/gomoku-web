@@ -9,7 +9,7 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.repository.UsersRepository
-import gomoku.repository.jdbi.model.users.JdbiUserModel
+import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
