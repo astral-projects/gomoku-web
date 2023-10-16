@@ -14,7 +14,8 @@ interface GamesRepository {
     fun startGame(variantId: Id, userId: Id): Boolean
     fun deleteGame(game: Game): Boolean
     fun getSystemInfo(): SystemInfo
-    fun makeMove(id: Id, userId: Id, square: Square): Boolean
+    fun userBelongsToTheGame(user: User, gameId: Id): Boolean
+    fun makeMove(id: Id, userId: Id, square: Square, player: Player): Boolean
     fun exitGame(id: Id, user: User): Boolean
     fun getGameStatus(gameId: Int, user: User): String?
 }

@@ -3,15 +3,10 @@ package gomoku.http.controllers
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
-import gomoku.domain.game.board.moves.move.Square
-import gomoku.domain.game.GameId
 import gomoku.domain.game.board.findPlayer
 import gomoku.domain.game.board.moves.move.toSquare
 import gomoku.http.Uris
-import gomoku.http.model.game.GameInputModel
 import gomoku.http.model.game.MoveInputModel
-import gomoku.services.GamesService
-import gomoku.services.UsersService
 import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
@@ -100,7 +95,7 @@ class GamesController(
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")
         val user = usersService.getUserByToken(getRidBearer(request.getHeader("Authorization"))) ?: return ResponseEntity.status(401).body("Invalid Token")
         val pl= requireNotNull( findPlayer(move.move)){ return ResponseEntity.status(400).body("Your movement is not correct")}
-        val responseEntity = gamesService.makeMove(GameId(id),user, toSquare(move.move) , pl)
+        val responseEntity = gamesService.makeMove(Id(id),user, toSquare(move.move) , pl)
         return ResponseEntity.status(responseEntity.status).body(responseEntity.reasonException)
 
     }

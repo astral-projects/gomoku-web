@@ -45,11 +45,10 @@ class JdbiGamesRepository(
         return r == 1
     }
 
-    override fun getSystemInfo(): SystemInfo = SystemInfo
-    override fun userBelongsToTheGame(user: User, gameId: GameId): Boolean {
+    override fun userBelongsToTheGame(user: User, gameId: Id): Boolean {
         val query =
             handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)")
-                .bind("gameId", gameId.id)
+                .bind("gameId", gameId)
                 .bind("userId", user.id.value)
         val game = query.mapToMap().findOnly()
         return game != null // retorna true se encontrou um jogo, false caso contrário
@@ -60,7 +59,7 @@ class JdbiGamesRepository(
         TODO("Not yet implemented")
     }
 
-    override fun makeMove(gameId: GameId, userId: User, square: Square, player: Player): Boolean {
+    override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
         val updateQuery = handle.createUpdate(
             """
         UPDATE dbo.Games 
@@ -68,14 +67,14 @@ class JdbiGamesRepository(
             updated_at = extract(epoch from now()) 
         WHERE id = :gameId;
     """
-        ).bind("gameId", gameId.id) // assumindo que gameId é um objeto e você quer usar um campo de valor
+        ).bind("gameId", gameId) // assumindo que gameId é um objeto e você quer usar um campo de valor
             .bind("square", "\"${square}-${player}\"") // assumindo que square tem um método toString adequado
 
         val rowsUpdated = updateQuery.execute()
         return rowsUpdated > 0 // retorna true se alguma linha foi atualizada, false caso contrário
     }
 
-    override fun exitGame(gameId: Int, user: User): Boolean {
+    override fun exitGame(id: Id, user: User): Boolean {
         val r = handle.createUpdate(
             """
         UPDATE dbo.Games 
