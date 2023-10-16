@@ -2,7 +2,7 @@ package gomoku.services
 
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankingInfo
+import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Either
@@ -110,7 +110,7 @@ class UsersService(
         }
     }
 
-    fun getUsersRanking(): List<UserRankingInfo> {
+    fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 

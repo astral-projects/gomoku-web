@@ -7,7 +7,6 @@ create table dbo.Users
     email               varchar(64) unique not null,
     password_validation varchar(256)       not null,
     constraint email_is_valid check (email ~ '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$'),
-    -- TODO: if necessary, add a password regex constraint
     constraint username_min_length check (char_length(username) >= 5),
     constraint username_max_length check (char_length(username) <= 30)
 );
@@ -78,9 +77,3 @@ create table dbo.Games
     constraint created_is_valid check (created_at > 0),
     constraint updated_is_valid check (updated_at > 0)
 );
-
-
-UPDATE dbo.Games
-SET state = 'IN_PROGRESS'
-WHERE id = 1;
-
