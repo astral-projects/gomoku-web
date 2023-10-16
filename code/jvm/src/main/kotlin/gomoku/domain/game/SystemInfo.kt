@@ -1,6 +1,6 @@
 package gomoku.domain.game
 
-import java.util.Date
+import java.util.*
 
 class SystemInfo(
     gameName: String,

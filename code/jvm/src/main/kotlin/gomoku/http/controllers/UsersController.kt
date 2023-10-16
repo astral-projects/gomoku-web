@@ -1,7 +1,8 @@
 package gomoku.http.controllers
 
-import gomoku.domain.token.TokenValidationInfo
-import gomoku.domain.user.*
+import gomoku.domain.user.AuthenticatedUser
+import gomoku.domain.user.User
+import gomoku.domain.user.UserRankInfo
 import gomoku.http.Uris
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
@@ -85,7 +86,7 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.RANKING)
-    fun getUserRanking(): List<UserRankingInfo> {
+    fun getUserRanking(): List<UserRankInfo> {
         logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }

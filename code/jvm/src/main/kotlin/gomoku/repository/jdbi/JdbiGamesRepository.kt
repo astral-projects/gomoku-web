@@ -22,7 +22,7 @@ class JdbiGamesRepository(
     override fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: Int): Int? =
         handle.createUpdate(
             "insert into dbo.Lobbies ( board_size, game_variant, opening_rule, host_id) " +
-                "values (:board_size, :game_variant, :opening_rule, :host_id)"
+                    "values (:board_size, :game_variant, :opening_rule, :host_id)"
         )
             .bind("game_variant", gameVariant)
             .bind("opening_rule", openingRule)
@@ -47,7 +47,7 @@ class JdbiGamesRepository(
         TODO("Not yet implemented")
     }
 
-    override fun exitGame(gameId: GameId, user: User): Boolean {
+    override fun exitGame(gameId: Int, user: User): Boolean {
         val r = handle.createUpdate(
             """
         UPDATE dbo.Games 

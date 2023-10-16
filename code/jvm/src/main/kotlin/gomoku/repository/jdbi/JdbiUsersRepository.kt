@@ -2,7 +2,12 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
-import gomoku.domain.user.*
+import gomoku.domain.user.Email
+import gomoku.domain.user.PasswordValidationInfo
+import gomoku.domain.user.User
+import gomoku.domain.user.UserId
+import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.Username
 import gomoku.repository.UsersRepository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
@@ -126,11 +131,11 @@ class JdbiUsersRepository(
                     )
     }
 
-    override fun getUsersRanking(): List<UserRankingInfo> {
+    override fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 
-    override fun getUserStats(userId: Int): UserRankingInfo? {
+    override fun getUserStats(userId: Int): UserRankInfo? {
         TODO("Not yet implemented")
     }
 
