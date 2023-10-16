@@ -4,16 +4,16 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameVariant
+import gomoku.domain.game.board.Board
 import gomoku.http.jackson.serializers.BoardSizeSerializer
 import gomoku.http.jackson.serializers.InstantSerializer
 import gomoku.http.model.JsonOutputModel
 import kotlinx.datetime.Instant
 
 class GameOutputModel private constructor(
-    val id: Id,
-    val state: String,
-    val variant: GameVariant,
-    @field:JsonSerialize(using = BoardSizeSerializer::class)
+    val id: Int,
+    val state: GameStateOutputModel,
+    val variant: GameVariantOutputModel,
     val board: BoardOutputModel,
     @field:JsonSerialize(using = InstantSerializer::class)
     val createdAt: Instant,
@@ -25,14 +25,14 @@ class GameOutputModel private constructor(
     companion object : JsonOutputModel<Game, GameOutputModel> {
         override fun serializeFrom(domainClass: Game): GameOutputModel =
             GameOutputModel(
-                id = domainClass.id,
-                state = domainClass.state.name,
-                variant = domainClass.variant,
+                id = domainClass.id.value,
+                state = GameStateOutputModel.serializeFrom(domainClass.state),
+                variant = GameVariantOutputModel.serializeFrom(domainClass.variant),
                 board = BoardOutputModel.serializeFrom(domainClass.board),
                 createdAt = domainClass.createdAt,
                 updatedAt = domainClass.updatedAt,
-                hostId = domainClass.hostId,
-                guestId = domainClass.guestId
+                hostId = domainClass.hostId.value,
+                guestId = domainClass.guestId.value
             )
 
     }

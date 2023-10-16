@@ -7,7 +7,7 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.game.JdbiGameWithVariantModel
+import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
@@ -20,7 +20,7 @@ class JdbiGamesRepository(
             "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
         )
             .bind("id", id.value)
-            .mapTo<JdbiGameWithVariantModel>()
+            .mapTo<JdbiGameJoinVariantModel>()
             .singleOrNull() ?: return null
         return result.toDomainModel()
     }
@@ -34,9 +34,6 @@ class JdbiGamesRepository(
             .bind("variant_id", variantId.value)
             .execute()
             .run { this == 1 }
-
-
-
 
     override fun deleteGame(game: Game): Boolean {
         val r = handle.createUpdate("delete from dbo.Games where id = :gameId")

@@ -1,6 +1,7 @@
 package gomoku.domain.user
 
 import gomoku.domain.Id
+import gomoku.domain.SerializableDomainModel
 
 private const val MIN_USERNAME_LENGTH = 5
 private const val MAX_USERNAME_LENGTH = 30
@@ -10,7 +11,7 @@ data class User(
     val username: Username,
     val email: Email,
     val passwordValidation: PasswordValidationInfo
-) {
+) : SerializableDomainModel {
     init {
         require(username.value.isNotBlank())
         require(username.value.length in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH)

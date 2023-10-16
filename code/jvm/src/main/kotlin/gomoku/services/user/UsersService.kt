@@ -1,5 +1,6 @@
 package gomoku.services.user
 
+import gomoku.domain.Id
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
@@ -32,6 +33,17 @@ class UsersService(
             } else {
                 val id = usersRepository.storeUser(username, email, passwordValidationInfo)
                 success(id)
+            }
+        }
+    }
+
+    fun getUserById(id: Id): GettingUserResult {
+        return transactionManager.run {
+            val usersRepository = it.usersRepository
+            val user = usersRepository.getUserById(id)
+            when (user) {
+                null -> failure(GettingUserError.UserNotFound)
+                else -> success(user)
             }
         }
     }
@@ -75,7 +87,8 @@ class UsersService(
             val usersRepository = it.usersRepository
             val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
-            if (userAndToken != null ){//TODO(IT WAS GIVING ME PROBLEMS SO I COMMENTED THIS)&& usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
+            if (userAndToken != null) {
+                // TODO(IT WAS GIVING ME PROBLEMS SO I COMMENTED THIS)&& usersDomain.isTokenTimeValid(clock, userAndToken.second))
                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 userAndToken.first
             } else {

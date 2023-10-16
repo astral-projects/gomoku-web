@@ -13,12 +13,12 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.util.*
 
-class JdbiGameWithVariantModel(
-    val id: Id,
-    val state: GameState,
+class JdbiGameJoinVariantModel(
+    val id: Int,
+    val state: String,
     @ColumnName("variant_id")
-    val variantId: Id,
-    val board: Board,
+    val variantId: Int,
+    val board: JdbiBoardModel,
     @ColumnName("created_at")
     val createdAt: Instant,
     @ColumnName("updated_at")
@@ -32,23 +32,23 @@ class JdbiGameWithVariantModel(
     @ColumnName("opening_rule")
     val openingRule: String,
     @ColumnName("board_size")
-    val boardSize: String,
+    val boardSize: Int,
 ) : JdbiModel<Game> {
     override fun toDomainModel(): Game {
         return Game(
-            id = id,
-            state = state,
+            id = Id(id),
+            state = GameState.valueOf(state.uppercase(Locale.getDefault())),
             variant = GameVariant(
-                id = variantId,
+                id = Id(variantId),
                 name = Variant.valueOf(variantName.uppercase(Locale.getDefault())),
                 openingRule = OpeningRule.valueOf(openingRule.uppercase(Locale.getDefault())),
-                boardSize = BoardSize.valueOf(boardSize.uppercase(Locale.getDefault()))
+                boardSize = BoardSize.fromSize(boardSize)
             ),
-            board = board,
+            board = board.toDomainModel(),
             createdAt = createdAt,
             updatedAt = updatedAt,
-            hostId = hostId,
-            guestId = guestId
+            hostId = Id(hostId),
+            guestId = Id(guestId)
         )
     }
 }
