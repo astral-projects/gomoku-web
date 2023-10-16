@@ -6,6 +6,7 @@ import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
 import gomoku.repository.jdbi.configureWithAppRequirements
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
+import gomoku.services.user.UsersService
 import gomoku.utils.Either
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test

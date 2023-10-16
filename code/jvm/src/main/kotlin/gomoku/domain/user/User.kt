@@ -1,10 +1,12 @@
 package gomoku.domain.user
 
+import gomoku.domain.Id
+
 private const val MIN_USERNAME_LENGTH = 5
-private const val MAX_USERNAME_LENGTH = 20
+private const val MAX_USERNAME_LENGTH = 30
 
 data class User(
-    val id: UserId,
+    val id: Id,
     val username: Username,
     val email: Email,
     val passwordValidation: PasswordValidationInfo

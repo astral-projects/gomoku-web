@@ -1,0 +1,1 @@
+select * from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = 1;

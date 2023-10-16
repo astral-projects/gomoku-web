@@ -1,10 +1,6 @@
 package gomoku.domain.game
 
-enum class GameVariant {
-    FREESTYLE,
-    RENJU,
-    CARO,
-    OMOK,
-    NINUKI_RENJU,
-    PENTE
-}
+import gomoku.domain.Id
+import gomoku.domain.game.board.BoardSize
+
+data class GameVariant(val id: Id, val name: Variant, val openingRule: OpeningRule, val boardSize: BoardSize)

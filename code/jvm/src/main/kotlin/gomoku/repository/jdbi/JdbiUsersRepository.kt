@@ -1,8 +1,13 @@
 package gomoku.repository.jdbi
 
+import gomoku.domain.Id
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
-import gomoku.domain.user.*
+import gomoku.domain.user.Email
+import gomoku.domain.user.PasswordValidationInfo
+import gomoku.domain.user.User
+import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.Username
 import gomoku.repository.UsersRepository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
@@ -84,10 +89,10 @@ class JdbiUsersRepository(
     override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
         handle.createQuery(
             """
-                select id, username, password_validation, token_validation, created_at, last_used_at,email
+                select value, username, password_validation, token_validation, created_at, last_used_at,email
                 from dbo.Users as users 
                 inner join dbo.Tokens as tokens 
-                on users.id = tokens.user_id
+                on users.value = tokens.user_id
                 where token_validation = :validation_information
             """
         )
@@ -117,20 +122,20 @@ class JdbiUsersRepository(
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
-            get() = User(UserId(id), Username(username), Email(email), passwordValidation) to
+            get() = User(Id(id), Username(username), Email(email), passwordValidation) to
                     Token(
                         tokenValidation,
-                        UserId(id),
+                        Id(id),
                         Instant.fromEpochSeconds(createdAt),
                         Instant.fromEpochSeconds(lastUsedAt)
                     )
     }
 
-    override fun getUsersRanking(): List<UserRankingInfo> {
+    override fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 
-    override fun getUserStats(userId: Int): UserRankingInfo? {
+    override fun getUserStats(userId: Int): UserRankInfo? {
         TODO("Not yet implemented")
     }
 

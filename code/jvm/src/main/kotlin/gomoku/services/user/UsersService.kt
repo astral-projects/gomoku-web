@@ -1,33 +1,15 @@
-package gomoku.services
+package gomoku.services.user
 
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankingInfo
+import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Either
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
-
-data class TokenExternalInfo(
-    val tokenValue: String,
-    val tokenExpiration: Instant
-)
-
-// TODO: add more error types, email validation, etc.
-sealed class UserCreationError {
-    object UserAlreadyExists : UserCreationError()
-    object InsecurePassword : UserCreationError()
-}
-typealias UserCreationResult = Either<UserCreationError, Int>
-
-sealed class TokenCreationError {
-    object UserOrPasswordAreInvalid : TokenCreationError()
-}
-typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
 
 @Component
 class UsersService(
@@ -110,7 +92,7 @@ class UsersService(
         }
     }
 
-    fun getUsersRanking(): List<UserRankingInfo> {
+    fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 

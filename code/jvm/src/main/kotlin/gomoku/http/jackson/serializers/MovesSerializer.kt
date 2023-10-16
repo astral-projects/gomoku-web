@@ -40,7 +40,6 @@ class MovesDeserializer : JsonDeserializer<Moves>() {
             val square = if (squareString.length == 2) {
                 Square(Column(squareString.first()), Row(squareString.last().toString().toInt()))
             } else {
-                println(squareString)
                 Square(Column(squareString.first()), Row(squareString.drop(1).toInt()))
             }
             val player = Player.valueOf(playerString)

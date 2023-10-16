@@ -1,6 +1,6 @@
-package gomoku.domain.game
+package gomoku.http.model.game
 
-class Author(
+data class AuthorOutputModel(
     val firstName: String,
     val lastName: String,
     val gitHubUrl: String

@@ -4,7 +4,7 @@ import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankingInfo
+import gomoku.domain.user.UserRankInfo
 import kotlinx.datetime.Instant
 
 interface UsersRepository {
@@ -16,7 +16,7 @@ interface UsersRepository {
     fun createToken(token: Token, maxTokens: Int)
     fun updateTokenLastUsed(token: Token, now: Instant)
     fun logout(tokenValidationInfo: TokenValidationInfo): Int
-    fun getUsersRanking(): List<UserRankingInfo>
-    fun getUserStats(userId: Int): UserRankingInfo?
+    fun getUsersRanking(): List<UserRankInfo>
+    fun getUserStats(userId: Int): UserRankInfo?
     fun editUser(user: User): Boolean
 }

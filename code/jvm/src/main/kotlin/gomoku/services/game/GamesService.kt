@@ -1,11 +1,12 @@
-package gomoku.services
+package gomoku.services.game
 
+import gomoku.domain.Id
 import gomoku.domain.game.Game
+import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.GameId
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
-import gomoku.domain.user.UserId
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Response
@@ -17,15 +18,15 @@ class GamesService(
     private val usersDomain: UsersDomain,
 ) {
 
-    fun getGameById(id: Int): Game? =
+    fun getGameById(id: Id): Game? =
         transactionManager.run {
             it.gamesRepository.getGameById(id)
         }
 
-    fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: User): Int? =
+    fun startGame(variantId: Id, user: User): Boolean =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.startGame(gameVariant, openingRule, boardSize, user.id.value)
+            gamesRepository.startGame(variantId, user.id)
         }
 
     fun deleteGame(game: Game) {
@@ -38,12 +39,17 @@ class GamesService(
     fun getGameStatus(user: User, gameId: Int): String? =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.getGameStatus(gameId,user)
+            gamesRepository.getGameStatus(gameId, user)
         }
 
-    fun getSystemInfo() {
-        TODO("Not yet implemented")
+    fun getSystemInfo(): SystemInfo =
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.getSystemInfo()
+        }
 
+    fun makeMove(gameId: Id, userId: Id, square: Square): Boolean {
+        TODO("Not yet implemented")
     }
 
     fun makeMove(gameId: GameId, user: User, square: Square, player: Player):Response =
@@ -59,10 +65,10 @@ class GamesService(
         }
 
 
-    fun exitGame(gameId: Int,user: User): Boolean {
+    fun exitGame(gameId: Id, user: User): Boolean {
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.exitGame(gameId,user)
+            gamesRepository.exitGame(gameId, user)
         }
         return true
     }
