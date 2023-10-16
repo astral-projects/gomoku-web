@@ -80,7 +80,4 @@ create table dbo.Games
 );
 
 
-UPDATE dbo.Games
-SET state = 'IN_PROGRESS'
-WHERE id = 1;
 
