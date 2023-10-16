@@ -1,11 +1,11 @@
 package gomoku.repository.jdbi
 
 import gomoku.TestClock
+import gomoku.domain.Id
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import gomoku.domain.user.UserId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
@@ -74,7 +74,7 @@ class JdbiUserRepositoryTests {
         val tokenCreationInstant = clock.now()
         val token = Token(
             testTokenValidationInfo,
-            UserId(userId),
+            Id(userId),
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )

@@ -1,11 +1,10 @@
-package gomoku.services.gameServices
+package gomoku.services.game
 
+import gomoku.domain.Id
 import gomoku.domain.game.Game
-import gomoku.domain.game.GameId
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
-import gomoku.domain.user.UserId
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import org.springframework.stereotype.Component
@@ -16,15 +15,15 @@ class GamesService(
     private val usersDomain: UsersDomain,
 ) {
 
-    fun getGameById(id: Int): Game? =
+    fun getGameById(id: Id): Game? =
         transactionManager.run {
             it.gamesRepository.getGameById(id)
         }
 
-    fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: User): Int? =
+    fun startGame(variantId: Id, user: User): Boolean =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.startGame(gameVariant, openingRule, boardSize, user.id.value)
+            gamesRepository.startGame(variantId, user.id)
         }
 
     fun deleteGame(game: Game) {
@@ -46,11 +45,11 @@ class GamesService(
             gamesRepository.getSystemInfo()
         }
 
-    fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {
+    fun makeMove(gameId: Id, userId: Id, square: Square): Boolean {
         TODO("Not yet implemented")
     }
 
-    fun exitGame(gameId: GameId, user: User): Boolean {
+    fun exitGame(gameId: Id, user: User): Boolean {
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             gamesRepository.exitGame(gameId, user)

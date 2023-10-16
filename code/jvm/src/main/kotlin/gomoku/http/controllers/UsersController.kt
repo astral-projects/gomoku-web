@@ -9,9 +9,9 @@ import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserHomeOutputModel
-import gomoku.services.userServices.TokenCreationError
-import gomoku.services.userServices.UserCreationError
-import gomoku.services.userServices.UsersService
+import gomoku.services.user.TokenCreationError
+import gomoku.services.user.UserCreationError
+import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
 import org.slf4j.LoggerFactory

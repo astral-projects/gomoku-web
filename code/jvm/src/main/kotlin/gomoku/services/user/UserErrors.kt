@@ -1,4 +1,4 @@
-package gomoku.services.userServices
+package gomoku.services.user
 
 import gomoku.utils.Either
 

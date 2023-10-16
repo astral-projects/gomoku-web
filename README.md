@@ -218,7 +218,7 @@ The HTTP API should provide the functionality required for a front-end applicati
 
 ### 3. Get Game Status
 - Allow a user to observe the game state.
-- **URI:** `/api/games/:gameId/status`
+- **URI:** `/api/games/:id/status`
 - **Method:** `GET`
 - **Headers:** `{ "Authorization": "Bearer abc123" }`
     - **Request**
@@ -230,7 +230,7 @@ The HTTP API should provide the functionality required for a front-end applicati
           "id": "D4E5F6G7H8I9J0K1A2B3C4D5",
           "reason": "Observe game state",
           "data": {
-            "gameId": 73,
+            "id": 73,
             "openingRule": "swap",
             "variant": "renju",
             "state": "inProgress",
@@ -256,7 +256,7 @@ The HTTP API should provide the functionality required for a front-end applicati
         }
         ```
 ### Make a move on the board
-- **URI:** `/api/games/:gameId/moves`
+- **URI:** `/api/games/:id/moves`
 - **Method:** `PUT`
 - **Headers:** `{ "Authorization": "Bearer abc123" }`
 - **Response**
@@ -266,7 +266,7 @@ The HTTP API should provide the functionality required for a front-end applicati
       ```json
       {
         "position": "7f",
-        "gameId": 73
+        "id": 73
       }
       ```
     - **Response (Success)**
@@ -276,7 +276,7 @@ The HTTP API should provide the functionality required for a front-end applicati
          "id": "E5F6G7H8I9J0K1A2B3C4D5E6",
          "reason": "Play a round",
           "data": {
-            "gameId": 194,
+            "id": 194,
               "move": {
                 "player": {
                     "userId": 15,
@@ -322,7 +322,7 @@ The HTTP API should provide the functionality required for a front-end applicati
 
 ### Exit a Game
 - This route will be used to exit a game, but you can only exit a game if you are in a game.
-- **URI:** `/api/games/:gameId/exit`
+- **URI:** `/api/games/:id/exit`
 - **Method:** `POST`
 - **Headers:** `{ "Authoriztion" : "Bearer abc123"}`
 - **Response:**

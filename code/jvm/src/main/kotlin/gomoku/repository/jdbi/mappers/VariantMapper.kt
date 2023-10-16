@@ -1,12 +1,13 @@
 package gomoku.repository.jdbi.mappers
 
-import gomoku.domain.Id
+import gomoku.domain.game.Variant
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class GameIdMapper : ColumnMapper<Id> {
+class VariantMapper : ColumnMapper<Variant> {
     @Throws(SQLException::class)
-    override fun map(r: ResultSet, columnNumber: Int, ctx: StatementContext?): Id = Id(r.getInt(columnNumber))
+    override fun map(r: ResultSet, columnNumber: Int, ctx: StatementContext?): Variant =
+        Variant.valueOf(r.getString(columnNumber))
 }

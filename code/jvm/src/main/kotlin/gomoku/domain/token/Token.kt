@@ -1,11 +1,11 @@
 package gomoku.domain.token
 
-import gomoku.domain.user.UserId
+import gomoku.domain.Id
 import kotlinx.datetime.Instant
 
 class Token(
     val tokenValidationInfo: TokenValidationInfo,
-    val userId: UserId,
+    val userId: Id,
     val createdAt: Instant,
     val lastUsedAt: Instant
 )

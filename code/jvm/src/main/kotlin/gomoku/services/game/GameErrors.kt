@@ -1,4 +1,4 @@
-package gomoku.services.gameServices
+package gomoku.services.game
 
 import gomoku.utils.Either
 

@@ -1,6 +1,6 @@
 package gomoku.domain.user
 
-class UserRankInfo(
+data class UserRankInfo(
     val username: Username,
     val email: Email,
     val rankPosition: Int,

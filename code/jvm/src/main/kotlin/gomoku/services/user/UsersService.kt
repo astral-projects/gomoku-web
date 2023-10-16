@@ -1,4 +1,4 @@
-package gomoku.services.userServices
+package gomoku.services.user
 
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
@@ -9,7 +9,6 @@ import gomoku.utils.Either
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
 
 @Component

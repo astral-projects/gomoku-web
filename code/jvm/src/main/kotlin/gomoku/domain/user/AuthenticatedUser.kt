@@ -1,6 +1,6 @@
 package gomoku.domain.user
 
-class AuthenticatedUser(
+data class AuthenticatedUser(
     val user: User,
     val token: String
 )

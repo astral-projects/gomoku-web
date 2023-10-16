@@ -38,17 +38,17 @@ create table dbo.Statistics
 
 create table dbo.GameVariants
 (
-    id            serial primary key,
-    name          varchar(64) unique not null,
-    opening_rules varchar(64)        not null,
-    board_size    varchar(64)        not null
+    id           serial primary key,
+    name         varchar(64) not null,
+    opening_rule varchar(64) not null,
+    board_size   varchar(64) not null
 );
 
 create table dbo.Lobbies
 (
-    id      int generated always as identity,
-    host_id int,
-    variant int references dbo.GameVariants (id),
+    id         int generated always as identity,
+    host_id    int,
+    variant_id int references dbo.GameVariants (id),
     foreign key (host_id) references dbo.Users (id),
     primary key (id, host_id)
 );
@@ -57,7 +57,7 @@ create table dbo.Games
 (
     id         int generated always as identity primary key,
     state      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
-    variant    int references dbo.GameVariants (id)             not null,
+    variant_id int references dbo.GameVariants (id)                     not null,
     board      jsonb                                                    not null,
     -- TODO: add board json constraints once we have a board representation in domain
     created_at int                                                      not null default extract(epoch from now()),
@@ -70,4 +70,3 @@ create table dbo.Games
     constraint created_is_valid check (created_at > 0),
     constraint updated_is_valid check (updated_at > 0)
 );
-
