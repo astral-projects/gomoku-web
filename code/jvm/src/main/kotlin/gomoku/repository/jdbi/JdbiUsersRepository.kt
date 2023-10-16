@@ -9,6 +9,7 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.repository.UsersRepository
+import gomoku.repository.jdbi.model.users.JdbiUserModel
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -23,6 +24,13 @@ class JdbiUsersRepository(
             .bind("username", username)
             .mapTo<User>()
             .singleOrNull()
+
+    override fun getUserById(id: Id): JdbiUserModel? {
+        return handle.createQuery("select * from dbo.Users where id = :id")
+            .bind("id", id.value)
+            .mapTo<JdbiUserModel>()
+            .singleOrNull()
+    }
 
     override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int =
         handle.createUpdate(
@@ -123,12 +131,12 @@ class JdbiUsersRepository(
     ) {
         val userAndToken: Pair<User, Token>
             get() = User(Id(id), Username(username), Email(email), passwordValidation) to
-                    Token(
-                        tokenValidation,
-                        Id(id),
-                        Instant.fromEpochSeconds(createdAt),
-                        Instant.fromEpochSeconds(lastUsedAt)
-                    )
+                Token(
+                    tokenValidation,
+                    Id(id),
+                    Instant.fromEpochSeconds(createdAt),
+                    Instant.fromEpochSeconds(lastUsedAt)
+                )
     }
 
     override fun getUsersRanking(): List<UserRankInfo> {

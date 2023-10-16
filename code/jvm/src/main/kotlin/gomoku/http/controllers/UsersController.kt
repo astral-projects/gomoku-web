@@ -1,11 +1,13 @@
 package gomoku.http.controllers
 
+import gomoku.domain.Id
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.http.Uris
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
+import gomoku.http.model.user.GetUserOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserHomeOutputModel
@@ -80,9 +82,14 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.GET_BY_ID)
-    fun getById(@PathVariable id: String) {
+    fun getById(@PathVariable id: String): ResponseEntity<GetUserOutputModel> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        TODO("TODO")
+        val user = userService.getUserById(Id(id.toInt()))
+        // use type alias of Either to return a 404 if user is null
+        return when (user) {
+            is Success -> ResponseEntity.ok(GetUserOutputModel(user.value.id, user.value.username, user.value.email))
+            is Failure -> ResponseEntity.notFound().build()
+        }
     }
 
     @GetMapping(Uris.Users.RANKING)
