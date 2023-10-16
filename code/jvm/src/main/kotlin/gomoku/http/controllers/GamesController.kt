@@ -7,13 +7,18 @@ import gomoku.domain.user.UserId
 import gomoku.http.Uris
 import gomoku.http.model.game.GameInputModel
 import gomoku.services.GamesService
+import gomoku.services.UsersService
+import gomoku.utils.getRidBearer
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class GamesController(
     private val gamesService: GamesService,
+    private val usersService: UsersService,
 ) {
 
     @GetMapping(Uris.Games.GET_BY_ID)
@@ -27,18 +32,24 @@ class GamesController(
         }
     }
 
-    @PostMapping(Uris.Games.CREATE)
-    fun createGame(@RequestBody game: GameInputModel): ResponseEntity<String> {
-        logger.info("POST ${Uris.Games.CREATE}")
-        val res = gamesService.createGame(game.gameVariant, game.openingRule, game.boardSize, game.host, game.guest)
+    /*
+    This method is used to the user express his intention to start a game.
+     */
+    @PostMapping(Uris.Games.START_GAME)
+    fun startGame(@RequestBody game: GameInputModel, request: HttpServletRequest): ResponseEntity<String> {
+        logger.info("POST ${Uris.Games.START_GAME}")
+        val token = getRidBearer(request.getHeader("Authorization"))
+        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+
+        val res = gamesService.startGame(game.gameVariant, game.openingRule, game.boardSize, user)
         if (res != null) {
             return ResponseEntity.status(201)
                 .header(
                     "Location",
                     Uris.Games.byId(res).toASCIIString()
-                ).body("Game created With Sucess")
+                ).body("Joined the lobby waiting for an opponent")
         } else {
-            return ResponseEntity.status(400).body("Error creating game")
+            return ResponseEntity.status(400).body("Error joining the lobby")
         }
     }
 
@@ -67,9 +78,29 @@ class GamesController(
     }
 
     @PostMapping(Uris.Games.EXIT_GAME)
-    fun exitGame(gameId: GameId): ResponseEntity<String> {
+    fun exitGame(@PathVariable id: Int, request: HttpServletRequest): ResponseEntity<String> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        TODO("Not yet implemented")
+        val token = getRidBearer(request.getHeader("Authorization"))
+        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+        val game = gamesService.exitGame(id, user)
+        return if (game) {
+            ResponseEntity.status(200).body("Game exited")
+        } else {
+            ResponseEntity.status(403).body("You are not part of this game")
+        }
+    }
+
+    @GetMapping(Uris.Games.GAME_STATUS)
+    fun gameStatus(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> {
+        logger.info("GET ${Uris.Games.GAME_STATUS}")
+        val token = getRidBearer(request.getHeader("Authorization"))
+        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+        val gameStatus = gamesService.getGameStatus(user, id.toInt())
+        return if (gameStatus == null) {
+            ResponseEntity.status(403).body("You are not part of this game")
+        } else {
+            ResponseEntity.status(200).body(gameStatus)
+        }
     }
 
     companion object {

@@ -62,7 +62,9 @@ class UsersDomain(
     fun createTokenValidationInformation(token: String): TokenValidationInfo =
         tokenEncoder.createValidationInformation(token)
 
-    fun isSafePassword(password: String) = password.length > 4
+    fun isSafePassword(password: String) = password.length >= 4
 
     val maxNumberOfTokensPerUser = config.maxTokensPerUser
+
+
 }

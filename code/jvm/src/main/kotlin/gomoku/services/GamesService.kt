@@ -3,13 +3,16 @@ package gomoku.services
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameId
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.user.User
 import gomoku.domain.user.UserId
+import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import org.springframework.stereotype.Component
 
 @Component
 class GamesService(
     private val transactionManager: TransactionManager,
+    private val usersDomain: UsersDomain,
 ) {
 
     fun getGameById(id: Int): Game? =
@@ -17,10 +20,10 @@ class GamesService(
             it.gamesRepository.getGameById(id)
         }
 
-    fun createGame(gameVariant:String,openingRule: String,boardSize: Int, host:Int, guest:Int): Int? =
+    fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: User): Int? =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.createGame(gameVariant,openingRule,boardSize,host,guest)
+            gamesRepository.startGame(gameVariant, openingRule, boardSize, user.id.value)
         }
 
     fun deleteGame(game: Game) {
@@ -29,6 +32,12 @@ class GamesService(
             gamesRepository.deleteGame(game)
         }
     }
+
+    fun getGameStatus(user: User, gameId: Int): String? =
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.getGameStatus(gameId,user)
+        }
 
     fun getSystemInfo() {
         TODO("Not yet implemented")
@@ -39,7 +48,11 @@ class GamesService(
         TODO("Not yet implemented")
     }
 
-    fun exitGame(gameId: GameId): Boolean {
-        TODO("Not yet implemented")
+    fun exitGame(gameId: Int,user: User): Boolean {
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.exitGame(gameId,user)
+        }
+        return true
     }
 }

@@ -27,16 +27,16 @@ class UsersController(
     private val userService: UsersService
 ) {
 
-    @PostMapping(Uris.Users.CREATE)
+    @PostMapping(Uris.Users.REGISTER)
     fun create(@RequestBody input: UserCreateInputModel): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.CREATE}")
+        logger.info("POST ${Uris.Users.REGISTER}")
         val res = userService.createUser(input.username, input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.status(201)
                 .header(
                     "Location",
                     Uris.Users.byId(res.value).toASCIIString()
-                ).build<Unit>()
+                ).body("User created With Success. Welcome!")
 
             is Failure -> when (res.value) {
                 UserCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
