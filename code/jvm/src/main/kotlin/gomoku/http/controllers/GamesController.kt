@@ -2,10 +2,13 @@ package gomoku.http.controllers
 
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameId
+import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.UserId
 import gomoku.http.Uris
+import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameInputModel
+import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.services.GamesService
 import gomoku.services.UsersService
 import gomoku.utils.getRidBearer
@@ -47,14 +50,14 @@ class GamesController(
         val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
 
         val res = gamesService.startGame(game.gameVariant, game.openingRule, game.boardSize, user)
-        if (res != null) {
-            return ResponseEntity.status(201)
+        return if (res != null) {
+            ResponseEntity.status(201)
                 .header(
                     "Location",
                     Uris.Games.byId(res).toASCIIString()
                 ).body("Joined the lobby waiting for an opponent")
         } else {
-            return ResponseEntity.status(400).body("Error joining the lobby")
+            ResponseEntity.status(400).body("Error joining the lobby")
         }
     }
 
@@ -71,9 +74,17 @@ class GamesController(
     }
 
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
-    fun getSystemInfo(): ResponseEntity<String> {
+    fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
         logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
-        TODO("Not yet implemented")
+        val systemInfo: SystemInfo = gamesService.getSystemInfo()
+        return ResponseEntity.ok(
+            SystemInfoOutputModel(
+                systemInfo.GAME_NAME,
+                systemInfo.authors.map { AuthorOutputModel(it.firstName, it.lastName, it.gitHubUrl) },
+                systemInfo.VERSION,
+                systemInfo.releaseDate
+            )
+        )
     }
 
     @PutMapping(Uris.Games.MAKE_MOVE)

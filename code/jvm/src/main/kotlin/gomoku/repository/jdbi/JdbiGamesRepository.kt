@@ -40,7 +40,7 @@ class JdbiGamesRepository(
     }
 
     override fun getSystemInfo(): SystemInfo {
-        TODO("Not yet implemented")
+        return SystemInfo
     }
 
     override fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {

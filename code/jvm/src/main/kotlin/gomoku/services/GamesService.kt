@@ -2,6 +2,7 @@ package gomoku.services
 
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameId
+import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
 import gomoku.domain.user.UserId
@@ -39,9 +40,11 @@ class GamesService(
             gamesRepository.getGameStatus(gameId, user)
         }
 
-    fun getSystemInfo() {
-        TODO("Not yet implemented")
-    }
+    fun getSystemInfo(): SystemInfo =
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            gamesRepository.getSystemInfo()
+        }
 
     fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {
         TODO("Not yet implemented")
