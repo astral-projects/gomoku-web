@@ -50,16 +50,16 @@ The conceptual model has the following restrictions:
 - `Game` entity:
     - The `state` attribute only accepts the following values: `IN-PROGRESS`, `FINISHED`;
     - The `board` attribute is of type `jsob` and should be a valid `JSON` object;
-    - The `updated` and `created` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
+    - The `updated` and `created` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0. 
     - The `updated` attribute should be greater than or equal to the `created` attribute;
     - The `host` and `guest` attributes reference the same user;
-
+  
 - `Statistics` entity:
     - The `gamesPlayed`, `gamesWon` and `points` attributes should be greater than 0;
     - The `gamesPlayed` attribute should be greater than or equal to the `gamesWon` attribute;
 
 - `Token` entity:
-    - The `created_at` and `last_used_at` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
+    - The `created_at` and `last_used_at` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0. 
     - The `last_used` attribute should be greater than or equal to the `created_at` attribute;
 
 ### Physical Model

@@ -36,22 +36,21 @@ class GamesService(
     fun getGameStatus(user: User, gameId: Int): String? =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.getGameStatus(gameId,user)
+            gamesRepository.getGameStatus(gameId, user)
         }
 
     fun getSystemInfo() {
         TODO("Not yet implemented")
-
     }
 
     fun makeMove(gameId: GameId, userId: UserId, square: Square): Boolean {
         TODO("Not yet implemented")
     }
 
-    fun exitGame(gameId: Int,user: User): Boolean {
+    fun exitGame(gameId: GameId, user: User): Boolean {
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.exitGame(gameId,user)
+            gamesRepository.exitGame(gameId, user)
         }
         return true
     }

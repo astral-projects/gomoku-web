@@ -79,8 +79,3 @@ create table dbo.Games
     constraint updated_is_valid check (updated_at > 0)
 );
 
-
-UPDATE dbo.Games
-SET state = 'IN_PROGRESS'
-WHERE id = 1;
-

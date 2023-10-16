@@ -82,7 +82,7 @@ class GamesController(
         logger.info("POST ${Uris.Games.EXIT_GAME}")
         val token = getRidBearer(request.getHeader("Authorization"))
         val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
-        val game = gamesService.exitGame(id, user)
+        val game = gamesService.exitGame(GameId(id), user)
         return if (game) {
             ResponseEntity.status(200).body("Game exited")
         } else {

@@ -2,7 +2,7 @@ package gomoku.domain.game
 
 import java.util.Date
 
-class SystemInfo (
+class SystemInfo(
     gameName: String,
     gameVersion: String,
     gameDescription: String,

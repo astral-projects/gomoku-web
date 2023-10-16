@@ -22,7 +22,7 @@ class JdbiGamesRepository(
     override fun startGame(gameVariant: String, openingRule: String, boardSize: Int, user: Int): Int? =
         handle.createUpdate(
             "insert into dbo.Lobbies ( board_size, game_variant, opening_rule, host_id) " +
-                    "values (:board_size, :game_variant, :opening_rule, :host_id)"
+                "values (:board_size, :game_variant, :opening_rule, :host_id)"
         )
             .bind("game_variant", gameVariant)
             .bind("opening_rule", openingRule)
@@ -33,7 +33,7 @@ class JdbiGamesRepository(
             .one()
 
     override fun deleteGame(game: Game): Boolean {
-        val r = handle.createUpdate("delete from dbo.Game where game_id = :gameId")
+        val r = handle.createUpdate("delete from dbo.Games where id = :gameId")
             .bind("gameId", game.id)
             .execute()
         return r == 1
@@ -47,12 +47,14 @@ class JdbiGamesRepository(
         TODO("Not yet implemented")
     }
 
-    override fun exitGame(gameId: Int,user: User): Boolean{
-        val r = handle.createUpdate("""
+    override fun exitGame(gameId: GameId, user: User): Boolean {
+        val r = handle.createUpdate(
+            """
         UPDATE dbo.Games 
         SET state = 'FINISHED'
         WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)
-    """)
+    """
+        )
             .bind("gameId", gameId)
             .bind("userId", user.id.value) // assumindo que o objeto 'user' tem um atributo 'id'
             .execute()
@@ -60,7 +62,7 @@ class JdbiGamesRepository(
         return r == 1
     }
 
-    override fun getGameStatus(gameId: Int ,user: User): String? =
+    override fun getGameStatus(gameId: Int, user: User): String? =
         handle.createQuery("select state from dbo.Games where id = :gameId AND (host_id = :id OR guest_id = :id)")
             .bind("id", user.id.value)
             .bind("gameId", gameId)

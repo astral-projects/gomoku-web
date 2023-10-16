@@ -16,8 +16,8 @@ class JacksonConfig {
         private val logger = LoggerFactory.getLogger(JacksonConfig::class.java)
     }
 
-    @Bean
     // TODO("not working... why?")
+    @Bean
     fun jackson2ObjectMapperBuilder(): Jackson2ObjectMapperBuilder {
         logger.info("Configuring JackSonObjectMapperBuilder with custom property naming strategy")
         return Jackson2ObjectMapperBuilder()
