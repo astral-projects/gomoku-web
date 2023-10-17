@@ -82,7 +82,7 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.GET_BY_ID)
-    fun getById(@PathVariable id: String): ResponseEntity<GetUserOutputModel> {
+    fun getById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<GetUserOutputModel> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
         val user = userService.getUserById(Id(id.toInt()))
         // use type alias of Either to return a 404 if user is null

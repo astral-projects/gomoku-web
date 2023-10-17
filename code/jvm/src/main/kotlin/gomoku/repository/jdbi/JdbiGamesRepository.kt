@@ -45,7 +45,7 @@ class JdbiGamesRepository(
     override fun userBelongsToTheGame(user: User, gameId: Id): Boolean {
         val query =
             handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)")
-                .bind("gameId", gameId)
+                .bind("gameId", gameId.value)
                 .bind("userId", user.id.value)
         val game = query.mapToMap().findOnly()
         return game != null // retorna true se encontrou um jogo, false caso contrário
@@ -64,7 +64,7 @@ class JdbiGamesRepository(
             updated_at = extract(epoch from now()) 
         WHERE id = :gameId;
     """
-        ).bind("gameId", gameId) // assumindo que gameId é um objeto e você quer usar um campo de valor
+        ).bind("gameId", gameId.value) // assumindo que gameId é um objeto e você quer usar um campo de valor
             .bind("square", "\"${square}-${player}\"") // assumindo que square tem um método toString adequado
 
         val rowsUpdated = updateQuery.execute()

@@ -5,6 +5,8 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.findPlayer
 import gomoku.domain.game.board.moves.move.toSquare
+import gomoku.domain.user.AuthenticatedUser
+import gomoku.domain.user.User
 import gomoku.http.Uris
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.AuthorOutputModel
@@ -119,11 +121,11 @@ class GamesController(
     }
 
     @GetMapping(Uris.Games.GAME_STATUS)
-    fun gameStatus(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> {
+    fun gameStatus(@PathVariable id: String,  user : AuthenticatedUser,request: HttpServletRequest): ResponseEntity<String> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
         val token = getRidBearer(request.getHeader("Authorization"))
-        val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
-        val gameStatus = gamesService.getGameStatus(user, id.toInt())
+       // val user = usersService.getUserByToken(token) ?: return ResponseEntity.status(401).body("Invalid Token")
+        val gameStatus = gamesService.getGameStatus(user.user, id.toInt())
         return if (gameStatus == null) {
             ResponseEntity.status(403).body("You are not part of this game")
         } else {

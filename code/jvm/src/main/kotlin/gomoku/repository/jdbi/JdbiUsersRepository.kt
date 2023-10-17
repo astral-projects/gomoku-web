@@ -8,6 +8,7 @@ import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
+import gomoku.http.model.user.UserDB
 import gomoku.repository.UsersRepository
 import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
@@ -19,11 +20,13 @@ class JdbiUsersRepository(
     private val handle: Handle
 ) : UsersRepository {
 
-    override fun getUserByUsername(username: String): User? =
-        handle.createQuery("select * from dbo.Users where username = :username")
+    override fun getUserByUsername(username: String): User? {
+       val usr= handle.createQuery("select * from dbo.Users where username = :username")
             .bind("username", username)
-            .mapTo<User>()
+            .mapTo<UserDB>()
             .singleOrNull()
+        return User(Id(usr!!.id), Username(usr.username), Email(usr.email), PasswordValidationInfo(usr.passwordValidation))
+    }
 
     override fun getUserById(id: Id): JdbiUserModel? {
         return handle.createQuery("select * from dbo.Users where id = :id")
@@ -62,7 +65,7 @@ class JdbiUsersRepository(
                 )
             """.trimIndent()
         )
-            .bind("user_id", token.userId)
+            .bind("user_id", token.userId.value)
             .bind("offset", maxTokens - 1)
             .execute()
 
@@ -74,7 +77,7 @@ class JdbiUsersRepository(
                 values (:user_id, :token_validation, :created_at, :last_used_at)
             """.trimIndent()
         )
-            .bind("user_id", token.userId)
+            .bind("user_id", token.userId.value)
             .bind("token_validation", token.tokenValidationInfo.validationInfo)
             .bind("created_at", token.createdAt.epochSeconds)
             .bind("last_used_at", token.lastUsedAt.epochSeconds)
@@ -97,10 +100,10 @@ class JdbiUsersRepository(
     override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
         handle.createQuery(
             """
-                select value, username, password_validation, token_validation, created_at, last_used_at,email
+                select id, username, password_validation, token_validation, created_at, last_used_at,email
                 from dbo.Users as users 
                 inner join dbo.Tokens as tokens 
-                on users.value = tokens.user_id
+                on users.id = tokens.user_id
                 where token_validation = :validation_information
             """
         )
