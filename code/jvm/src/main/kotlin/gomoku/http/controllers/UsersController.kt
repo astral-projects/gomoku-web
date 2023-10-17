@@ -84,8 +84,7 @@ class UsersController(
     @GetMapping(Uris.Users.GET_BY_ID)
     fun getById(id: Id): ResponseEntity<UserOutputModel> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val user = userService.getUserById(id)
-        return when (user) {
+        return when (val user = userService.getUserById(id)) {
             is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
             is Failure -> ResponseEntity.notFound().build()
         }

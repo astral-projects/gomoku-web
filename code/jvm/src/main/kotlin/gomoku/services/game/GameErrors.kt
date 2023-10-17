@@ -17,7 +17,24 @@ sealed class GettingGameError {
 typealias GettingGameResult = Either<GettingGameError, Game>
 
 sealed class GamePutError {
+    object UserIsNotTheHost : GamePutError()
     object GameNotFound : GamePutError()
 }
 
 typealias GamePutResult = Either<GamePutError, Boolean>
+
+sealed class GameDeleteError {
+    object UserDoesntBelongToThisGame : GameDeleteError()
+    object GameNotFound : GameDeleteError()
+}
+
+typealias GameDeleteResult = Either<GameDeleteError, Boolean>
+
+
+sealed class GameMakeMoveError {
+    object MoveNotValid : GameMakeMoveError()
+    object UserDoesNotBelongToThisGame : GameMakeMoveError()
+    object GameNotFound : GameMakeMoveError()
+}
+
+typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>

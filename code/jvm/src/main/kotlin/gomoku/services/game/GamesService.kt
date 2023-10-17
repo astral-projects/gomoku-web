@@ -1,7 +1,6 @@
 package gomoku.services.game
 
 import gomoku.domain.Id
-import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
@@ -19,13 +18,13 @@ class GamesService(
     private val usersDomain: UsersDomain,
 ) {
 
-    fun getGameById(id: Id): GettingGameResult{
+    fun getGameById(id: Id): GettingGameResult {
         return transactionManager.run {
-           val game= (it.gamesRepository.getGameById(id))
-            when(game) {
-               null -> failure(GettingGameError.GameNotFound)
-               else -> success(game.toDomainModel())
-           }
+            val game = (it.gamesRepository.getGameById(id))
+            when (game) {
+                null -> failure(GettingGameError.GameNotFound)
+                else -> success(game.toDomainModel())
+            }
         }
     }
 
@@ -40,18 +39,31 @@ class GamesService(
         }
     }
 
-    fun deleteGame(game: Game) {
-        transactionManager.run { transaction ->
+    fun deleteGame(gameId: Id, userId: Id): GamePutResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.deleteGame(game)
+            val u = gamesRepository.userIsTheHost(gameId, userId)
+            if (!u) {
+                failure(GamePutError.UserIsNotTheHost)
+            } else {
+                val g = gamesRepository.deleteGame(gameId, userId)
+                when (g) {
+                    false -> failure(GamePutError.GameNotFound)
+                    true -> success(g)
+                }
+            }
         }
     }
 
-    fun getGameStatus(user: User, gameId: Int): String? =
-        transactionManager.run { transaction ->
+    fun getGameStatus(user: User, gameId: Id): GettingGameResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.getGameStatus(gameId, user)
+            when (val state = gamesRepository.getGameStatus(gameId, user)) {
+                null -> failure(GettingGameError.GameNotFound)
+                else -> success(state.toDomainModel())
+            }
         }
+    }
 
     fun getSystemInfo(): SystemInfo =
         transactionManager.run { transaction ->
@@ -59,24 +71,28 @@ class GamesService(
             gamesRepository.getSystemInfo()
         }
 
-    fun makeMove(gameId: Id, user: User, square: Square, player: Player):Response =
-        transactionManager.run { transaction ->
+    fun makeMove(gameId: Id, user: User, square: Square, player: Player): GameMakeMoveResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            if(!gamesRepository.userBelongsToTheGame(user, gameId)){
-                return@run Response(403, reasonException = "This user don´t have permissions to this game")
+            if (!gamesRepository.userBelongsToTheGame(user, gameId)) {
+                failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
             }
-            if(!gamesRepository.makeMove(gameId, user.id, square, player)){
-                return@run Response(404 , reasonException = "Move not valid do this game")
+            if (!gamesRepository.makeMove(gameId, user.id, square, player)) {
+                failure(GameMakeMoveError.MoveNotValid)
             }
-            return@run Response(200, reasonException = "Your move is added do the board")
+            success(true)
         }
+    }
 
 
-    fun exitGame(gameId: Id, user: User): Boolean {
-        transactionManager.run { transaction ->
+    fun exitGame(gameId: Id, user: User): GameDeleteResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.exitGame(gameId, user)
+            val res = gamesRepository.exitGame(gameId, user)
+            when (res) {
+                false -> failure(GameDeleteError.GameNotFound)
+                true -> success(res)
+            }
         }
-        return true
     }
 }

@@ -12,9 +12,7 @@ import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
-import gomoku.services.game.GameCreationError
-import gomoku.services.game.GamesService
-import gomoku.services.game.GettingGameError
+import gomoku.services.game.*
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
@@ -36,13 +34,14 @@ class GamesController(
 
     @GetMapping(Uris.Games.GET_BY_ID)
     // TODO(id should be Id and not String, make a ArgumentsResolver to convert it)
-    fun getById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<*> {
+    fun getById(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
-        val res = gamesService.getGameById(Id(id.toInt()))
-       return when (res){
+        val res = gamesService.getGameById(id)
+        return when (res) {
             is Success -> ResponseEntity
                 .status(200)
                 .body(GameOutputModel.serializeFrom(res.value))
+
             is Failure -> when (res.value) {
                 GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
             }
@@ -56,9 +55,9 @@ class GamesController(
     fun startGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.START_GAME}")
         val res = gamesService.startGame(Id(variantInputModel.id), user.user)
-        return when(res){
+        return when (res) {
             is Success -> ResponseEntity.status(201).body("Game was created")
-            is Failure -> when(res.value) {
+            is Failure -> when (res.value) {
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
                 GameCreationError.GameNotFound -> TODO()
             }
@@ -66,21 +65,18 @@ class GamesController(
     }
 
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
-    fun deleteById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<String> {
+    fun deleteById(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
-        val game = gamesService.getGameById(Id(id.toInt()))
-        return when(game) {
-            is Success -> {
-                ResponseEntity.status(403).body("You are not the host of this game")
-            }
-
-            is Failure -> {
-                when (game.value) {
-                    GettingGameError.GameNotFound -> ResponseEntity.status(404).body("Game not found")
-                }
+        val game = gamesService.deleteGame(id, user.user.id)
+        return when (game) {
+            is Success -> ResponseEntity.status(200).body("Game deleted")
+            is Failure -> when (game.value) {
+                GamePutError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+                GamePutError.UserIsNotTheHost -> Problem.response(403, Problem.userIsNotTheHost)
             }
         }
     }
+
 
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
@@ -98,36 +94,47 @@ class GamesController(
 
     @PutMapping(Uris.Games.MAKE_MOVE)
     fun makeMove(
-        @PathVariable id: Int, @RequestBody move: MoveInputModel, user: AuthenticatedUser
-    ): ResponseEntity<String> {
+        id: Id, @RequestBody move: MoveInputModel, user: AuthenticatedUser
+    ): ResponseEntity<*> {
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.makeMove(Id(id), user.user, toSquare(move.move), pl)
-        return ResponseEntity.status(responseEntity.status).body(responseEntity.reasonException)
+        val responseEntity = gamesService.makeMove(id, user.user, toSquare(move.move), pl)
+        when (responseEntity){
+            is Success -> return ResponseEntity.status(200).body("Move made")
+            is Failure -> when(responseEntity.value){
+                GameMakeMoveError.MoveNotValid -> return Problem.response(400, Problem.invalidMove)
+                GameMakeMoveError.UserDoesNotBelongToThisGame -> return Problem.response(403, Problem.userIsNotTheHost)
+                GameMakeMoveError.GameNotFound -> return Problem.response(404, Problem.gameNotFound)
+            }
+        }
 
     }
 
     @PostMapping(Uris.Games.EXIT_GAME)
-    fun exitGame(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<String> {
+    fun exitGame(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        val game = gamesService.exitGame(Id(value = id), user.user)
-        return if (game) {
-            ResponseEntity.status(200).body("Game exited")
-        } else {
-            ResponseEntity.status(403).body("You are not part of this game")
+        val game = gamesService.exitGame(id, user.user)
+        return when(game) {
+
+           is Success -> ResponseEntity.status(200).body("Game exited")
+            is Failure -> when(game.value){
+                GameDeleteError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+                GameDeleteError.UserDoesntBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
+            }
         }
     }
 
     @GetMapping(Uris.Games.GAME_STATUS)
-    fun gameStatus(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<String> {
+    fun gameStatus(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
-        val gameStatus = gamesService.getGameStatus(user.user, id.toInt())
-        return if (gameStatus == null) {
-            ResponseEntity.status(403).body("You are not part of this game")
-        } else {
-            ResponseEntity.status(200).body(gameStatus)
+        val gameStatus = gamesService.getGameStatus(user.user, id)
+        return when (gameStatus) {
+            is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
+            is Failure -> when (gameStatus.value) {
+                    GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+            }
         }
     }
 

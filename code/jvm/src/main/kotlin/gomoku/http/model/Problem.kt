@@ -50,5 +50,14 @@ class Problem(
         val userAlreadyInLobby = Problem(
             URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/user-already-in-lobby")
         )
+
+        val userIsNotTheHost= Problem(
+            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/user-already-in-lobby")
+        )
+
+        val invalidMove= Problem(
+            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/invalid-move")
+        )
+
     }
 }

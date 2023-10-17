@@ -35,9 +35,10 @@ class JdbiGameRepository(
             .execute()
             .run { this == 1 }
 
-    override fun deleteGame(game: Game): Boolean {
-        val r = handle.createUpdate("delete from dbo.Games where id = :gameId")
-            .bind("gameId", game.id)
+    override fun deleteGame(gameId: Id, userId: Id): Boolean {
+        val r = handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
+            .bind("gameId", gameId)
+            .bind("hostId", gameId)
             .execute()
         return r == 1
     }
@@ -51,6 +52,14 @@ class JdbiGameRepository(
         return game != null // retorna true se encontrou um jogo, false caso contrário
     }
 
+    override fun userIsTheHost(userId: Id, gameId: Id): Boolean {
+        val query =
+            handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND host_id = :userId")
+                .bind("gameId", gameId.value)
+                .bind("userId", userId.value)
+        val game = query.mapToMap().findOnly()
+        return game != null
+    }
     override fun getSystemInfo() = SystemInfo
 
     override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
@@ -83,12 +92,14 @@ class JdbiGameRepository(
         return r == 1
     }
 
-    override fun getGameStatus(gameId: Int, user: User): String? =
-        handle.createQuery("select state from dbo.Games where id = :gameId AND (host_id = :id OR guest_id = :id)")
+    override fun getGameStatus(gameId: Id, user: User): JdbiGameJoinVariantModel? {
+        val r= handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
             .bind("id", user.id.value)
-            .bind("gameId", gameId)
-            .mapTo<String>()
-            .one()
+            .bind("gameId", gameId.value)
+            .mapTo<JdbiGameJoinVariantModel>()
+            .singleOrNull()
+        return r
+    }
 }
 
 /*
