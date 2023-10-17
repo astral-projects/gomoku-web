@@ -7,10 +7,10 @@ import gomoku.domain.user.UserRankInfo
 import gomoku.http.Uris
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
-import gomoku.http.model.user.GetUserOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserHomeOutputModel
+import gomoku.http.model.user.UserOutputModel
 import gomoku.services.user.TokenCreationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
@@ -82,24 +82,23 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.GET_BY_ID)
-    fun getById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<GetUserOutputModel> {
+    fun getById(id: Id): ResponseEntity<UserOutputModel> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val user = userService.getUserById(Id(id.toInt()))
-        // use type alias of Either to return a 404 if user is null
+        val user = userService.getUserById(id)
         return when (user) {
-            is Success -> ResponseEntity.ok(GetUserOutputModel(user.value.id, user.value.username, user.value.email))
+            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
             is Failure -> ResponseEntity.notFound().build()
         }
     }
 
     @GetMapping(Uris.Users.RANKING)
-    fun getUserRanking( user: AuthenticatedUser): List<UserRankInfo> {
+    fun getUserRanking(user: AuthenticatedUser): List<UserRankInfo> {
         logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }
 
     @PutMapping(Uris.Users.EDIT_USER_PROFILE)
-    fun editUser(@PathVariable id :String, user: AuthenticatedUser): User {
+    fun editUser(@PathVariable id: String, user: AuthenticatedUser): User {
         logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
         TODO("Not yet implemented")
     }

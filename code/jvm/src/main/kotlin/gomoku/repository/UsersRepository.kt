@@ -6,14 +6,13 @@ import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
-import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
 
 interface UsersRepository {
 
     fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int
     fun getUserByUsername(username: String): User?
-    fun getUserById(id: Id): JdbiUserModel?
+    fun getUserById(id: Id): User?
     fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
     fun isUserStoredByUsername(username: String): Boolean
     fun createToken(token: Token, maxTokens: Int)

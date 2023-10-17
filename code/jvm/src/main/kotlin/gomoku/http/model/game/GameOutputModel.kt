@@ -1,11 +1,7 @@
 package gomoku.http.model.game
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import gomoku.domain.Id
 import gomoku.domain.game.Game
-import gomoku.domain.game.GameVariant
-import gomoku.domain.game.board.Board
-import gomoku.http.jackson.serializers.BoardSizeSerializer
 import gomoku.http.jackson.serializers.InstantSerializer
 import gomoku.http.model.JsonOutputModel
 import kotlinx.datetime.Instant
@@ -34,6 +30,5 @@ class GameOutputModel private constructor(
                 hostId = domainClass.hostId.value,
                 guestId = domainClass.guestId.value
             )
-
     }
 }

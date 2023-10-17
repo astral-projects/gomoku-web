@@ -1,4 +1,4 @@
-package gomoku.http.pipeline
+package gomoku.http.pipeline.argumentResolvers
 
 import gomoku.domain.user.AuthenticatedUser
 import jakarta.servlet.http.HttpServletRequest
