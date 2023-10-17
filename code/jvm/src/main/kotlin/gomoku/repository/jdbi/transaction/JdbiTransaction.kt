@@ -2,7 +2,7 @@ package gomoku.repository.jdbi.transaction
 
 import gomoku.repository.GamesRepository
 import gomoku.repository.UsersRepository
-import gomoku.repository.jdbi.JdbiGamesRepository
+import gomoku.repository.jdbi.JdbiGameRepository
 import gomoku.repository.jdbi.JdbiUsersRepository
 import gomoku.repository.transaction.Transaction
 import org.jdbi.v3.core.Handle
@@ -13,7 +13,7 @@ class JdbiTransaction(
 
     override val usersRepository: UsersRepository = JdbiUsersRepository(handle)
 
-    override val gamesRepository: GamesRepository = JdbiGamesRepository(handle)
+    override val gamesRepository: GamesRepository = JdbiGameRepository(handle)
 
     override fun rollback() {
         handle.rollback()

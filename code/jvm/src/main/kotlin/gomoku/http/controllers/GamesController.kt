@@ -1,21 +1,23 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
-import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.findPlayer
 import gomoku.domain.game.board.moves.move.toSquare
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.domain.user.User
 import gomoku.http.Uris
+import gomoku.http.model.Problem
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
+import gomoku.services.game.GameCreationError
 import gomoku.services.game.GamesService
+import gomoku.services.game.GettingGameError
 import gomoku.services.user.UsersService
-import jakarta.servlet.http.HttpServletRequest
+import gomoku.utils.Failure
+import gomoku.utils.Success
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -34,15 +36,16 @@ class GamesController(
 
     @GetMapping(Uris.Games.GET_BY_ID)
     // TODO(id should be Id and not String, make a ArgumentsResolver to convert it)
-    fun getById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<GameOutputModel> {
+    fun getById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
-        val game = gamesService.getGameById(Id(id.toInt()))
-        return if (game == null) {
-            ResponseEntity.notFound().build()
-        } else {
-            val gameOutputModel = GameOutputModel.serializeFrom(game)
-            logger.info("Game: $gameOutputModel")
-            ResponseEntity.ok(gameOutputModel)
+        val res = gamesService.getGameById(Id(id.toInt()))
+       return when (res){
+            is Success -> ResponseEntity
+                .status(200)
+                .body(GameOutputModel.serializeFrom(res.value))
+            is Failure -> when (res.value) {
+                GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+            }
         }
     }
 
@@ -50,18 +53,15 @@ class GamesController(
     This method is used to the user express his intention to start a game.
      */
     @PostMapping(Uris.Games.START_GAME)
-    fun startGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<String> {
+    fun startGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.START_GAME}")
         val res = gamesService.startGame(Id(variantInputModel.id), user.user)
-        return if (res) {
-            ResponseEntity.status(201)
-                /*.header(
-                    "Location",
-                    Uris.Games.byId(res).toASCIIString()*/
-                .body("Joined the lobby, waiting for an opponent")
-        } else {
-            // TODO("revisited this code")
-            ResponseEntity.status(200).body("Game was created")
+        return when(res){
+            is Success -> ResponseEntity.status(201).body("Game was created")
+            is Failure -> when(res.value) {
+                GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
+                GameCreationError.GameNotFound -> TODO()
+            }
         }
     }
 
@@ -69,11 +69,16 @@ class GamesController(
     fun deleteById(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<String> {
         logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
         val game = gamesService.getGameById(Id(id.toInt()))
-        return if (game == null) {
-            ResponseEntity.notFound().build()
-        } else {
-            gamesService.deleteGame(game)
-            ResponseEntity.ok("Game deleted")
+        return when(game) {
+            is Success -> {
+                ResponseEntity.status(403).body("You are not the host of this game")
+            }
+
+            is Failure -> {
+                when (game.value) {
+                    GettingGameError.GameNotFound -> ResponseEntity.status(404).body("Game not found")
+                }
+            }
         }
     }
 

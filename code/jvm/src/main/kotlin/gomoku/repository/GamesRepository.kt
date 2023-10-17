@@ -6,9 +6,10 @@ import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
+import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
 
 interface GamesRepository {
-    fun getGameById(id: Id): Game?
+    fun getGameById(id: Id): JdbiGameJoinVariantModel?
     // TODO fun getAllVariants(): List<GameVariant>
     // TODO fun getVariantById(variantId: Id): GameVariant?
     fun startGame(variantId: Id, userId: Id): Boolean

@@ -11,10 +11,10 @@ import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
-class JdbiGamesRepository(
+class JdbiGameRepository(
     private val handle: Handle
 ) : GamesRepository {
-    override fun getGameById(id: Id): Game? {
+    override fun getGameById(id: Id): JdbiGameJoinVariantModel? {
         // retrieve game information and corresponding variant
         val result = handle.createQuery(
             "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
@@ -22,7 +22,7 @@ class JdbiGamesRepository(
             .bind("id", id.value)
             .mapTo<JdbiGameJoinVariantModel>()
             .singleOrNull() ?: return null
-        return result.toDomainModel()
+        return result
     }
 
     override fun startGame(variantId: Id, userId: Id): Boolean =

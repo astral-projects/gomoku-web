@@ -9,6 +9,8 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Response
+import gomoku.utils.failure
+import gomoku.utils.success
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,16 +19,26 @@ class GamesService(
     private val usersDomain: UsersDomain,
 ) {
 
-    fun getGameById(id: Id): Game? =
-        transactionManager.run {
-            it.gamesRepository.getGameById(id)
+    fun getGameById(id: Id): GettingGameResult{
+        return transactionManager.run {
+           val game= (it.gamesRepository.getGameById(id))
+            when(game) {
+               null -> failure(GettingGameError.GameNotFound)
+               else -> success(game.toDomainModel())
+           }
         }
+    }
 
-    fun startGame(variantId: Id, user: User): Boolean =
-        transactionManager.run { transaction ->
+    fun startGame(variantId: Id, user: User): GameCreationResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.startGame(variantId, user.id)
+            val g = gamesRepository.startGame(variantId, user.id)
+            when (g) {
+                false -> failure(GameCreationError.UserAlreadyInLobby)
+                true -> success(g)
+            }
         }
+    }
 
     fun deleteGame(game: Game) {
         transactionManager.run { transaction ->
@@ -46,10 +58,6 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             gamesRepository.getSystemInfo()
         }
-
-    fun makeMove(gameId: Id, userId: Id, square: Square): Boolean {
-        TODO("Not yet implemented")
-    }
 
     fun makeMove(gameId: Id, user: User, square: Square, player: Player):Response =
         transactionManager.run { transaction ->
