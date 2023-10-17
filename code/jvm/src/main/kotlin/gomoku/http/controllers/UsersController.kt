@@ -93,13 +93,13 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.RANKING)
-    fun getUserRanking(): List<UserRankInfo> {
+    fun getUserRanking( user: AuthenticatedUser): List<UserRankInfo> {
         logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }
 
     @PutMapping(Uris.Users.EDIT_USER_PROFILE)
-    fun editUser(user: User): User {
+    fun editUser(@PathVariable id :String, user: AuthenticatedUser): User {
         logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
         TODO("Not yet implemented")
     }
