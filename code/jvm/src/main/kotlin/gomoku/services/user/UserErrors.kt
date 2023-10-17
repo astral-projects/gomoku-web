@@ -1,6 +1,6 @@
 package gomoku.services.user
 
-import gomoku.repository.jdbi.model.user.JdbiUserModel
+import gomoku.domain.user.User
 import gomoku.utils.Either
 
 sealed class UserCreationError {
@@ -14,4 +14,4 @@ sealed class GettingUserError {
     object UserNotFound : GettingUserError()
 }
 
-typealias GettingUserResult = Either<GettingUserError, JdbiUserModel>
+typealias GettingUserResult = Either<GettingUserError, User>

@@ -21,18 +21,19 @@ class JdbiUsersRepository(
 ) : UsersRepository {
 
     override fun getUserByUsername(username: String): User? {
-       val usr= handle.createQuery("select * from dbo.Users where username = :username")
+        val usr = handle.createQuery("select * from dbo.Users where username = :username")
             .bind("username", username)
             .mapTo<UserDB>()
             .singleOrNull()
         return User(Id(usr!!.id), Username(usr.username), Email(usr.email), PasswordValidationInfo(usr.passwordValidation))
     }
 
-    override fun getUserById(id: Id): JdbiUserModel? {
-        return handle.createQuery("select * from dbo.Users where id = :id")
+    override fun getUserById(id: Id): User? {
+        val user = handle.createQuery("select * from dbo.Users where id = :id")
             .bind("id", id.value)
             .mapTo<JdbiUserModel>()
             .singleOrNull()
+        return user?.toDomainModel()
     }
 
     override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int =

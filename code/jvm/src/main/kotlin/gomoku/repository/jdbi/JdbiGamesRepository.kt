@@ -28,7 +28,7 @@ class JdbiGamesRepository(
     override fun startGame(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                    "values (:host_id, :variant_id)"
+                "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -51,10 +51,7 @@ class JdbiGamesRepository(
         return game != null // retorna true se encontrou um jogo, false caso contrário
     }
 
-
-    override fun getSystemInfo(): SystemInfo {
-        TODO("Not yet implemented")
-    }
+    override fun getSystemInfo() = SystemInfo
 
     override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
         val updateQuery = handle.createUpdate(
@@ -65,7 +62,7 @@ class JdbiGamesRepository(
         WHERE id = :gameId;
     """
         ).bind("gameId", gameId.value) // assumindo que gameId é um objeto e você quer usar um campo de valor
-            .bind("square", "\"${square}-${player}\"") // assumindo que square tem um método toString adequado
+            .bind("square", "\"$square-${player}\"") // assumindo que square tem um método toString adequado
 
         val rowsUpdated = updateQuery.execute()
         return rowsUpdated > 0 // retorna true se alguma linha foi atualizada, false caso contrário

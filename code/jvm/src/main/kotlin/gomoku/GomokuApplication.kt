@@ -2,8 +2,9 @@ package gomoku
 
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.http.pipeline.AuthenticatedUserArgumentResolver
-import gomoku.http.pipeline.AuthenticationInterceptor
+import gomoku.http.pipeline.argumentResolvers.AuthenticatedUserArgumentResolver
+import gomoku.http.pipeline.argumentResolvers.IdArgumentResolver
+import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
 import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
@@ -44,13 +45,13 @@ class GomokuApplication {
         tokenRollingTtl = 1.hours,
         maxTokensPerUser = 3
     )
-
 }
 
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
-    val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver
+    val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
+    val idArgumentResolver: IdArgumentResolver
 ) : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -59,6 +60,7 @@ class PipelineConfigurer(
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
+        resolvers.add(idArgumentResolver)
     }
 }
 
