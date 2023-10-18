@@ -1,8 +1,10 @@
 package gomoku.repository.jdbi.model
 
-import gomoku.domain.SerializableDomainModel
-
+/**
+ * A functional interface for mapping a database model into a domain model. Implementations of this interface
+ * should define the necessary logic to convert a database-specific model into the corresponding domain model.
+ */
 @FunctionalInterface
-interface JdbiModel<R : SerializableDomainModel> {
+fun interface JdbiModel<R> {
     fun toDomainModel(): R
 }

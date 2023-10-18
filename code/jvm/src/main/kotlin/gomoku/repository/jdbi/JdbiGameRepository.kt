@@ -8,7 +8,7 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
+import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -16,12 +16,13 @@ import org.jdbi.v3.core.kotlin.mapTo
 class JdbiGameRepository(
     private val handle: Handle
 ) : GamesRepository {
-    override fun getGameById(id: Id): Game? = handle.createQuery(
-        "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
-    )
-        .bind("id", id.value)
-        .mapTo<JdbiGameJoinVariantModel>()
-        .singleOrNull()?.toDomainModel()
+    override fun getGameById(id: Id): Game? =
+        handle.createQuery(
+            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
+        )
+            .bind("id", id.value)
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()?.toDomainModel()
 
 
     override fun insertInLobby(variantId: Id, userId: Id): Boolean =
@@ -94,6 +95,8 @@ class JdbiGameRepository(
         .bind("userId", user.id.value)
         .execute() == 1
 
+        return r == 1
+    }
 
     override fun getGameStatus(gameId: Id, user: User): Game? =
         handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")

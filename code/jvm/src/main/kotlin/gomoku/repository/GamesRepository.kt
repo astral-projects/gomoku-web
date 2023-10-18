@@ -7,8 +7,6 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
-import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
-import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 
 interface GamesRepository {
     fun getGameById(id: Id): Game?

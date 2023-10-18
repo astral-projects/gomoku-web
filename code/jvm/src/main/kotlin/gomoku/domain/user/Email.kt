@@ -4,9 +4,11 @@ data class Email (
     val value: String
 ) {
 
-    init {
-        // Email format regex from https://www.regular-expressions.info/email.html
+    companion object {
         val emailFormat = Regex(("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"))
+    }
+
+    init {
         require(value.matches(emailFormat)) { "Invalid email format" }
     }
 }

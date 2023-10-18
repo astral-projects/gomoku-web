@@ -3,13 +3,12 @@ package gomoku.http.controllers
 import gomoku.domain.Id
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.findPlayer
-import gomoku.domain.game.board.moves.move.toSquare
+import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.model.Problem
-import gomoku.http.model.game.MoveInputModel
-import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameOutputModel
+import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
 import gomoku.services.game.*
@@ -82,14 +81,7 @@ class GamesController(
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
         logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
         val systemInfo: SystemInfo = gamesService.getSystemInfo()
-        return ResponseEntity.ok(
-            SystemInfoOutputModel(
-                systemInfo.GAME_NAME,
-                systemInfo.authors.map { AuthorOutputModel(it.firstName, it.lastName, it.gitHubUrl) },
-                systemInfo.VERSION,
-                systemInfo.releaseDate
-            )
-        )
+        return ResponseEntity.ok(SystemInfoOutputModel.serializeFrom(systemInfo))
     }
 
     @PutMapping(Uris.Games.MAKE_MOVE)
@@ -100,13 +92,13 @@ class GamesController(
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.makeMove(id, user.user, toSquare(move.move), pl)
-        when (responseEntity){
-            is Success -> return ResponseEntity.status(200).body("Move made")
+        val responseEntity = gamesService.makeMove(id, user.user, Square.toSquare(move.move), pl)
+        return when (responseEntity){
+            is Success -> ResponseEntity.status(200).body("Move made")
             is Failure -> when(responseEntity.value){
-                GameMakeMoveError.MoveNotValid -> return Problem.response(400, Problem.invalidMove)
-                GameMakeMoveError.UserDoesNotBelongToThisGame -> return Problem.response(403, Problem.userIsNotTheHost)
-                GameMakeMoveError.GameNotFound -> return Problem.response(404, Problem.gameNotFound)
+                GameMakeMoveError.MoveNotValid -> Problem.response(400, Problem.invalidMove)
+                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
+                GameMakeMoveError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
             }
         }
 

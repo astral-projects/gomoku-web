@@ -30,7 +30,7 @@ class GamesService(
     fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val lobby = gamesRepository.isMatchmaking(variantId,user.id)
+            val lobby = gamesRepository.isMatchmaking(variantId)
             if (lobby != null) {
                 gamesRepository.deleteUserFromLobby(user.id)
                 val res = gamesRepository.createGame(
@@ -39,6 +39,7 @@ class GamesService(
                     guestId = user.id,
                     lobbyId = lobby.lobbyId
                 )
+                val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
                 when (res) {
                     false -> failure(GameCreationError.UserAlreadyInGame)
                     true -> success("Joining game")
@@ -79,9 +80,9 @@ class GamesService(
     fun getGameStatus(user: User, gameId: Id): GettingGameResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            when (val state = gamesRepository.getGameStatus(gameId, user)) {
+            when (val game = gamesRepository.getGameStatus(gameId, user)) {
                 null -> failure(GettingGameError.GameNotFound)
-                else -> success(state)
+                else -> success(game)
             }
         }
     }
@@ -104,7 +105,6 @@ class GamesService(
             success(true)
         }
     }
-
 
     fun exitGame(gameId: Id, user: User): GameDeleteResult {
         return transactionManager.run { transaction ->

@@ -11,4 +11,6 @@ data class Column(val letter: Char) {
     }
 
     override fun toString(): String = letter.toString()
+
+    fun toIndex(): Int = letter - 'a'
 }

@@ -6,14 +6,13 @@ import gomoku.domain.game.GameState
 import gomoku.domain.game.GameVariant
 import gomoku.domain.game.OpeningRule
 import gomoku.domain.game.Variant
-import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardSize
 import gomoku.repository.jdbi.model.JdbiModel
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.util.*
 
-class JdbiGameJoinVariantModel(
+class JdbiGameAndVariantModel(
     val id: Int,
     val state: String,
     @ColumnName("variant_id")

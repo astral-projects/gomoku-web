@@ -5,4 +5,6 @@ data class Row(val number: Int) {
         require(number > 0) { "Row number must be positive" }
     }
     override fun toString(): String = number.toString()
+
+    fun toIndex(): Int = number - 1
 }

@@ -1,9 +1,12 @@
 package gomoku.services
 
 import gomoku.TestClock
+import gomoku.TestDataGenerator.newTestEmail
+import gomoku.TestDataGenerator.newTestUserName
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
+import gomoku.repository.jdbi.JdbiTestConfiguration.jdbi
 import gomoku.repository.jdbi.configureWithAppRequirements
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.services.user.UsersService
@@ -282,21 +285,11 @@ class UserServiceTests {
                 UsersDomainConfig(
                     tokenSizeInBytes = 256 / 8,
                     tokenTtl = tokenTtl,
-                    tokenRollingTtl,
+                    tokenRollingTtl = tokenRollingTtl,
                     maxTokensPerUser = maxTokensPerUser
                 )
             ),
             testClock
         )
-
-        private fun newTestUserName() = "user-${abs(Random.nextLong())}"
-
-        private fun newTestEmail() = "email-${abs(Random.nextLong())}@example.com"
-
-        private val jdbi = Jdbi.create(
-            PGSimpleDataSource().apply {
-                setURL("jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit")
-            }
-        ).configureWithAppRequirements()
     }
 }

@@ -1,4 +1,4 @@
-package gomoku.http.pipeline.argumentResolvers
+package gomoku.http.pipeline.resolvers
 
 import gomoku.domain.user.AuthenticatedUser
 import jakarta.servlet.http.HttpServletRequest
@@ -21,6 +21,7 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
+        // TODO("handle exceptions properly")
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             ?: throw IllegalStateException("TODO")
         return getUserFrom(request) ?: throw IllegalStateException("TODO")
@@ -29,14 +30,10 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
     companion object {
         private const val KEY = "AuthenticatedUserArgumentResolver"
 
-        fun addUserTo(user: AuthenticatedUser, request: HttpServletRequest) {
-            return request.setAttribute(KEY, user)
-        }
+        fun addUserTo(user: AuthenticatedUser, request: HttpServletRequest) =
+            request.setAttribute(KEY, user)
 
-        fun getUserFrom(request: HttpServletRequest): AuthenticatedUser? {
-            return request.getAttribute(KEY)?.let {
-                it as? AuthenticatedUser
-            }
-        }
+        fun getUserFrom(request: HttpServletRequest): AuthenticatedUser? =
+            request.getAttribute(KEY)?.let { it as? AuthenticatedUser }
     }
 }

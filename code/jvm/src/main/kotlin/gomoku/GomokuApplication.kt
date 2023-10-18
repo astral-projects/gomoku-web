@@ -2,8 +2,8 @@ package gomoku
 
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.http.pipeline.argumentResolvers.AuthenticatedUserArgumentResolver
 import gomoku.http.pipeline.argumentResolvers.IdArgumentResolver
+import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
 import gomoku.repository.jdbi.configureWithAppRequirements
 import kotlinx.datetime.Clock
@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.util.*
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
@@ -68,5 +69,7 @@ fun main(args: Array<String>) {
     val logger = LoggerFactory.getLogger("GomokuApplication")
     logger.info("Starting application")
     logger.info("DB_URL: ${Environment.getDbUrl()}")
+    // used for spring messages
+    Locale.setDefault(Locale.ENGLISH)
     runApplication<GomokuApplication>(*args)
 }

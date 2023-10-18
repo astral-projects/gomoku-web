@@ -1,6 +1,8 @@
 package gomoku.repository.jdbi
 
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.Email
@@ -8,8 +10,9 @@ import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
-import gomoku.http.model.user.UserDB
 import gomoku.repository.UsersRepository
+import gomoku.repository.jdbi.model.JdbiIdModel
+import gomoku.repository.jdbi.model.user.JdbiUserAndTokenModel
 import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
@@ -20,44 +23,41 @@ class JdbiUsersRepository(
     private val handle: Handle
 ) : UsersRepository {
 
-    override fun getUserByUsername(username: String): User? {
-        val usr = handle.createQuery("select * from dbo.Users where username = :username")
-            .bind("username", username)
+    override fun getUserByUsername(username: Username): User? =
+        handle.createQuery("select * from dbo.Users where username = :username")
+            .bind("username", username.value)
             .mapTo<JdbiUserModel>()
-            .singleOrNull()
-        return User(Id(usr!!.id), Username(usr.username), Email(usr.email), PasswordValidationInfo(usr.passwordValidation))
-    }
+            .singleOrNull()?.toDomainModel()
 
-    override fun getUserById(id: Id): User? {
-        val user = handle.createQuery("select * from dbo.Users where id = :id")
-            .bind("id", id.value)
+    override fun getUserById(userId: Id): User? =
+        handle.createQuery("select * from dbo.Users where id = :id")
+            .bind("id", userId.value)
             .mapTo<JdbiUserModel>()
-            .singleOrNull()
-        return user?.toDomainModel()
-    }
+            .singleOrNull()?.toDomainModel()
 
-    override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int {
-        val userId =handle.createUpdate(
+    override fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id =
+        handle.createUpdate(
             """
             insert into dbo.Users (username, email, password_validation) values (:username, :email, :password_validation)
             """
         )
-            .bind("username", username)
-            .bind("email", email)
+            .bind("username", username.value)
+            .bind("email", email.value)
             .bind("password_validation", passwordValidation.validationInfo)
-            .executeAndReturnGeneratedKeys("id")
-            .mapTo<Int>()
+            .executeAndReturnGeneratedKeys()
+            .mapTo<JdbiIdModel>()
             .one()
-        handle.createUpdate("insert into dbo.statistics(user_id) values (:user_id)")
-            .bind("user_id", userId)
-            .execute()
-        return userId
+            .toDomainModel()
 
-    }
-
-    override fun isUserStoredByUsername(username: String): Boolean =
+    override fun isUserStoredByUsername(username: Username): Boolean =
         handle.createQuery("select count(*) from dbo.Users where username = :username")
-            .bind("username", username)
+            .bind("username", username.value)
+            .mapTo<Int>()
+            .single() == 1
+
+    override fun isUserStoredByEmail(email: Email): Boolean =
+        handle.createQuery("select count(*) from dbo.Users where email = :email")
+            .bind("email", email.value)
             .mapTo<Int>()
             .single() == 1
 
@@ -104,23 +104,22 @@ class JdbiUsersRepository(
             .execute()
     }
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): UserAndToken? =
         handle.createQuery(
             """
-                select id, username, password_validation, token_validation, created_at, last_used_at,email
+                select id, username, email, password_validation, token_validation, created_at, last_used_at
                 from dbo.Users as users 
                 inner join dbo.Tokens as tokens 
                 on users.id = tokens.user_id
                 where token_validation = :validation_information
-            """
+            """.trimIndent()
         )
             .bind("validation_information", tokenValidationInfo.validationInfo)
-            .mapTo<UserAndTokenModel>()
-            .singleOrNull()
-            ?.userAndToken
+            .mapTo<JdbiUserAndTokenModel>()
+            .singleOrNull()?.toDomainModel()
 
-    override fun logout(tokenValidationInfo: TokenValidationInfo): Int {
-        return handle.createUpdate(
+    override fun revokeToken(tokenValidationInfo: TokenValidationInfo): Boolean =
+        handle.createUpdate(
             """
                 delete from dbo.Tokens
                 where token_validation = :validation_information
@@ -128,36 +127,18 @@ class JdbiUsersRepository(
         )
             .bind("validation_information", tokenValidationInfo.validationInfo)
             .execute()
-    }
+            .let { it == 1 }
 
-    private data class UserAndTokenModel(
-        val id: Int,
-        val username: String,
-        val email: String,
-        val passwordValidation: PasswordValidationInfo,
-        val tokenValidation: TokenValidationInfo,
-        val createdAt: Long,
-        val lastUsedAt: Long
-    ) {
-        val userAndToken: Pair<User, Token>
-            get() = User(Id(id), Username(username), Email(email), passwordValidation) to
-                Token(
-                    tokenValidation,
-                    Id(id),
-                    Instant.fromEpochSeconds(createdAt),
-                    Instant.fromEpochSeconds(lastUsedAt)
-                )
-    }
-
+    // TODO("should be paginated")
     override fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 
-    override fun getUserStats(userId: Int): UserRankInfo? {
+    override fun getUserStats(userId: Id): UserRankInfo? {
         TODO("Not yet implemented")
     }
 
-    override fun editUser(user: User): Boolean {
+    override fun editUser(userId: Id): User {
         TODO("Not yet implemented")
     }
 
