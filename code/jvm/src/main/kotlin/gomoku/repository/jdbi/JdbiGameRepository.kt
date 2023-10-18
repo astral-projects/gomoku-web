@@ -5,6 +5,7 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
 import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
@@ -15,34 +16,37 @@ import org.jdbi.v3.core.kotlin.mapTo
 class JdbiGameRepository(
     private val handle: Handle
 ) : GamesRepository {
-    override fun getGameById(id: Id): JdbiGameJoinVariantModel? {
-        // retrieve game information and corresponding variant
-        val result = handle.createQuery(
-            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
-        )
-            .bind("id", id.value)
-            .mapTo<JdbiGameJoinVariantModel>()
-            .singleOrNull() ?: return null
-        return result
-    }
+    override fun getGameById(id: Id): Game? = handle.createQuery(
+        "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
+    )
+        .bind("id", id.value)
+        .mapTo<JdbiGameJoinVariantModel>()
+        .singleOrNull()?.toDomainModel()
 
-    override fun waitInLobby(variantId: Id, userId: Id): Boolean =
+
+    override fun insertInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                "values (:host_id, :variant_id)"
+                    "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
-            .execute()
-            .run { this == 1 }
+            .execute() == 1
 
-    override fun deleteGame(gameId: Id, userId: Id): Boolean {
-        val r = handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
+    override fun checkIfIsLobby(userId: Id): Boolean {
+        handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
+            .bind("userId", userId.value)
+            .mapTo<JdbiLobbyModel>()
+            .singleOrNull() ?: return false
+        return true
+    }
+
+    override fun deleteGame(gameId: Id, userId: Id): Boolean =
+        handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
             .bind("gameId", gameId)
             .bind("hostId", gameId)
-            .execute()
-        return r == 1
-    }
+            .execute() == 1
+
 
     override fun userBelongsToTheGame(user: User, gameId: Id): Boolean {
         val query =
@@ -61,6 +65,7 @@ class JdbiGameRepository(
         val game = query.mapToMap().findOnly()
         return game != null
     }
+
     override fun getSystemInfo() = SystemInfo
 
     override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
@@ -78,55 +83,75 @@ class JdbiGameRepository(
         return rowsUpdated > 0
     }
 
-    override fun exitGame(id: Id, user: User): Boolean {
-        val r = handle.createUpdate(
-            """
+    override fun exitGame(id: Id, user: User): Boolean = handle.createUpdate(
+        """
         UPDATE dbo.Games 
         SET state = 'FINISHED'
         WHERE id = :id AND (host_id = :userId OR guest_id = :userId)
     """
-        )
-            .bind("id", id)
-            .bind("userId", user.id.value)
-            .execute()
+    )
+        .bind("id", id)
+        .bind("userId", user.id.value)
+        .execute() == 1
 
-        return r == 1
-    }
 
-    override fun getGameStatus(gameId: Id, user: User): JdbiGameJoinVariantModel? {
-        val r= handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
+    override fun getGameStatus(gameId: Id, user: User): Game? =
+        handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
             .bind("id", user.id.value)
             .bind("gameId", gameId.value)
             .mapTo<JdbiGameJoinVariantModel>()
-            .singleOrNull()
-        return r
-    }
+            .singleOrNull()?.toDomainModel()
 
-    override fun isMatchmaking(variantId: Id): JdbiLobbyModel? =
-        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id")
+
+    override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id")
             .bind("variant_id", variantId.value)
+            .bind("host_id", userId.value)
             .mapTo<JdbiLobbyModel>()
-            .singleOrNull()
+            .singleOrNull()?.toDomainModel()
 
     //TODO(The board isn't being initialize correctly. Review the insertion query)
-    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean {
-        val r = handle.createUpdate(
-            "insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)"
-        ).bind("variant_id", variantId.value)
-            .bind("host_id", hostId.value)
-            .bind("guest_id", guestId.value)
-            .bind("state", "IN_PROGRESS")
-            .bind("board", "[]")
-            .bind("lobby_id", lobbyId.value)
-            .execute()
-        return r == 1
-    }
+    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean = handle.createUpdate(
+        "insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)"
+    ).bind("variant_id", variantId.value)
+        .bind("host_id", hostId.value)
+        .bind("guest_id", guestId.value)
+        .bind("state", "IN_PROGRESS")
+        .bind("board", "[]")
+        .bind("lobby_id", lobbyId.value)
+        .execute() == 1
 
-    override fun deleteUserFromLobby(userId: Id): Boolean {
-        val r = handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
+
+    override fun deleteUserFromLobby(userId: Id): Boolean =
+        handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
             .bind("userId", userId.value)
+            .execute() == 1
+
+
+    override fun updatePoints(gameId: Id, userId: Id): Boolean {
+        handle.createUpdate(
+            """
+        UPDATE dbo.stats 
+        SET points = points + 
+            CASE 
+                WHEN user_id = (
+                SELECT 
+    CASE
+        WHEN host_id != :loserId THEN host_id
+        WHEN guest_id != :loserId THEN guest_id
+FROM 
+    dbo.games 
+WHERE 
+    id = 1;
+) THEN 300  
+                WHEN user_id = :loserId THEN +100  -- subtrai pontos do perdedor
+            END
+        WHERE user_id IN (:winnerId, :loserId)
+        """
+        ).bind("winnerId", userId.value)
+            .bind("loserId", userId.value)
             .execute()
-        return r == 1
+        return true
     }
 }
 

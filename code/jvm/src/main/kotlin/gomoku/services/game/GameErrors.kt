@@ -6,6 +6,7 @@ import gomoku.utils.Either
 sealed class GameCreationError {
     object UserAlreadyInLobby : GameCreationError()
 
+    object GameVariantNotFound : GameCreationError()
     object UserAlreadyInGame : GameCreationError()
     object GameNotFound : GameCreationError()
 }

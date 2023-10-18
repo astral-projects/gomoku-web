@@ -38,7 +38,7 @@ class UsersController(
             is Success -> ResponseEntity.status(201)
                 .header(
                     "Location",
-                    Uris.Users.byId(res.value).toASCIIString()
+                   // Uris.Users.byId(res.value).toASCIIString()
                 ).body("User created With Success. Welcome!")
 
             is Failure -> when (res.value) {
@@ -97,9 +97,9 @@ class UsersController(
     }
 
     @PutMapping(Uris.Users.EDIT_USER_PROFILE)
-    fun editUser(@PathVariable id: String, user: AuthenticatedUser): User {
+    fun editUser(@PathVariable id: String, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
-        TODO("Not yet implemented")
+        return ResponseEntity.status(200).body("User edited with success")
     }
 
     companion object {

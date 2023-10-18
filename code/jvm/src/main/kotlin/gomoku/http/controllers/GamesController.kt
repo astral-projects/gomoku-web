@@ -56,6 +56,7 @@ class GamesController(
         return when (res) {
             is Success -> ResponseEntity.status(201).body(res.value)
             is Failure -> when (res.value) {
+                GameCreationError.GameVariantNotFound -> Problem.response(404, Problem.gameVariantNotFound)
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
                 GameCreationError.UserAlreadyInGame -> Problem.response(404, Problem.userAlreadyInGame)
                 GameCreationError.GameNotFound -> TODO()
@@ -116,7 +117,6 @@ class GamesController(
         logger.info("POST ${Uris.Games.EXIT_GAME}")
         val game = gamesService.exitGame(id, user.user)
         return when(game) {
-
            is Success -> ResponseEntity.status(200).body("Game exited")
             is Failure -> when(game.value){
                 GameDeleteError.GameNotFound -> Problem.response(404, Problem.gameNotFound)

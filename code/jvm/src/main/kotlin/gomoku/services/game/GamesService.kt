@@ -22,7 +22,7 @@ class GamesService(
             val game = (it.gamesRepository.getGameById(id))
             when (game) {
                 null -> failure(GettingGameError.GameNotFound)
-                else -> success(game.toDomainModel())
+                else -> success(game)
             }
         }
     }
@@ -30,20 +30,31 @@ class GamesService(
     fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val matchLobby = gamesRepository.isMatchmaking(variantId)
-            if (matchLobby != null) {
+            val lobby = gamesRepository.isMatchmaking(variantId,user.id)
+            if (lobby != null) {
                 gamesRepository.deleteUserFromLobby(user.id)
-                val lobby = matchLobby.toDomainModel()
-                val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
+                val res = gamesRepository.createGame(
+                    variantId = variantId,
+                    hostId = lobby.userId,
+                    guestId = user.id,
+                    lobbyId = lobby.lobbyId
+                )
                 when (res) {
                     false -> failure(GameCreationError.UserAlreadyInGame)
                     true -> success("Joining game")
                 }
             } else {
-                val g = gamesRepository.waitInLobby(variantId, user.id)
-                when (g) {
-                    false -> failure(GameCreationError.UserAlreadyInLobby)
-                    true -> success("Waiting in lobby")
+                val check = gamesRepository.checkIfIsLobby(user.id)
+                if(check) {
+                    failure(GameCreationError.UserAlreadyInLobby)
+                }else {
+                    val r = gamesRepository.insertInLobby(variantId, user.id)
+                    //TODO(I think we need to create a argument resolver for the VariandInputModel,
+                    // beacuse if you pass an Integer that isnt created in the database, it will throw an exception)
+                    when (r) {
+                        false -> failure(GameCreationError.GameVariantNotFound)
+                        true -> success("Waiting in lobby")
+                    }
                 }
             }
         }
@@ -70,7 +81,7 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             when (val state = gamesRepository.getGameStatus(gameId, user)) {
                 null -> failure(GettingGameError.GameNotFound)
-                else -> success(state.toDomainModel())
+                else -> success(state)
             }
         }
     }
@@ -99,6 +110,10 @@ class GamesService(
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val res = gamesRepository.exitGame(gameId, user)
+            if (res){
+                gamesRepository.updatePoints(gameId,user.id)
+
+            }
             when (res) {
                 false -> failure(GameDeleteError.GameNotFound)
                 true -> success(res)
