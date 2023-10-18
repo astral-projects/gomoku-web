@@ -91,13 +91,13 @@ class GamesController(
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.makeMove(id, user.user, Square(move.move), pl)
-        when (responseEntity){
-            is Success -> return ResponseEntity.status(200).body("Move made")
+        val responseEntity = gamesService.makeMove(id, user.user, Square.toSquare(move.move), pl)
+        return when (responseEntity){
+            is Success -> ResponseEntity.status(200).body("Move made")
             is Failure -> when(responseEntity.value){
-                GameMakeMoveError.MoveNotValid -> return Problem.response(400, Problem.invalidMove)
-                GameMakeMoveError.UserDoesNotBelongToThisGame -> return Problem.response(403, Problem.userIsNotTheHost)
-                GameMakeMoveError.GameNotFound -> return Problem.response(404, Problem.gameNotFound)
+                GameMakeMoveError.MoveNotValid -> Problem.response(400, Problem.invalidMove)
+                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
+                GameMakeMoveError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
             }
         }
 

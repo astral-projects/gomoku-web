@@ -1,17 +1,16 @@
 package gomoku.repository.jdbi
 
 import gomoku.TestClock
-import gomoku.domain.Id
+import gomoku.TestDataGenerator.newTestEmail
+import gomoku.TestDataGenerator.newTestUserName
+import gomoku.TestDataGenerator.newTokenValidationData
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
+import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.postgresql.ds.PGSimpleDataSource
-import kotlin.math.abs
-import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -30,16 +29,23 @@ class JdbiUserRepositoryTests {
         val userName = newTestUserName()
         val email = newTestEmail()
         val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
-        repo.storeUser(userName, email, passwordValidationInfo)
+        val createdUserId = repo.storeUser(userName, email, passwordValidationInfo)
 
-        // and: retrieving a user
-        val retrievedUser: User? = repo.getUserByUsername(userName)
+        // and: retrieving the user by id
+        val retrievedUserById: User? = repo.getUserById(createdUserId)
 
         // then:
-        assertNotNull(retrievedUser)
-        assertEquals(userName, retrievedUser.username.value)
-        assertEquals(passwordValidationInfo, retrievedUser.passwordValidation)
-        assertTrue(retrievedUser.id.value >= 0)
+        assertNotNull(retrievedUserById)
+        assertEquals(createdUserId, retrievedUserById.id)
+
+        // and: retrieving a user by username
+        val retrievedUserByUsername: User? = repo.getUserByUsername(userName)
+
+        // then:
+        assertNotNull(retrievedUserByUsername)
+        assertEquals(userName, retrievedUserByUsername.username)
+        assertEquals(passwordValidationInfo, retrievedUserByUsername.passwordValidation)
+        assertTrue(retrievedUserByUsername.id.value >= 0)
 
         // when: asking if the user exists
         val isUserIsStored = repo.isUserStoredByUsername(userName)
@@ -48,14 +54,14 @@ class JdbiUserRepositoryTests {
         assertTrue(isUserIsStored)
 
         // when: asking if a different user exists
-        val anotherUserIsStored = repo.isUserStoredByUsername("another-$userName")
+        val anotherUserIsStored = repo.isUserStoredByUsername(newTestUserName())
 
         // then: response is false
         assertFalse(anotherUserIsStored)
     }
 
     @Test
-    fun `can create and validate tokens`() = runWithHandle { handle ->
+    fun `can create, validate and update tokens`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
         // and: a test clock
@@ -73,8 +79,8 @@ class JdbiUserRepositoryTests {
         // when: creating a token
         val tokenCreationInstant = clock.now()
         val token = Token(
-            testTokenValidationInfo,
-            Id(userId),
+            tokenValidationInfo = testTokenValidationInfo,
+            userId = userId,
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
@@ -89,26 +95,51 @@ class JdbiUserRepositoryTests {
         // then:
         val (user, retrievedToken) = userAndToken ?: fail("token and associated user must exist")
 
-        // and: ...
-        assertEquals(userName, user.username.value)
+        // and: the user is the same
+        assertEquals(userName.value, user.username.value)
         assertEquals(testTokenValidationInfo.validationInfo, retrievedToken.tokenValidationInfo.validationInfo)
         assertEquals(tokenCreationInstant, retrievedToken.createdAt)
+
+        // when: TODO("continue updateTokenLastUsed test
     }
 
-    companion object {
+    @Test
+    fun `can revoke tokens allowing a user to logout`() = runWithHandle { handle ->
+        // given: a UsersRepository
+        val repo = JdbiUsersRepository(handle)
+        // and: a test clock
+        val clock = TestClock()
 
-        private fun runWithHandle(block: (Handle) -> Unit) = jdbi.useTransaction<Exception>(block)
+        // and: a createdUser
+        val userName = newTestUserName()
+        val email = newTestEmail()
+        val passwordValidationInfo = PasswordValidationInfo("not-valid")
+        val userId = repo.storeUser(userName, email, passwordValidationInfo)
 
-        private fun newTestUserName() = "user-${abs(Random.nextLong())}"
+        // and: test TokenValidationInfo
+        val testTokenValidationInfo = TokenValidationInfo(newTokenValidationData())
 
-        private fun newTestEmail() = "email@-${abs(Random.nextLong())}.com"
+        // when: creating a token
+        val tokenCreationInstant = clock.now()
+        val token = Token(
+            tokenValidationInfo = testTokenValidationInfo,
+            userId = userId,
+            createdAt = tokenCreationInstant,
+            lastUsedAt = tokenCreationInstant
+        )
+        repo.createToken(token, 1)
 
-        private fun newTokenValidationData() = "token-${abs(Random.nextLong())}"
+        // when: retrieving the token and associated user
+        val userAndToken = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
 
-        private val jdbi = Jdbi.create(
-            PGSimpleDataSource().apply {
-                setURL("jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit")
-            }
-        ).configureWithAppRequirements()
+        // then:
+        val (_, retrievedToken) = userAndToken ?: fail("token and associated user must exist")
+
+        // when: when token is revoked
+        repo.revokeToken(retrievedToken.tokenValidationInfo)
+
+        // then: the token is not able to be used again to keep login status active
+        val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
+        assertNull(userAndTokenAfterRevoke)
     }
 }

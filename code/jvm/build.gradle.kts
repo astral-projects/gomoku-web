@@ -36,14 +36,20 @@ dependencies {
     implementation("org.jdbi:jdbi3-kotlin:3.37.1")
     implementation("org.jdbi:jdbi3-postgres:3.37.1")
     implementation("org.postgresql:postgresql:42.5.4")
-    // To use Kotlin specific date and time functions
+
+    // for Spring validation
+    implementation("org.springframework.boot:spring-boot-starter-validation:3.0.4")
+
+    // to use Kotlin specific date and time functions
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 
-    // To get password encode
+    // to get password encode
     implementation("org.springframework.security:spring-security-core:6.0.2")
 
+    // to use in SpringBootTest
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
-    // To use WebTestClient on tests
+
+    // to use WebTestClient on tests
     testImplementation("org.springframework.boot:spring-boot-starter-webflux:3.0.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
 }

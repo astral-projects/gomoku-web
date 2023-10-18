@@ -7,16 +7,16 @@ object Uris {
 
     const val PREFIX = "/api"
     const val HOME = PREFIX
-
     fun home(): URI = URI(HOME)
 
     object Users {
         const val REGISTER = "$PREFIX/users/register"
         const val TOKEN = "$PREFIX/users/token"
         const val RANKING = "$PREFIX/users/ranking"
+        const val STATS_BY_ID = "$PREFIX/users/{id}/stats"
         const val GET_BY_ID = "$PREFIX/users/{id}"
         const val EDIT_USER_PROFILE = "$PREFIX/users/{id}"
-        const val HOME = "$PREFIX/me"
+        const val HOME = "$PREFIX/home"
         const val LOGOUT = "$PREFIX/users/logout"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)

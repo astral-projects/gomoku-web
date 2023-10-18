@@ -22,7 +22,7 @@ class GamesService(
             val game = (it.gamesRepository.getGameById(id))
             when (game) {
                 null -> failure(GettingGameError.GameNotFound)
-                else -> success(game.toDomainModel())
+                else -> success(game)
             }
         }
     }
@@ -30,10 +30,9 @@ class GamesService(
     fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val matchLobby = gamesRepository.isMatchmaking(variantId)
-            if (matchLobby != null) {
+            val lobby = gamesRepository.isMatchmaking(variantId)
+            if (lobby != null) {
                 gamesRepository.deleteUserFromLobby(user.id)
-                val lobby = matchLobby.toDomainModel()
                 val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
                 when (res) {
                     false -> failure(GameCreationError.UserAlreadyInGame)
@@ -68,9 +67,9 @@ class GamesService(
     fun getGameStatus(user: User, gameId: Id): GettingGameResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            when (val state = gamesRepository.getGameStatus(gameId, user)) {
+            when (val game = gamesRepository.getGameStatus(gameId, user)) {
                 null -> failure(GettingGameError.GameNotFound)
-                else -> success(state.toDomainModel())
+                else -> success(game)
             }
         }
     }
@@ -93,7 +92,6 @@ class GamesService(
             success(true)
         }
     }
-
 
     fun exitGame(gameId: Id, user: User): GameDeleteResult {
         return transactionManager.run { transaction ->

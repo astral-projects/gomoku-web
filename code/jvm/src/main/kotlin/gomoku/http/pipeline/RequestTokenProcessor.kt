@@ -13,17 +13,20 @@ class RequestTokenProcessor(
         if (authorizationValue == null) {
             return null
         }
+        // Bearer <token>
         val parts = authorizationValue.trim().split(" ")
         if (parts.size != 2) {
             return null
         }
-        if (parts[0].lowercase() != SCHEME) {
+        val schemeString = parts.first()
+        val tokenString = parts.last()
+        if (schemeString.lowercase() != SCHEME) {
             return null
         }
-        return usersService.getUserByToken(parts[1])?.let {
+        return usersService.getUserByToken(tokenString)?.let {
             AuthenticatedUser(
                 it,
-                parts[1]
+                tokenString
             )
         }
     }

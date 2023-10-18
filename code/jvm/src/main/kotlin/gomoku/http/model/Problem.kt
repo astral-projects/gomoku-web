@@ -9,61 +9,24 @@ class Problem(
     val type = typeUri.toASCIIString()
 
     companion object {
+        const val baseUrl = "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/"
+        // TODO("make a problem json class")
         const val MEDIA_TYPE = "application/problem+json"
-        fun response(status: Int, problem: Problem) = ResponseEntity
+        fun response(status: Int, problemType: Problem) = ResponseEntity
             .status(status)
             .header("Content-Type", MEDIA_TYPE)
-            .body<Any>(problem)
-
-        // TODO("change all uris here to the correct ones and add more")
-        val userAlreadyExists = Problem(
-            URI(
-                "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                        "docs/problems/user-already-exists"
-            )
-        )
-        val insecurePassword = Problem(
-            URI(
-                "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                        "docs/problems/insecure-password"
-            )
-        )
-
-        val userOrPasswordAreInvalid = Problem(
-            URI(
-                "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                        "docs/problems/user-or-password-are-invalid"
-            )
-        )
-
-        val invalidRequestContent = Problem(
-            URI(
-                "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                        "docs/problems/invalid-request-content"
-            )
-        )
-
-        val gameNotFound = Problem(
-            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/game-not-found")
-        )
-
-        val userAlreadyInLobby = Problem(
-            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/user-already-in-lobby")
-        )
-
-        val userIsNotTheHost= Problem(
-            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/user-already-in-lobby")
-        )
-
-        val invalidMove= Problem(
-            URI("https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/invalid-move")
-        )
-
-        val userAlreadyInGame = Problem(
-            URI(
-                "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/docs/problems/user-already-in-game"
-            )
-        )
-
+            .body<Any>(problemType)
+        val userAlreadyExists = Problem(URI("${baseUrl}user-already-exists"))
+        val insecurePassword = Problem(URI("${baseUrl}insecure-password"))
+        val usernameIsInvalid = Problem(URI("${baseUrl}username-is-invalid"))
+        val passwordIsInvalid = Problem(URI("${baseUrl}password-is-invalid"))
+        val invalidRequestContent = Problem(URI("${baseUrl}invalid-request-content"))
+        val gameNotFound = Problem(URI("${baseUrl}game-not-found"))
+        val userAlreadyInLobby = Problem(URI("${baseUrl}user-already-in-lobby"))
+        val userIsNotTheHost = Problem(URI("${baseUrl}user-already-in-lobby"))
+        val invalidMove = Problem(URI("${baseUrl}invalid-move"))
+        val userAlreadyInGame = Problem(URI("${baseUrl}user-already-in-game"))
+        val usernameAlreadyExists = Problem(URI("${baseUrl}username-already-exists"))
+        val emailAlreadyExists = Problem(URI("${baseUrl}email-already-exists"))
     }
 }

@@ -1,12 +1,14 @@
 package gomoku.repository.jdbi
 
 import gomoku.domain.Id
+import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
+import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -14,20 +16,18 @@ import org.jdbi.v3.core.kotlin.mapTo
 class JdbiGameRepository(
     private val handle: Handle
 ) : GamesRepository {
-    override fun getGameById(id: Id): JdbiGameJoinVariantModel? {
-        // retrieve game information and corresponding variant
-        return handle.createQuery(
+    override fun getGameById(id: Id): Game? =
+        handle.createQuery(
             "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
         )
             .bind("id", id.value)
-            .mapTo<JdbiGameJoinVariantModel>()
-            .singleOrNull()
-    }
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()?.toDomainModel()
 
     override fun waitInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                "values (:host_id, :variant_id)"
+                    "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -59,6 +59,7 @@ class JdbiGameRepository(
         val game = query.mapToMap().findOnly()
         return game != null
     }
+
     override fun getSystemInfo() = SystemInfo
 
     override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
@@ -91,20 +92,18 @@ class JdbiGameRepository(
         return r == 1
     }
 
-    override fun getGameStatus(gameId: Id, user: User): JdbiGameJoinVariantModel? {
-        val r= handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
+    override fun getGameStatus(gameId: Id, user: User): Game? =
+        handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
             .bind("id", user.id.value)
             .bind("gameId", gameId.value)
-            .mapTo<JdbiGameJoinVariantModel>()
-            .singleOrNull()
-        return r
-    }
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()?.toDomainModel()
 
-    override fun isMatchmaking(variantId: Id): JdbiLobbyModel? =
+    override fun isMatchmaking(variantId: Id): Lobby? =
         handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id")
             .bind("variant_id", variantId.value)
             .mapTo<JdbiLobbyModel>()
-            .singleOrNull()
+            .singleOrNull()?.toDomainModel()
 
     //TODO(The board isn't being initialize correctly. Review the insertion query)
     override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean {

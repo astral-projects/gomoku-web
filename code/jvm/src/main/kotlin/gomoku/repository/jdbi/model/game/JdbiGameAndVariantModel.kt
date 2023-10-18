@@ -12,7 +12,7 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.util.*
 
-class JdbiGameJoinVariantModel(
+class JdbiGameAndVariantModel(
     val id: Int,
     val state: String,
     @ColumnName("variant_id")

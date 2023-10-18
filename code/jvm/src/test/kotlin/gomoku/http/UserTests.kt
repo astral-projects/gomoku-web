@@ -1,5 +1,6 @@
 package gomoku.http
 
+import gomoku.TestDataGenerator.newTestUserName
 import gomoku.http.model.TokenResponse
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -113,7 +114,4 @@ class UserTests {
             .expectHeader().valueEquals("WWW-Authenticate", "bearer")
     }
 
-    companion object {
-        private fun newTestUserName() = "user-${abs(Random.nextLong())}"
-    }
 }
