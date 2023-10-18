@@ -6,6 +6,7 @@ import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 
 const val WINNING_PIECES = 5
+
 // TODO: make this configurable in the UI and in the backend
 val boardSize = BoardSize.FIFTEEN
 
@@ -20,6 +21,7 @@ sealed class Board(val grid: Moves, val turn: BoardTurn?) {
         }
     }
 }
+
 class BoardRun(val size: BoardSize, mvs: Moves, turn: BoardTurn, val timeLeftInSec: Int) : Board(mvs, turn)
 class BoardWin(val size: BoardSize, mvs: Moves, val winner: Player) : Board(mvs, null)
 class BoardDraw(val size: BoardSize, mvs: Moves) : Board(mvs, null)
@@ -54,10 +56,8 @@ private fun BoardRun.checkWin(pos: Square): Boolean {
     val slash = pos.row.toIndex() + pos.col.toIndex() == boardSize.size - 1
     val places = grid.filter { it.value == Piece(turn.player) }.keys + pos
     return places.count { it.col == pos.col } == WINNING_PIECES ||
-            places.count { it.row == pos.row } == WINNING_PIECES ||
-            places.count { backSlash } == WINNING_PIECES ||
-            places.count { slash } == WINNING_PIECES ||
-            turn.timeLeftInSec <= 0
+        places.count { it.row == pos.row } == WINNING_PIECES ||
+        places.count { backSlash } == WINNING_PIECES ||
+        places.count { slash } == WINNING_PIECES ||
+        turn.timeLeftInSec <= 0
 }
-
-

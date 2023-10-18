@@ -1,7 +1,7 @@
 package gomoku.repository.jdbi
 
-import gomoku.repository.jdbi.mappers.JdbiBoardModelMapper
 import gomoku.repository.jdbi.mappers.InstantMapper
+import gomoku.repository.jdbi.mappers.JdbiBoardModelMapper
 import gomoku.repository.jdbi.mappers.PasswordValidationInfoMapper
 import gomoku.repository.jdbi.mappers.TokenValidationInfoMapper
 import org.jdbi.v3.core.Jdbi

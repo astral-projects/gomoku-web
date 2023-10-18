@@ -10,6 +10,7 @@ class Problem(
 
     companion object {
         const val baseUrl = "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/"
+
         // TODO("make a problem json class")
         const val MEDIA_TYPE = "application/problem+json"
         fun response(status: Int, problemType: Problem) = ResponseEntity

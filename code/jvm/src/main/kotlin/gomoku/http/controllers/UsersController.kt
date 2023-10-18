@@ -8,6 +8,7 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
+import gomoku.http.model.IdOutputModel
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
@@ -17,6 +18,7 @@ import gomoku.services.user.TokenCreationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
+import gomoku.utils.NotTested
 import gomoku.utils.Success
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
@@ -35,7 +37,10 @@ class UsersController(
 ) {
 
     @PostMapping(Uris.Users.REGISTER)
-    fun createUser(@Valid @RequestBody input: UserCreateInputModel): ResponseEntity<*> {
+    fun createUser(
+        @Valid @RequestBody
+        input: UserCreateInputModel
+    ): ResponseEntity<*> {
         logger.info("POST ${Uris.Users.REGISTER}")
         val res = userService.createUser(
             username = Username(input.username),
@@ -46,8 +51,9 @@ class UsersController(
             is Success -> ResponseEntity.status(201)
                 .header(
                     "Location",
-                    Uris.Users.byId(res.value.value).toASCIIString())
-                .body("A user with id ${res.value.value} was created")
+                    Uris.Users.byId(res.value.value).toASCIIString()
+                )
+                .body(IdOutputModel.serializeFrom(res.value))
             is Failure -> when (res.value) {
                 UserCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                 UserCreationError.UsernameAlreadyExists -> Problem.response(400, Problem.usernameAlreadyExists)
@@ -58,7 +64,8 @@ class UsersController(
 
     @PostMapping(Uris.Users.TOKEN)
     fun createToken(
-        @Valid @RequestBody input: UserCreateTokenInputModel
+        @Valid @RequestBody
+        input: UserCreateTokenInputModel
     ): ResponseEntity<*> {
         logger.info("POST ${Uris.Users.TOKEN}")
         val res = userService.createToken(
@@ -98,7 +105,12 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.GET_BY_ID)
-    fun getUserById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<UserOutputModel> {
+    fun getUserById(
+        @Valid
+        @Range(min = 1)
+        @PathVariable
+        id: Int
+    ): ResponseEntity<UserOutputModel> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
         return when (val user = userService.getUserById(Id(id))) {
             is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
@@ -107,18 +119,21 @@ class UsersController(
     }
 
     @GetMapping(Uris.Users.RANKING)
+    @NotTested
     fun getUsersRanking(user: AuthenticatedUser): ResponseEntity<List<UserRankInfo>> {
         logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }
 
     @GetMapping(Uris.Users.STATS_BY_ID)
+    @NotTested
     fun getUserStats(user: AuthenticatedUser): ResponseEntity<UserRankInfo> {
         logger.info("GET ${Uris.Users.RANKING}")
         TODO("Not yet implemented")
     }
 
     @PutMapping(Uris.Users.EDIT_USER_PROFILE)
+    @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
         logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
         TODO("Not yet implemented")

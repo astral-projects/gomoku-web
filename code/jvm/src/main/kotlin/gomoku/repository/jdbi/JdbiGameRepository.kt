@@ -27,7 +27,7 @@ class JdbiGameRepository(
     override fun waitInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                    "values (:host_id, :variant_id)"
+                "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -105,7 +105,7 @@ class JdbiGameRepository(
             .mapTo<JdbiLobbyModel>()
             .singleOrNull()?.toDomainModel()
 
-    //TODO(The board isn't being initialize correctly. Review the insertion query)
+    // TODO(The board isn't being initialize correctly. Review the insertion query)
     override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean {
         val r = handle.createUpdate(
             "insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)"
@@ -126,4 +126,3 @@ class JdbiGameRepository(
         return r == 1
     }
 }
-

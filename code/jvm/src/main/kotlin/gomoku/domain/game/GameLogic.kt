@@ -14,7 +14,7 @@ import gomoku.domain.user.User
 import kotlinx.datetime.Clock
 
 class GameLogic(
-    private val clock: Clock,
+    private val clock: Clock
 ) {
 
     /**
@@ -83,4 +83,3 @@ class GameLogic(
      */
     private fun User.toPlayer(game: Game) = if (this.id == game.hostId) Player.w else Player.b
 }
-

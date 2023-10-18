@@ -2,6 +2,7 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
 import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
@@ -61,7 +62,7 @@ class JdbiUsersRepository(
             .mapTo<Int>()
             .single() == 1
 
-    override fun createToken(token: Token, maxTokens: Int) {
+    override fun createToken(token: Token, maxTokens: PositiveValue) {
         val deletions = handle.createUpdate(
             """
             delete from dbo.Tokens 
@@ -73,7 +74,7 @@ class JdbiUsersRepository(
             """.trimIndent()
         )
             .bind("user_id", token.userId.value)
-            .bind("offset", maxTokens - 1)
+            .bind("offset", maxTokens.value - 1)
             .execute()
 
         logger.info("{} tokens deleted when creating new token", deletions)
@@ -129,9 +130,9 @@ class JdbiUsersRepository(
             .execute()
             .let { it == 1 }
 
-    // TODO("should be paginated")
-    override fun getUsersRanking(): List<UserRankInfo> {
-        TODO("Not yet implemented")
+    // TODO("should be paginated, I will bring paginatedResult class from LS")
+    override fun getUsersRanking(offset: NonNegativeValue, limit: NonNegativeValue): List<UserRankInfo> {
+        TODO("I have already an implementation saved for another commit")
     }
 
     override fun getUserStats(userId: Id): UserRankInfo? {

@@ -3,7 +3,7 @@ package gomoku.domain.user
 private const val MAX_PASSWORD_LENGTH = 40
 private const val MIN_PASSWORD_LENGTH = 8
 
-data class Password (
+data class Password(
     val value: String
 ) {
 

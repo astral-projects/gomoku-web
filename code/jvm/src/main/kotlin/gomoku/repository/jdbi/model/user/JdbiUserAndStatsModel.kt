@@ -1,4 +1,4 @@
-package gomoku.repository.jdbi
+package gomoku.repository.jdbi.model.user
 
 import gomoku.domain.user.Email
 import gomoku.domain.user.UserRankInfo
@@ -11,8 +11,8 @@ class JdbiUserAndStatsModel(
     val email: String,
     val points: Int,
     val rank: Int,
+    // TODO("create a domain class that receives positive or zero values only, like in Email and related components")
     @ColumnName("games_played")
-    // TODO("create a domain class that receives positive or zero values only, like in Email and components")
     val gamesPlayed: Int,
     @ColumnName("games_won")
     val wins: Int,
