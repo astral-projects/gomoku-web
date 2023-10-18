@@ -1,7 +1,6 @@
 package gomoku.repository.jdbi
 
 import gomoku.domain.Id
-import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
@@ -17,13 +16,12 @@ class JdbiGameRepository(
 ) : GamesRepository {
     override fun getGameById(id: Id): JdbiGameJoinVariantModel? {
         // retrieve game information and corresponding variant
-        val result = handle.createQuery(
+        return handle.createQuery(
             "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
         )
             .bind("id", id.value)
             .mapTo<JdbiGameJoinVariantModel>()
-            .singleOrNull() ?: return null
-        return result
+            .singleOrNull()
     }
 
     override fun waitInLobby(variantId: Id, userId: Id): Boolean =

@@ -10,11 +10,12 @@ import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 
 interface GamesRepository {
     fun getGameById(id: Id): JdbiGameJoinVariantModel?
+
     // TODO fun getAllVariants(): List<GameVariant>
     // TODO fun getVariantById(variantId: Id): GameVariant?
     fun waitInLobby(variantId: Id, userId: Id): Boolean
     fun isMatchmaking(variantId: Id): JdbiLobbyModel?
-    fun createGame(variantId: Id, hostId: Id,guestId: Id, lobbyId: Id): Boolean
+    fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean
 
     fun deleteUserFromLobby(userId: Id): Boolean
     fun deleteGame(game: Id, userId: Id): Boolean

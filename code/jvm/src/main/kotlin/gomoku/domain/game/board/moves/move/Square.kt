@@ -20,4 +20,5 @@ data class Square(val col: Column, val row: Row) {
 
         return Square(Column(column), Row(row))
     }
+
 }

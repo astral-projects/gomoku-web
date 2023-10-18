@@ -1,5 +1,6 @@
 package gomoku.domain.game
 
+import java.net.URI
 import java.util.*
 
 object SystemInfo {
@@ -8,9 +9,9 @@ object SystemInfo {
 
     val releaseDate = dateFormatted(Date())
     val authors = listOf(
-        Author("Diogo", "Rodrigues", "https://github.com/Diogofmr"),
-        Author("Francisco", "Engenheiro", "https://github.com/FranciscoEngenheiro"),
-        Author("Tiago", "Frazão", "https://github.com/TiagoFrazao01")
+        Author("Diogo", "Rodrigues", URI("https://github.com/Diogofmr")),
+        Author("Francisco", "Engenheiro", URI("https://github.com/FranciscoEngenheiro")),
+        Author("Tiago", "Frazão", URI("https://github.com/TiagoFrazao01"))
     )
 
     private fun dateFormatted(date: Date): String {
