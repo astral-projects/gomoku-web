@@ -27,7 +27,7 @@ class GamesService(
         }
     }
 
-    fun startGame(variantId: Id, user: User): GameCreationResult {
+    fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val matchLobby = gamesRepository.isMatchmaking(variantId)

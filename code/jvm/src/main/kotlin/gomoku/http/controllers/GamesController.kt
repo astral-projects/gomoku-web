@@ -50,9 +50,9 @@ class GamesController(
     This method is used to the user express his intention to start a game.
      */
     @PostMapping(Uris.Games.START_GAME)
-    fun tryJoinGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
+    fun findGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.START_GAME}")
-        val res = gamesService.startGame(Id(variantInputModel.id), user.user)
+        val res = gamesService.findGame(Id(variantInputModel.id), user.user)
         return when (res) {
             is Success -> ResponseEntity.status(201).body(res.value)
             is Failure -> when (res.value) {
