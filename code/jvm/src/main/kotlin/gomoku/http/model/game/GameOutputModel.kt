@@ -2,6 +2,7 @@ package gomoku.http.model.game
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import gomoku.domain.game.Game
+import gomoku.domain.game.board.BoardRun
 import gomoku.http.jackson.serializers.InstantSerializer
 import gomoku.http.model.JsonOutputModel
 import kotlinx.datetime.Instant
@@ -19,8 +20,9 @@ class GameOutputModel private constructor(
     val guestId: Int
 ) {
     companion object : JsonOutputModel<Game, GameOutputModel> {
-        override fun serializeFrom(domainClass: Game): GameOutputModel =
-            GameOutputModel(
+        override fun serializeFrom(domainClass: Game): GameOutputModel {
+            require(domainClass.board is BoardRun)
+            return GameOutputModel(
                 id = domainClass.id.value,
                 state = GameStateOutputModel.serializeFrom(domainClass.state),
                 variant = GameVariantOutputModel.serializeFrom(domainClass.variant),
@@ -30,5 +32,6 @@ class GameOutputModel private constructor(
                 hostId = domainClass.hostId.value,
                 guestId = domainClass.guestId.value
             )
+        }
     }
 }

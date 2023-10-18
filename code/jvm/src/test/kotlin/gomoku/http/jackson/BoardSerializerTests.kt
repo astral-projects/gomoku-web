@@ -2,6 +2,8 @@ package gomoku.http.jackson
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.domain.game.board.Board
+import gomoku.domain.game.board.BoardRun
+import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
@@ -15,15 +17,17 @@ import org.junit.jupiter.api.Test
 class BoardSerializerTests {
 
     companion object {
-        val boardToTest = Board(
-            grid = mapOf(
+        val boardToTest = BoardRun(
+            size = BoardSize.FIFTEEN,
+            mvs = mapOf(
                 Move(Square(Column('c'), Row(9)), Piece(Player.w)),
                 Move(Square(Column('d'), Row(8)), Piece(Player.b)),
                 Move(Square(Column('a'), Row(6)), Piece(Player.w)),
                 Move(Square(Column('b'), Row(7)), Piece(Player.b)),
                 Move(Square(Column('b'), Row(11)), Piece(Player.b))
             ),
-            turn = BoardTurn(Player.b, 28)
+            turn = BoardTurn(Player.b, 28),
+            timeLeftInSec = 28
         )
         val expectedJsonString = """
             {"grid":["c9-w","d8-b","a6-w","b7-b","b11-b"],"turn":{"player":"b","timeLeftInSec":28}}

@@ -13,10 +13,12 @@ class BoardOutputModel private constructor(
     val turn: BoardTurn
 ) {
     companion object : JsonOutputModel<Board, BoardOutputModel> {
-        override fun serializeFrom(domainClass: Board): BoardOutputModel =
-            BoardOutputModel(
+        override fun serializeFrom(domainClass: Board): BoardOutputModel {
+            val turn = domainClass.turn ?: error("Game is over")
+            return BoardOutputModel(
                 grid = domainClass.grid,
-                turn = domainClass.turn
+                turn = turn
             )
+        }
     }
 }

@@ -1,21 +1,20 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
-import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.findPlayer
-import gomoku.domain.game.board.moves.move.toSquare
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.board.moves.square.Column
+import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.domain.user.User
 import gomoku.http.Uris
-import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.AuthorOutputModel
 import gomoku.http.model.game.GameOutputModel
+import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
 import gomoku.services.game.GamesService
 import gomoku.services.user.UsersService
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -124,6 +123,12 @@ class GamesController(
         } else {
             ResponseEntity.status(200).body(gameStatus)
         }
+    }
+
+    private fun toSquare(move: String): Square {
+        val row: Row = Row(move.split("")[0].toInt())
+        val col = Column(move.split("")[1].toCharArray()[0])
+        return Square(col, row)
     }
 
     companion object {

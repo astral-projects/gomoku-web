@@ -3,6 +3,6 @@ package gomoku.repository.jdbi.model
 import gomoku.domain.SerializableDomainModel
 
 @FunctionalInterface
-interface JdbiModel<R : SerializableDomainModel> {
+interface JdbiModel<R> {
     fun toDomainModel(): R
 }

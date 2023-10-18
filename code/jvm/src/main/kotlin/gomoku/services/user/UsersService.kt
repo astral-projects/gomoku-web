@@ -40,11 +40,9 @@ class UsersService(
     fun getUserById(id: Id): GettingUserResult {
         return transactionManager.run {
             val usersRepository = it.usersRepository
-            val user = usersRepository.getUserById(id)
-            when (user) {
-                null -> failure(GettingUserError.UserNotFound)
-                else -> success(user)
-            }
+            val user: User = usersRepository.getUserById(id)
+                ?: return@run failure(GettingUserError.UserNotFound)
+            success(user)
         }
     }
 
