@@ -23,7 +23,7 @@ class JdbiUsersRepository(
     override fun getUserByUsername(username: String): User? {
         val usr = handle.createQuery("select * from dbo.Users where username = :username")
             .bind("username", username)
-            .mapTo<UserDB>()
+            .mapTo<JdbiUserModel>()
             .singleOrNull()
         return User(Id(usr!!.id), Username(usr.username), Email(usr.email), PasswordValidationInfo(usr.passwordValidation))
     }
@@ -36,8 +36,8 @@ class JdbiUsersRepository(
         return user?.toDomainModel()
     }
 
-    override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int =
-        handle.createUpdate(
+    override fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int {
+        val userId =handle.createUpdate(
             """
             insert into dbo.Users (username, email, password_validation) values (:username, :email, :password_validation)
             """
@@ -45,9 +45,15 @@ class JdbiUsersRepository(
             .bind("username", username)
             .bind("email", email)
             .bind("password_validation", passwordValidation.validationInfo)
-            .executeAndReturnGeneratedKeys()
+            .executeAndReturnGeneratedKeys("id")
             .mapTo<Int>()
             .one()
+        handle.createUpdate("insert into dbo.statistics(user_id) values (:user_id)")
+            .bind("user_id", userId)
+            .execute()
+        return userId
+
+    }
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle.createQuery("select count(*) from dbo.Users where username = :username")

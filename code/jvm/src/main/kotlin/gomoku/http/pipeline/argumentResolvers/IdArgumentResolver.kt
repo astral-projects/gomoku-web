@@ -30,7 +30,7 @@ class IdArgumentResolver : HandlerMethodArgumentResolver {
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             ?: throw IllegalStateException("No HttpServletRequest found")
 
-        val id = request.requestURI.split("/").last().toIntOrNull() ?: return null
+        val id = request.requestURI.split("/")[3].toIntOrNull() ?: return null
         return try {
             Id(id)
         } catch (e: IllegalArgumentException) {

@@ -1,14 +1,14 @@
 package gomoku.services.game
 
 import gomoku.domain.Id
-import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
-import gomoku.utils.Response
+import gomoku.utils.failure
+import gomoku.utils.success
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,29 +17,63 @@ class GamesService(
     private val usersDomain: UsersDomain,
 ) {
 
-    fun getGameById(id: Id): Game? =
-        transactionManager.run {
-            it.gamesRepository.getGameById(id)
-        }
-
-    fun startGame(variantId: Id, user: User): Boolean =
-        transactionManager.run { transaction ->
-            val gamesRepository = transaction.gamesRepository
-            gamesRepository.startGame(variantId, user.id)
-        }
-
-    fun deleteGame(game: Game) {
-        transactionManager.run { transaction ->
-            val gamesRepository = transaction.gamesRepository
-            gamesRepository.deleteGame(game)
+    fun getGameById(id: Id): GettingGameResult {
+        return transactionManager.run {
+            val game = (it.gamesRepository.getGameById(id))
+            when (game) {
+                null -> failure(GettingGameError.GameNotFound)
+                else -> success(game.toDomainModel())
+            }
         }
     }
 
-    fun getGameStatus(user: User, gameId: Int): String? =
-        transactionManager.run { transaction ->
+    fun findGame(variantId: Id, user: User): GameCreationResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.getGameStatus(gameId, user)
+            val matchLobby = gamesRepository.isMatchmaking(variantId)
+            if (matchLobby != null) {
+                gamesRepository.deleteUserFromLobby(user.id)
+                val lobby = matchLobby.toDomainModel()
+                val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
+                when (res) {
+                    false -> failure(GameCreationError.UserAlreadyInGame)
+                    true -> success("Joining game")
+                }
+            } else {
+                val g = gamesRepository.waitInLobby(variantId, user.id)
+                when (g) {
+                    false -> failure(GameCreationError.UserAlreadyInLobby)
+                    true -> success("Waiting in lobby")
+                }
+            }
         }
+    }
+
+    fun deleteGame(gameId: Id, userId: Id): GamePutResult {
+        return transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            val u = gamesRepository.userIsTheHost(gameId, userId)
+            if (!u) {
+                failure(GamePutError.UserIsNotTheHost)
+            } else {
+                val g = gamesRepository.deleteGame(gameId, userId)
+                when (g) {
+                    false -> failure(GamePutError.GameNotFound)
+                    true -> success(g)
+                }
+            }
+        }
+    }
+
+    fun getGameStatus(user: User, gameId: Id): GettingGameResult {
+        return transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            when (val state = gamesRepository.getGameStatus(gameId, user)) {
+                null -> failure(GettingGameError.GameNotFound)
+                else -> success(state.toDomainModel())
+            }
+        }
+    }
 
     fun getSystemInfo(): SystemInfo =
         transactionManager.run { transaction ->
@@ -47,28 +81,28 @@ class GamesService(
             gamesRepository.getSystemInfo()
         }
 
-    fun makeMove(gameId: Id, userId: Id, square: Square): Boolean {
-        TODO("Not yet implemented")
+    fun makeMove(gameId: Id, user: User, square: Square, player: Player): GameMakeMoveResult {
+        return transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            if (!gamesRepository.userBelongsToTheGame(user, gameId)) {
+                failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
+            }
+            if (!gamesRepository.makeMove(gameId, user.id, square, player)) {
+                failure(GameMakeMoveError.MoveNotValid)
+            }
+            success(true)
+        }
     }
 
-    fun makeMove(gameId: Id, user: User, square: Square, player: Player):Response =
-        transactionManager.run { transaction ->
-            val gamesRepository = transaction.gamesRepository
-            if(!gamesRepository.userBelongsToTheGame(user, gameId)){
-                return@run Response(403, reasonException = "This user don´t have permissions to this game")
-            }
-            if(!gamesRepository.makeMove(gameId, user.id, square, player)){
-                return@run Response(404 , reasonException = "Move not valid do this game")
-            }
-            return@run Response(200, reasonException = "Your move is added do the board")
-        }
 
-
-    fun exitGame(gameId: Id, user: User): Boolean {
-        transactionManager.run { transaction ->
+    fun exitGame(gameId: Id, user: User): GameDeleteResult {
+        return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.exitGame(gameId, user)
+            val res = gamesRepository.exitGame(gameId, user)
+            when (res) {
+                false -> failure(GameDeleteError.GameNotFound)
+                true -> success(res)
+            }
         }
-        return true
     }
 }
