@@ -7,7 +7,6 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
-import gomoku.utils.Response
 import gomoku.utils.failure
 import gomoku.utils.success
 import org.springframework.stereotype.Component
@@ -31,10 +30,21 @@ class GamesService(
     fun startGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val g = gamesRepository.startGame(variantId, user.id)
-            when (g) {
-                false -> failure(GameCreationError.UserAlreadyInLobby)
-                true -> success(g)
+            val matchLobby = gamesRepository.isMatchmaking(variantId)
+            if (matchLobby != null) {
+                gamesRepository.deleteUserFromLobby(user.id)
+                val lobby = matchLobby.toDomainModel()
+                val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
+                when (res) {
+                    false -> failure(GameCreationError.UserAlreadyInGame)
+                    true -> success("Joining game")
+                }
+            } else {
+                val g = gamesRepository.waitInLobby(variantId, user.id)
+                when (g) {
+                    false -> failure(GameCreationError.UserAlreadyInLobby)
+                    true -> success("Waiting in lobby")
+                }
             }
         }
     }

@@ -5,10 +5,12 @@ import gomoku.utils.Either
 
 sealed class GameCreationError {
     object UserAlreadyInLobby : GameCreationError()
+
+    object UserAlreadyInGame : GameCreationError()
     object GameNotFound : GameCreationError()
 }
 
-typealias GameCreationResult = Either<GameCreationError, Boolean>
+typealias GameCreationResult = Either<GameCreationError, String>
 
 sealed class GettingGameError {
     object GameNotFound : GettingGameError()

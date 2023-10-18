@@ -8,6 +8,7 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
 import gomoku.repository.jdbi.model.game.JdbiGameJoinVariantModel
+import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
@@ -25,7 +26,7 @@ class JdbiGameRepository(
         return result
     }
 
-    override fun startGame(variantId: Id, userId: Id): Boolean =
+    override fun waitInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
                 "values (:host_id, :variant_id)"
@@ -49,7 +50,7 @@ class JdbiGameRepository(
                 .bind("gameId", gameId.value)
                 .bind("userId", user.id.value)
         val game = query.mapToMap().findOnly()
-        return game != null // retorna true se encontrou um jogo, false caso contrário
+        return game != null
     }
 
     override fun userIsTheHost(userId: Id, gameId: Id): Boolean {
@@ -70,11 +71,11 @@ class JdbiGameRepository(
             updated_at = extract(epoch from now()) 
         WHERE id = :gameId;
     """
-        ).bind("gameId", gameId.value) // assumindo que gameId é um objeto e você quer usar um campo de valor
-            .bind("square", "\"$square-${player}\"") // assumindo que square tem um método toString adequado
+        ).bind("gameId", gameId.value)
+            .bind("square", "\"$square-${player}\"")
 
         val rowsUpdated = updateQuery.execute()
-        return rowsUpdated > 0 // retorna true se alguma linha foi atualizada, false caso contrário
+        return rowsUpdated > 0
     }
 
     override fun exitGame(id: Id, user: User): Boolean {
@@ -86,7 +87,7 @@ class JdbiGameRepository(
     """
         )
             .bind("id", id)
-            .bind("userId", user.id.value) // assuming that the object 'user' has an attribute 'id'
+            .bind("userId", user.id.value)
             .execute()
 
         return r == 1
@@ -100,10 +101,32 @@ class JdbiGameRepository(
             .singleOrNull()
         return r
     }
+
+    override fun isMatchmaking(variantId: Id): JdbiLobbyModel? =
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id")
+            .bind("variant_id", variantId.value)
+            .mapTo<JdbiLobbyModel>()
+            .singleOrNull()
+
+    //TODO(The board isn't being initialize correctly. Review the insertion query)
+    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean {
+        val r = handle.createUpdate(
+            "insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)"
+        ).bind("variant_id", variantId.value)
+            .bind("host_id", hostId.value)
+            .bind("guest_id", guestId.value)
+            .bind("state", "IN_PROGRESS")
+            .bind("board", "[]")
+            .bind("lobby_id", lobbyId.value)
+            .execute()
+        return r == 1
+    }
+
+    override fun deleteUserFromLobby(userId: Id): Boolean {
+        val r = handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
+            .bind("userId", userId.value)
+            .execute()
+        return r == 1
+    }
 }
 
-/*
-   This will be helpful for the matchGame method
-   handle.createUpdate("insert into dbo.Game (state, board_size, created, updated, game_variant, opening_rule, board) " +
-               "values (:state, :board_size, :created, :updated, :game_variant, :opening_rule, CAST(:board AS jsonb))")
- */

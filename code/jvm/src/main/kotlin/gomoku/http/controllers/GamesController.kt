@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -33,7 +32,6 @@ class GamesController(
 ) {
 
     @GetMapping(Uris.Games.GET_BY_ID)
-    // TODO(id should be Id and not String, make a ArgumentsResolver to convert it)
     fun getById(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
         val res = gamesService.getGameById(id)
@@ -52,13 +50,14 @@ class GamesController(
     This method is used to the user express his intention to start a game.
      */
     @PostMapping(Uris.Games.START_GAME)
-    fun startGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
+    fun tryJoinGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.START_GAME}")
         val res = gamesService.startGame(Id(variantInputModel.id), user.user)
         return when (res) {
-            is Success -> ResponseEntity.status(201).body("Game was created")
+            is Success -> ResponseEntity.status(201).body(res.value)
             is Failure -> when (res.value) {
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
+                GameCreationError.UserAlreadyInGame -> Problem.response(404, Problem.userAlreadyInGame)
                 GameCreationError.GameNotFound -> TODO()
             }
         }
