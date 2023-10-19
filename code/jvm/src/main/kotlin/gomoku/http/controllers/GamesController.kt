@@ -61,6 +61,7 @@ class GamesController(
         return when (res) {
             is Success -> ResponseEntity.status(201).body(res.value)
             is Failure -> when (res.value) {
+                GameCreationError.VariantNotFound -> Problem.response(404, Problem.gameVariantNotExists)
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
                 GameCreationError.UserAlreadyInGame -> Problem.response(404, Problem.userAlreadyInGame)
                 GameCreationError.GameNotFound -> TODO()
@@ -99,7 +100,7 @@ class GamesController(
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.updateGame(id, user.user, Square.toSquare(move.move), pl)
+        val responseEntity = gamesService.makeMove(id, user.user.id, Square.toSquare(move.move), pl)
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("Move made")
             is Failure -> when (responseEntity.value) {
@@ -113,7 +114,7 @@ class GamesController(
     @PostMapping(Uris.Games.EXIT_GAME)
     fun exitGame(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        val game = gamesService.exitGame(id, user.user)
+        val game = gamesService.exitGame(id, user.user.id)
         return when (game) {
             is Success -> ResponseEntity.status(200).body("Game exited")
             is Failure -> when (game.value) {
@@ -126,7 +127,7 @@ class GamesController(
     @GetMapping(Uris.Games.GAME_STATUS)
     fun gameStatus(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
-        val gameStatus = gamesService.getGameStatus(user.user, id)
+        val gameStatus = gamesService.getGameStatus(user.user.id, id)
         return when (gameStatus) {
             is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
             is Failure -> when (gameStatus.value) {

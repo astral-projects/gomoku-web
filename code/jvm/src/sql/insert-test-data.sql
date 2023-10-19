@@ -34,6 +34,8 @@ values (1, 1),
 
 insert into dbo.Games (state, variant_id, board, host_id, guest_id, lobby_id)
 values ('FINISHED', 1, '{
+  "type": "run",
+  "size": 15,
   "grid": [
     "c9-w",
     "d8-b",
@@ -47,6 +49,8 @@ values ('FINISHED', 1, '{
   }
 }', 1, 3, 1),
        ('IN_PROGRESS', 2, '{
+         "type": "run",
+         "size": 15,
          "grid": [
            "j6-w",
            "k7-b",
@@ -60,6 +64,8 @@ values ('FINISHED', 1, '{
          }
        }', 4, 5, 2),
        ('FINISHED', 3, '{
+         "type": "run",
+         "size": 15,
          "grid": [
            "e1-b",
            "f2-w",
