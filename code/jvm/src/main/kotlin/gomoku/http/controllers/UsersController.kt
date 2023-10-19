@@ -14,9 +14,11 @@ import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserOutputModel
+import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
+import gomoku.utils.Either
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -54,6 +56,7 @@ class UsersController(
                     Uris.Users.byId(res.value.value).toASCIIString()
                 )
                 .body(IdOutputModel.serializeFrom(res.value))
+
             is Failure -> when (res.value) {
                 UserCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                 UserCreationError.UsernameAlreadyExists -> Problem.response(400, Problem.usernameAlreadyExists)
@@ -80,6 +83,7 @@ class UsersController(
             is Failure -> when (res.value) {
                 TokenCreationError.PasswordIsInvalid ->
                     Problem.response(400, Problem.passwordIsInvalid)
+
                 TokenCreationError.UsernameIsInvalid ->
                     Problem.response(400, Problem.usernameIsInvalid)
             }
@@ -110,11 +114,21 @@ class UsersController(
         @Range(min = 1)
         @PathVariable
         id: Int
-    ): ResponseEntity<UserOutputModel> {
+    ): ResponseEntity<*> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        return when (val user = userService.getUserById(Id(id))) {
-            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
-            is Failure -> ResponseEntity.notFound().build()
+        val ids = Id(id)
+        return when (ids) {
+            is Success -> {
+                val res = userService.getUserById(ids.value)
+                when (res) {
+                    is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
+                    is Failure -> when (res.value) {
+                        is GettingUserError.UserNotFound -> Problem.response(404, Problem.userAlreadyExists)
+                        is GettingUserError.InvalidId -> Problem.response(400, Problem.invalidId)
+                    }
+                }
+            }
+            is Failure -> Problem.response(400, Problem.invalidId)
         }
     }
 
