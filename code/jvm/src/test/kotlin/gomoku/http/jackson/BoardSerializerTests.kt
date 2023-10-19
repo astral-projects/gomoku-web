@@ -44,7 +44,6 @@ class BoardSerializerTests {
 
         // then: the JSON string matches the expected value
         assertEquals(expectedJsonString, jsonString)
-
     }
 
     @Test

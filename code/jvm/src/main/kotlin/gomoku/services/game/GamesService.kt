@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class GamesService(
     private val transactionManager: TransactionManager,
-    private val usersDomain: UsersDomain,
+    private val usersDomain: UsersDomain
 ) {
 
     fun getGameById(id: Id): GettingGameResult {

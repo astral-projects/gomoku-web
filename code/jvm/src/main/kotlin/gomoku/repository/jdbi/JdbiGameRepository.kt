@@ -28,7 +28,7 @@ class JdbiGameRepository(
     override fun insertInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                    "values (:host_id, :variant_id)"
+                "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -94,6 +94,7 @@ class JdbiGameRepository(
         .bind("id", id)
         .bind("userId", user.id.value)
         .execute() == 1
+
 
 
     override fun getGameStatus(gameId: Id, user: User): Game? =

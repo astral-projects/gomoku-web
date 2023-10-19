@@ -11,7 +11,12 @@ import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
-import gomoku.services.game.*
+import gomoku.services.game.GameCreationError
+import gomoku.services.game.GameDeleteError
+import gomoku.services.game.GameMakeMoveError
+import gomoku.services.game.GamePutError
+import gomoku.services.game.GamesService
+import gomoku.services.game.GettingGameError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
@@ -27,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class GamesController(
     private val gamesService: GamesService,
-    private val usersService: UsersService,
+    private val usersService: UsersService
 ) {
 
     @GetMapping(Uris.Games.GET_BY_ID)
@@ -35,9 +40,10 @@ class GamesController(
         logger.info("GET ${Uris.Games.GET_BY_ID}")
         val res = gamesService.getGameById(id)
         return when (res) {
-            is Success -> ResponseEntity
-                .status(200)
-                .body(GameOutputModel.serializeFrom(res.value))
+            is Success ->
+                ResponseEntity
+                    .status(200)
+                    .body(GameOutputModel.serializeFrom(res.value))
 
             is Failure -> when (res.value) {
                 GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
@@ -76,7 +82,6 @@ class GamesController(
         }
     }
 
-
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
         logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
@@ -86,31 +91,32 @@ class GamesController(
 
     @PutMapping(Uris.Games.MAKE_MOVE)
     fun makeMove(
-        id: Id, @RequestBody move: MoveInputModel, user: AuthenticatedUser
+        id: Id,
+        @RequestBody move: MoveInputModel,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
         val responseEntity = gamesService.makeMove(id, user.user, Square.toSquare(move.move), pl)
-        return when (responseEntity){
+        return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("Move made")
-            is Failure -> when(responseEntity.value){
+            is Failure -> when (responseEntity.value) {
                 GameMakeMoveError.MoveNotValid -> Problem.response(400, Problem.invalidMove)
                 GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
                 GameMakeMoveError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
             }
         }
-
     }
 
     @PostMapping(Uris.Games.EXIT_GAME)
     fun exitGame(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
         val game = gamesService.exitGame(id, user.user)
-        return when(game) {
-           is Success -> ResponseEntity.status(200).body("Game exited")
-            is Failure -> when(game.value){
+        return when (game) {
+            is Success -> ResponseEntity.status(200).body("Game exited")
+            is Failure -> when (game.value) {
                 GameDeleteError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
                 GameDeleteError.UserDoesntBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
             }
@@ -124,7 +130,7 @@ class GamesController(
         return when (gameStatus) {
             is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
             is Failure -> when (gameStatus.value) {
-                    GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+                GettingGameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
             }
         }
     }

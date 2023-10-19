@@ -33,7 +33,6 @@ sealed class GameDeleteError {
 
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
 
-
 sealed class GameMakeMoveError {
     object MoveNotValid : GameMakeMoveError()
     object UserDoesNotBelongToThisGame : GameMakeMoveError()

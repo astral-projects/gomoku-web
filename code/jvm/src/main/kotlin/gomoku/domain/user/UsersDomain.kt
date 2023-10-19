@@ -18,14 +18,14 @@ class UsersDomain(
 ) {
 
     fun generateTokenValue(): String =
-        ByteArray(config.tokenSizeInBytes).let { byteArray ->
+        ByteArray(config.tokenSizeInBytes.value).let { byteArray ->
             SecureRandom.getInstanceStrong().nextBytes(byteArray)
             Base64.getUrlEncoder().encodeToString(byteArray)
         }
 
     fun canBeToken(token: String): Boolean = try {
         Base64.getUrlDecoder()
-            .decode(token).size == config.tokenSizeInBytes
+            .decode(token).size == config.tokenSizeInBytes.value
     } catch (ex: IllegalArgumentException) {
         false
     }
@@ -63,6 +63,4 @@ class UsersDomain(
         tokenEncoder.createValidationInformation(token)
 
     val maxNumberOfTokensPerUser = config.maxTokensPerUser
-
-
 }

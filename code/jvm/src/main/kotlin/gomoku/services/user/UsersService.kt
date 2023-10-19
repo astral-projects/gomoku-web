@@ -9,6 +9,7 @@ import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
+import gomoku.utils.NotTested
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
@@ -93,14 +94,17 @@ class UsersService(
         }
     }
 
+    @NotTested
     fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 
+    @NotTested
     fun getUserStats(userId: Id): UserRankInfo? {
         TODO("Not yet implemented")
     }
 
+    @NotTested
     fun editUser(user: User): User {
         TODO("Not yet implemented")
     }

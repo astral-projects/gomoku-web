@@ -5,9 +5,7 @@ import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.boardSize
 import gomoku.domain.game.board.initialBoard
-import gomoku.domain.game.board.moves.Moves
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
@@ -87,5 +85,4 @@ class TestBoard {
         assertTrue(sut is BoardWin)
         assertEquals(Player.b, sut.winner)
     }
-
 }

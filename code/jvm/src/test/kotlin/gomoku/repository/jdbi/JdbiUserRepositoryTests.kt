@@ -4,6 +4,7 @@ import gomoku.TestClock
 import gomoku.TestDataGenerator.newTestEmail
 import gomoku.TestDataGenerator.newTestUserName
 import gomoku.TestDataGenerator.newTokenValidationData
+import gomoku.domain.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
@@ -47,17 +48,29 @@ class JdbiUserRepositoryTests {
         assertEquals(passwordValidationInfo, retrievedUserByUsername.passwordValidation)
         assertTrue(retrievedUserByUsername.id.value >= 0)
 
-        // when: asking if the user exists
+        // when: asking if the user exists by username
         val isUserIsStored = repo.isUserStoredByUsername(userName)
 
         // then: response is true
         assertTrue(isUserIsStored)
 
-        // when: asking if a different user exists
-        val anotherUserIsStored = repo.isUserStoredByUsername(newTestUserName())
+        // when: asking if the user exists by email
+        val isUserIsStoredByEmail = repo.isUserStoredByEmail(email)
+
+        // then: response is true
+        assertTrue(isUserIsStoredByEmail)
+
+        // when: asking if a user exists by username that does not exist
+        val anotherUserIsStoredByUsername = repo.isUserStoredByUsername(newTestUserName())
 
         // then: response is false
-        assertFalse(anotherUserIsStored)
+        assertFalse(anotherUserIsStoredByUsername)
+
+        // when: asking if a user exists by email that does not exist
+        val anotherUserIsStoredByEmail = repo.isUserStoredByEmail(newTestEmail())
+
+        // then: response is false
+        assertFalse(anotherUserIsStoredByEmail)
     }
 
     @Test
@@ -84,7 +97,7 @@ class JdbiUserRepositoryTests {
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
-        repo.createToken(token, 1)
+        repo.createToken(token, PositiveValue(1))
 
         // then: createToken does not throw errors
         // no exception
@@ -100,11 +113,18 @@ class JdbiUserRepositoryTests {
         assertEquals(testTokenValidationInfo.validationInfo, retrievedToken.tokenValidationInfo.validationInfo)
         assertEquals(tokenCreationInstant, retrievedToken.createdAt)
 
-        // when: TODO("continue updateTokenLastUsed test
+        // when: updating the token last used
+        val tokenLastUsedInstant = clock.now()
+        repo.updateTokenLastUsed(retrievedToken, tokenLastUsedInstant)
+
+        // then: the token last used is updated
+        val userAndTokenAfterUpdate = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
+        val (_, retrievedTokenAfterUpdate) = userAndTokenAfterUpdate ?: fail("token and associated user must exist")
+        assertEquals(tokenLastUsedInstant, retrievedTokenAfterUpdate.lastUsedAt)
     }
 
     @Test
-    fun `can revoke tokens allowing a user to logout`() = runWithHandle { handle ->
+    fun `can revoke tokens`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
         // and: a test clock
@@ -127,7 +147,7 @@ class JdbiUserRepositoryTests {
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
-        repo.createToken(token, 1)
+        repo.createToken(token, PositiveValue(1))
 
         // when: retrieving the token and associated user
         val userAndToken = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
@@ -138,7 +158,7 @@ class JdbiUserRepositoryTests {
         // when: when token is revoked
         repo.revokeToken(retrievedToken.tokenValidationInfo)
 
-        // then: the token is not able to be used again to keep login status active
+        // then: token is not found
         val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         assertNull(userAndTokenAfterRevoke)
     }

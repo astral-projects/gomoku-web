@@ -31,7 +31,7 @@ class JdbiGameAndVariantModel(
     @ColumnName("opening_rule")
     val openingRule: String,
     @ColumnName("board_size")
-    val boardSize: Int,
+    val boardSize: Int
 ) : JdbiModel<Game> {
     override fun toDomainModel(): Game {
         return Game(

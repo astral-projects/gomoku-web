@@ -1,6 +1,5 @@
 package gomoku.domain.game.board.moves.move
 
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 
@@ -23,5 +22,4 @@ data class Square(val col: Column, val row: Row) {
             return Square(Column(column), Row(row))
         }
     }
-
 }

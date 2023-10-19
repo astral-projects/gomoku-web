@@ -1,13 +1,16 @@
 package gomoku.http
 
+import gomoku.TestDataGenerator.newTestEmail
+import gomoku.TestDataGenerator.newTestPassword
 import gomoku.TestDataGenerator.newTestUserName
-import gomoku.http.model.TokenResponse
+import gomoku.http.model.IdOutputModel
+import gomoku.http.model.token.UserTokenCreateOutputModel
+import gomoku.http.model.user.UserOutputModel
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
-import kotlin.math.abs
-import kotlin.random.Random
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -18,21 +21,23 @@ class UserTests {
     var port: Int = 0
 
     @Test
-    fun `can create an user`() {
+    fun `can create and retrieve user`() {
         // given: an HTTP client
         val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
 
         // and: a random user
         val username = newTestUserName()
-        val password = "changeit"
+        val password = newTestPassword()
+        val email = newTestEmail()
 
         // when: creating an user
         // then: the response is a 201 with a proper Location header
-        client.post().uri("/users")
+        val userId = client.post().uri("/users")
             .bodyValue(
                 mapOf(
-                    "username" to username,
-                    "password" to password
+                    "username" to username.value,
+                    "password" to password.value,
+                    "email" to email.value
                 )
             )
             .exchange()
@@ -40,24 +45,85 @@ class UserTests {
             .expectHeader().value("location") {
                 assertTrue(it.startsWith("/api/users/"))
             }
+            .expectBody(IdOutputModel::class.java)
+            .returnResult()
+            .responseBody!!
+
+        // when: creating an user with the same username
+        // then: the response is a 400 with a proper problem
+        client.post().uri("/users")
+            .bodyValue(
+                mapOf(
+                    "username" to username.value,
+                    "password" to password.value,
+                    "email" to email.value
+                )
+            )
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+
+        // when: creating an user with the same email
+        // then: the response is a 400 with a proper problem
+        client.post().uri("/users")
+            .bodyValue(
+                mapOf(
+                    "username" to newTestUserName().value,
+                    "password" to password.value,
+                    "email" to email.value
+                )
+            )
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+
+        // when: getting the user
+        // then: the response is a 200 with the proper representation
+        val userOutputModel = client.get().uri("/users/${userId.id}")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(UserOutputModel::class.java)
+            .returnResult()
+            .responseBody!!
+
+        // and: the user has the same attributes
+        assertEquals(username.value, userOutputModel.username)
+        assertEquals(email.value, userOutputModel.email)
+        assertEquals(userId.id, userOutputModel.id)
+
+        // when: getting the user with an id of a non-existing user
+        // then: the response is a 404
+        client.get().uri("/users/${userId.id + 1}")
+            .exchange()
+            .expectStatus().isNotFound
+            .expectBody()
+
+        // when: getting the user with an invalid id
+        // then: the response is a 400
+        client.get().uri("/users/0")
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
     }
 
     @Test
-    fun `can create an user, obtain a token, and access user home, and logout`() {
+    fun `can login, access user home and logout`() {
         // given: an HTTP client
         val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
 
         // and: a random user
         val username = newTestUserName()
-        val password = "changeit"
+        val password = newTestPassword()
+        val email = newTestEmail()
 
         // when: creating an user
         // then: the response is a 201 with a proper Location header
         client.post().uri("/users")
             .bodyValue(
                 mapOf(
-                    "username" to username,
-                    "password" to password
+                    "username" to username.value,
+                    "password" to password.value,
+                    "email" to email.value
                 )
             )
             .exchange()
@@ -71,28 +137,28 @@ class UserTests {
         val result = client.post().uri("/users/token")
             .bodyValue(
                 mapOf(
-                    "username" to username,
-                    "password" to password
+                    "username" to username.value,
+                    "password" to password.value
                 )
             )
             .exchange()
             .expectStatus().isOk
-            .expectBody(TokenResponse::class.java)
+            .expectBody(UserTokenCreateOutputModel::class.java)
             .returnResult()
             .responseBody!!
 
         // when: getting the user home with a valid token
         // then: the response is a 200 with the proper representation
-        client.get().uri("/me")
+        client.get().uri("/home")
             .header("Authorization", "Bearer ${result.token}")
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("username").isEqualTo(username)
+            .jsonPath("username").isEqualTo(username.value)
 
         // when: getting the user home with an invalid token
-        // then: the response is a 4001 with the proper problem
-        client.get().uri("/me")
+        // then: the response is a 401 with the proper problem
+        client.get().uri("/home")
             .header("Authorization", "Bearer ${result.token}-invalid")
             .exchange()
             .expectStatus().isUnauthorized
@@ -107,11 +173,10 @@ class UserTests {
 
         // when: getting the user home with the revoked token
         // then: response is a 401
-        client.get().uri("/me")
+        client.get().uri("/home")
             .header("Authorization", "Bearer ${result.token}")
             .exchange()
             .expectStatus().isUnauthorized
             .expectHeader().valueEquals("WWW-Authenticate", "bearer")
     }
-
 }

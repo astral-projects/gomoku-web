@@ -7,7 +7,7 @@ class GameVariantOutputModel private constructor(
     val id: Int,
     val name: String,
     val openingRule: String,
-    val boardSize: Int,
+    val boardSize: Int
 ) {
     companion object {
         fun serializeFrom(domainClass: GameVariant): GameVariantOutputModel =

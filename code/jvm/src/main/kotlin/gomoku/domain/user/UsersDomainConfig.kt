@@ -1,17 +1,16 @@
 package gomoku.domain.user
 
+import gomoku.domain.PositiveValue
 import kotlin.time.Duration
 
 data class UsersDomainConfig(
-    val tokenSizeInBytes: Int,
+    val tokenSizeInBytes: PositiveValue,
     val tokenTtl: Duration,
     val tokenRollingTtl: Duration,
-    val maxTokensPerUser: Int
+    val maxTokensPerUser: PositiveValue
 ) {
     init {
-        require(tokenSizeInBytes > 0)
         require(tokenTtl.isPositive())
         require(tokenRollingTtl.isPositive())
-        require(maxTokensPerUser > 0)
     }
 }
