@@ -1,7 +1,6 @@
 package gomoku.repository
 
 import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
 import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo

@@ -30,7 +30,7 @@ class GamesService(
     fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val lobby = gamesRepository.isMatchmaking(variantId)
+            val lobby = gamesRepository.isMatchmaking(variantId, user.id)
             if (lobby != null) {
                 gamesRepository.deleteUserFromLobby(user.id)
                 val res = gamesRepository.createGame(
@@ -39,16 +39,15 @@ class GamesService(
                     guestId = user.id,
                     lobbyId = lobby.lobbyId
                 )
-                val res = gamesRepository.createGame(variantId, lobby.userId, user.id, lobby.lobbyId)
                 when (res) {
                     false -> failure(GameCreationError.UserAlreadyInGame)
                     true -> success("Joining game")
                 }
             } else {
                 val check = gamesRepository.checkIfIsLobby(user.id)
-                if(check) {
+                if (check) {
                     failure(GameCreationError.UserAlreadyInLobby)
-                }else {
+                } else {
                     val r = gamesRepository.insertInLobby(variantId, user.id)
                     //TODO(I think we need to create a argument resolver for the VariandInputModel,
                     // beacuse if you pass an Integer that isnt created in the database, it will throw an exception)
@@ -110,8 +109,8 @@ class GamesService(
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val res = gamesRepository.exitGame(gameId, user)
-            if (res){
-                gamesRepository.updatePoints(gameId,user.id)
+            if (res) {
+                gamesRepository.updatePoints(gameId, user.id)
 
             }
             when (res) {

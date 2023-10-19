@@ -95,14 +95,12 @@ class JdbiGameRepository(
         .bind("userId", user.id.value)
         .execute() == 1
 
-        return r == 1
-    }
 
     override fun getGameStatus(gameId: Id, user: User): Game? =
         handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
             .bind("id", user.id.value)
             .bind("gameId", gameId.value)
-            .mapTo<JdbiGameJoinVariantModel>()
+            .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
 
 

@@ -28,5 +28,6 @@ class Problem(
         val userAlreadyInGame = Problem(URI("${baseUrl}user-already-in-game"))
         val usernameAlreadyExists = Problem(URI("${baseUrl}username-already-exists"))
         val emailAlreadyExists = Problem(URI("${baseUrl}email-already-exists"))
+        val gameVariantNotExists = Problem(URI("${baseUrl}game-variant-not-exists"))
     }
 }

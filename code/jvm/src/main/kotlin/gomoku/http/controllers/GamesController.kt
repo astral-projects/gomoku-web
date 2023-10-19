@@ -55,7 +55,7 @@ class GamesController(
         return when (res) {
             is Success -> ResponseEntity.status(201).body(res.value)
             is Failure -> when (res.value) {
-                GameCreationError.GameVariantNotFound -> Problem.response(404, Problem.gameVariantNotFound)
+                GameCreationError.GameVariantNotFound -> Problem.response(404, Problem.gameVariantNotExists)
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
                 GameCreationError.UserAlreadyInGame -> Problem.response(404, Problem.userAlreadyInGame)
                 GameCreationError.GameNotFound -> TODO()
