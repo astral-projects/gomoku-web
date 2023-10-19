@@ -12,16 +12,7 @@ val boardSize = BoardSize.FIFTEEN
 
 const val timeout = 60
 
-sealed class Board(val grid: Moves, val turn: BoardTurn?) {
-    fun copy(grid: Moves = this.grid, turn: BoardTurn? = this.turn): Board {
-        return when (this) {
-            is BoardWin -> BoardWin(boardSize, grid, winner)
-            is BoardDraw -> BoardDraw(boardSize, grid)
-            is BoardRun -> BoardRun(boardSize, grid, turn!!, timeLeftInSec)
-        }
-    }
-}
-
+sealed class Board(val grid: Moves, val turn: BoardTurn?)
 class BoardRun(val size: BoardSize, mvs: Moves, turn: BoardTurn, val timeLeftInSec: Int) : Board(mvs, turn)
 class BoardWin(val size: BoardSize, mvs: Moves, val winner: Player) : Board(mvs, null)
 class BoardDraw(val size: BoardSize, mvs: Moves) : Board(mvs, null)
@@ -38,7 +29,7 @@ fun Board.play(square: Square): Board {
             when {
                 checkWin(square) -> BoardWin(boardSize, mvs, turn.player)
                 mvs.size == boardSize.size * boardSize.size -> BoardDraw(boardSize, mvs)
-                else -> BoardRun(boardSize, mvs, turn.other(), timeout)
+                else -> BoardRun(boardSize, mvs, turn.other(), timeLeftInSec)
             }
         }
     }

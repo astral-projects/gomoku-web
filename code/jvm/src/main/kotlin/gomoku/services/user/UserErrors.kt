@@ -14,6 +14,7 @@ typealias UserCreationResult = Either<UserCreationError, Id>
 
 sealed class GettingUserError {
     object UserNotFound : GettingUserError()
+    object InvalidId : GettingUserError()
 }
 
 typealias GettingUserResult = Either<GettingUserError, User>
