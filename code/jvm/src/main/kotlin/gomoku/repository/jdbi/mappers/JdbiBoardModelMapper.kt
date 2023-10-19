@@ -2,7 +2,6 @@ package gomoku.repository.jdbi.mappers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gomoku.repository.jdbi.model.game.JdbiBoardModel
-import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet

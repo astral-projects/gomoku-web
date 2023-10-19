@@ -4,6 +4,7 @@ import gomoku.TestClock
 import gomoku.TestDataGenerator.newTestEmail
 import gomoku.TestDataGenerator.newTestPassword
 import gomoku.TestDataGenerator.newTestUserName
+import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
@@ -304,6 +305,39 @@ class UserServiceTests {
         assertNull(maybeUser)
     }
 
+    @Test
+    fun `can retrieve users ranking information`() {
+        // given: a user service
+        val testClock = TestClock()
+        val userService = createUsersService(testClock)
+
+        // when: creating 10 users
+        val nrOfUsers = 10
+        repeat(nrOfUsers) {
+            val username = newTestUserName()
+            val email = newTestEmail()
+            val password = newTestPassword()
+            val createUserResult = userService.createUser(username, email, password)
+
+            // then: the creation is successful
+            when (createUserResult) {
+                is Failure -> fail("Unexpected $createUserResult")
+                is Success -> assertTrue(createUserResult.value.value > 0)
+            }
+        }
+
+        // when: retrieving the ranking
+        val limit = nrOfUsers
+        val ranking = userService.getUsersRanking(
+            offset = NonNegativeValue(0),
+            limit = PositiveValue(limit)
+        )
+
+        // then: the ranking is successful
+        assertEquals(nrOfUsers, ranking.items.size)
+        assertEquals(limit, ranking.itemsPerPage)
+    }
+
     companion object {
 
         private fun createUsersService(
@@ -327,4 +361,3 @@ class UserServiceTests {
         )
     }
 }
-

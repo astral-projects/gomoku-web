@@ -29,7 +29,7 @@ create table dbo.Statistics
     points       int not null default 0,
     games_played int not null default 0,
     games_won    int not null default 0,
-    foreign key (user_id) references dbo.Users (id),
+    foreign key (user_id) references dbo.Users (id) on delete cascade on update cascade,
     constraint points_are_valid check ( points >= 0 ),
     constraint games_played_are_valid check ( games_played >= 0 ),
     constraint games_won_are_valid check ( games_won >= 0 ),
@@ -49,7 +49,7 @@ create table dbo.Lobbies
     id         int generated always as identity,
     host_id    int,
     variant_id int references dbo.GameVariants (id),
-    foreign key (host_id) references dbo.Users (id),
+    foreign key (host_id) references dbo.Users (id) on delete cascade on update cascade,
     primary key (id, host_id)
 );
 

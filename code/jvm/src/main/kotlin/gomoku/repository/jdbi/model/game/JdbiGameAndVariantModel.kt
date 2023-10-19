@@ -3,10 +3,10 @@ package gomoku.repository.jdbi.model.game
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
+import gomoku.domain.game.board.BoardSize
+import gomoku.domain.game.variants.AcceptableVariant
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.game.variants.OpeningRule
-import gomoku.domain.game.variants.AcceptableVariant
-import gomoku.domain.game.board.BoardSize
 import gomoku.repository.jdbi.model.JdbiModel
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName

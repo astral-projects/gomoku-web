@@ -1,14 +1,9 @@
 package gomoku.domain
 
-import gomoku.domain.errors.InvalidIdError
-import gomoku.utils.Either
-import gomoku.utils.Failure
-import gomoku.utils.Success
-
 /**
  * Provides a generic identifier container for domain objects.
  */
-class Id (val value: Int) {
+class Id(val value: Int) {
     init {
         require(value > 0) { "Value must be positive to be considered a valid identifier" }
     }

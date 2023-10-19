@@ -2,6 +2,7 @@ package gomoku.repository
 
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
+import gomoku.domain.PaginatedResult
 import gomoku.domain.PositiveValue
 import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
@@ -24,9 +25,7 @@ interface UsersRepository {
     fun updateTokenLastUsed(token: Token, now: Instant)
     fun getUserById(userId: Id): User?
     fun revokeToken(tokenValidationInfo: TokenValidationInfo): Boolean
-
-    @NotTested
-    fun getUsersRanking(offset: NonNegativeValue, limit: NonNegativeValue): List<UserRankInfo>
+    fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo>
 
     @NotTested
     fun getUserStats(userId: Id): UserRankInfo?

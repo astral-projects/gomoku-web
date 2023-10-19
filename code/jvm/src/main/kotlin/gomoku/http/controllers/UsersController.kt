@@ -1,7 +1,9 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
-import gomoku.domain.errors.InvalidIdError
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PaginatedResult
+import gomoku.domain.PositiveValue
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password
@@ -19,7 +21,6 @@ import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
-import gomoku.utils.Either
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -117,21 +119,22 @@ class UsersController(
         id: Int
     ): ResponseEntity<*> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val res = userService.getUserById(Id(id))
-        return when (res) {
+        return when (val res = userService.getUserById(Id(id))) {
             is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
             is Failure -> when (res.value) {
                 GettingUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
             }
         }
-
     }
 
     @GetMapping(Uris.Users.RANKING)
-    @NotTested
-    fun getUsersRanking(user: AuthenticatedUser): ResponseEntity<List<UserRankInfo>> {
+    fun getUsersRanking(
+        @RequestParam(name = "offset", defaultValue = "0") offset: Int,
+        @RequestParam(name = "limit", defaultValue = "10") limit: Int
+    ): ResponseEntity<PaginatedResult<UserRankInfo>> {
         logger.info("GET ${Uris.Users.RANKING}")
-        TODO("Not yet implemented")
+        val paginatedResult = userService.getUsersRanking(NonNegativeValue(offset), PositiveValue(limit))
+        return ResponseEntity.ok(paginatedResult)
     }
 
     @GetMapping(Uris.Users.STATS_BY_ID)

@@ -2,6 +2,7 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
+import gomoku.domain.PaginatedResult
 import gomoku.domain.PositiveValue
 import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
@@ -13,6 +14,7 @@ import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.repository.UsersRepository
 import gomoku.repository.jdbi.model.JdbiIdModel
+import gomoku.repository.jdbi.model.user.JdbiUserAndStatsModel
 import gomoku.repository.jdbi.model.user.JdbiUserAndTokenModel
 import gomoku.repository.jdbi.model.user.JdbiUserModel
 import kotlinx.datetime.Instant
@@ -36,8 +38,8 @@ class JdbiUsersRepository(
             .mapTo<JdbiUserModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id =
-        handle.createUpdate(
+    override fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id {
+        val userId = handle.createUpdate(
             """
             insert into dbo.Users (username, email, password_validation) values (:username, :email, :password_validation)
             """
@@ -49,6 +51,12 @@ class JdbiUsersRepository(
             .mapTo<JdbiIdModel>()
             .one()
             .toDomainModel()
+
+        handle.createUpdate("insert into dbo.Statistics (user_id) values (:user_id)")
+            .bind("user_id", userId.value)
+            .execute()
+        return userId
+    }
 
     override fun isUserStoredByUsername(username: Username): Boolean =
         handle.createQuery("select count(*) from dbo.Users where username = :username")
@@ -130,9 +138,25 @@ class JdbiUsersRepository(
             .execute()
             .let { it == 1 }
 
-    // TODO("should be paginated, I will bring paginatedResult class from LS")
-    override fun getUsersRanking(offset: NonNegativeValue, limit: NonNegativeValue): List<UserRankInfo> {
-        TODO("I have already an implementation saved for another commit")
+    override fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> {
+        val totalItems = handle.createQuery("select count(*) from dbo.Statistics")
+            .mapTo<Int>()
+            .single()
+        val result = handle.createQuery(
+            """
+                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won
+                from dbo.Users as users 
+                inner join dbo.Statistics as stats 
+                on users.id = stats.user_id
+                offset :offset 
+                limit :limit
+            """.trimIndent()
+        )
+            .bind("offset", offset.value)
+            .bind("limit", limit.value)
+            .mapTo<JdbiUserAndStatsModel>()
+            .map { it.toDomainModel() }
+        return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
     }
 
     override fun getUserStats(userId: Id): UserRankInfo? {
