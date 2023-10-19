@@ -1,7 +1,6 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
-import gomoku.domain.errors.InvalidIdError
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password
@@ -17,9 +16,9 @@ import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserOutputModel
 import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
+import gomoku.services.user.TokenRevocationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
-import gomoku.utils.Either
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -92,14 +91,16 @@ class UsersController(
     }
 
     @PostMapping(Uris.Users.LOGOUT)
-    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<String> {
+    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Users.LOGOUT}")
         val wasTokenRevoked = userService.revokeToken(authenticatedUser.token)
-        return if (wasTokenRevoked) {
-            ResponseEntity.ok("Logout successful")
-        } else {
-            ResponseEntity.badRequest().body("Logout failed")
+        return when (wasTokenRevoked) {
+            is Success -> ResponseEntity.ok("Logged out successfully")
+            is Failure -> when (wasTokenRevoked.value) {
+                TokenRevocationError.TokenIsInvalid -> Problem.response(400, Problem.logoutError)
+            }
         }
+
     }
 
     @GetMapping(Uris.Users.HOME)
@@ -117,10 +118,10 @@ class UsersController(
         id: Int
     ): ResponseEntity<*> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val res = userService.getUserById(Id(id))
-        return when (res) {
-            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
-            is Failure -> when (res.value) {
+        val user = userService.getUserById(Id(id))
+        return when (user) {
+            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
+            is Failure -> when (user.value) {
                 GettingUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
             }
         }

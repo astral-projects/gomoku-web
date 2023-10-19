@@ -14,3 +14,9 @@ sealed class TokenCreationError {
 }
 
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
+
+sealed class TokenRevocationError {
+    object TokenIsInvalid : TokenRevocationError()
+}
+
+typealias TokenRevocationResult = Either<TokenRevocationError, Boolean>

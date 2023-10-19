@@ -66,10 +66,10 @@ class JdbiUsersRepository(
         val deletions = handle.createUpdate(
             """
             delete from dbo.Tokens 
-            where user_id = :user_id 
-                and token_validation in (
-                    select token_validation from dbo.Tokens where user_id = :user_id 
-                        order by last_used_at desc offset :offset
+            where user_id = :user_id and token_validation in (
+                    select token_validation from dbo.Tokens 
+                    where user_id = :user_id 
+                    order by last_used_at desc offset :offset
                 )
             """.trimIndent()
         )
@@ -124,7 +124,7 @@ class JdbiUsersRepository(
             """
                 delete from dbo.Tokens
                 where token_validation = :validation_information
-            """
+            """.trimIndent()
         )
             .bind("validation_information", tokenValidationInfo.validationInfo)
             .execute()

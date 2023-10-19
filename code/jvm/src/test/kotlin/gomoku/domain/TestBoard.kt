@@ -85,4 +85,20 @@ class TestBoard {
         assertTrue(sut is BoardWin)
         assertEquals(Player.b, sut.winner)
     }
+
+    @Test
+    fun `make a win in the diagonal`() {
+        val sut = initialBoard().play(Square(Column('a'), Row(1)))
+            .play(Square(Column('a'), Row(2)))
+            .play(Square(Column('b'), Row(2)))
+            .play(Square(Column('b'), Row(3)))
+            .play(Square(Column('c'), Row(3)))
+            .play(Square(Column('c'), Row(4)))
+            .play(Square(Column('d'), Row(4)))
+            .play(Square(Column('d'), Row(5)))
+            .play(Square(Column('e'), Row(5)))
+
+        assertTrue(sut is BoardWin)
+        assertEquals(Player.w, sut.winner)
+    }
 }

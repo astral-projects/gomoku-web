@@ -66,8 +66,7 @@ class JdbiGameRepository(
     override fun getSystemInfo() = SystemInfo
 
     override fun updateGame(gameId: Id, board: Board): Boolean {
-        val turn = board.turn
-        val jdbiBoard = JdbiBoardRunModel(board.grid, turn)
+        val jdbiBoard = JdbiBoardRunModel(board.grid, board.size, board.turn!!)
         val mapper = jacksonObjectMapper()
         val jdbiBoardJson = mapper.writeValueAsString(jdbiBoard)
         val updateQuery = handle.createUpdate(

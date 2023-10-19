@@ -31,15 +31,14 @@ class UsersService(
             } else if (usersRepository.isUserStoredByEmail(email)) {
                 failure(UserCreationError.EmailAlreadyExists)
             } else {
-                val id = usersRepository.storeUser(username, email, passwordValidationInfo)
-                success(id)
+                success(usersRepository.storeUser(username, email, passwordValidationInfo))
             }
         }
     }
 
     fun getUserById(userId: Id): GettingUserResult =
-        transactionManager.run {
-            val usersRepository = it.usersRepository
+        transactionManager.run { transaction ->
+            val usersRepository = transaction.usersRepository
             val user: User = usersRepository.getUserById(userId)
                 ?: return@run failure(GettingUserError.UserNotFound)
             success(user)
@@ -54,12 +53,11 @@ class UsersService(
                 return@run failure(TokenCreationError.PasswordIsInvalid)
             }
             val tokenValue = usersDomain.generateTokenValue()
-            val now = clock.now()
             val newToken = Token(
                 tokenValidationInfo = usersDomain.createTokenValidationInformation(tokenValue),
                 userId = user.id,
-                createdAt = now,
-                lastUsedAt = now
+                createdAt = clock.now(),
+                lastUsedAt = clock.now()
             )
             usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
             success(
@@ -87,10 +85,15 @@ class UsersService(
         }
     }
 
-    fun revokeToken(token: String): Boolean {
+    fun revokeToken(token: String): TokenRevocationResult {
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         return transactionManager.run {
-            it.usersRepository.revokeToken(tokenValidationInfo)
+            val usersRepository = it.usersRepository
+            if (usersRepository.revokeToken(tokenValidationInfo)) {
+                success(true)
+            } else {
+                failure(TokenRevocationError.TokenIsInvalid)
+            }
         }
     }
 
