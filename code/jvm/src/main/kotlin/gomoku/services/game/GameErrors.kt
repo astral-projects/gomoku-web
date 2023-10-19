@@ -1,13 +1,14 @@
 package gomoku.services.game
 
+import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.utils.Either
 
 sealed class GameCreationError {
     object UserAlreadyInLobby : GameCreationError()
-
     object UserAlreadyInGame : GameCreationError()
     object GameNotFound : GameCreationError()
+    object VariantNotFound : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, String>
@@ -33,9 +34,11 @@ sealed class GameDeleteError {
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
 
 sealed class GameMakeMoveError {
-    object MoveNotValid : GameMakeMoveError()
+    class MoveNotValid (val error: MakeMoveError): GameMakeMoveError()
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
+
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
+

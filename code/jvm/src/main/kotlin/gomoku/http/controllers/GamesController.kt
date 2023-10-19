@@ -64,6 +64,7 @@ class GamesController(
                 GameCreationError.UserAlreadyInLobby -> Problem.response(404, Problem.userAlreadyInLobby)
                 GameCreationError.UserAlreadyInGame -> Problem.response(404, Problem.userAlreadyInGame)
                 GameCreationError.GameNotFound -> TODO()
+                GameCreationError.VariantNotFound -> TODO()
             }
         }
     }
@@ -98,13 +99,13 @@ class GamesController(
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.makeMove(id, user.user, Square.toSquare(move.move), pl)
+        val responseEntity = gamesService.updateGame(id, user.user, Square.toSquare(move.move), pl)
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("Move made")
             is Failure -> when (responseEntity.value) {
-                GameMakeMoveError.MoveNotValid -> Problem.response(400, Problem.invalidMove)
                 GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.response(403, Problem.userIsNotTheHost)
                 GameMakeMoveError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
+                is GameMakeMoveError.MoveNotValid -> Problem.response(400, Problem.invalidMove)
             }
         }
     }
