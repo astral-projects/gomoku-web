@@ -114,7 +114,7 @@ class GamesController(
     @PostMapping(Uris.Games.EXIT_GAME)
     fun exitGame(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        val game = gamesService.exitGame(id, user.user)
+        val game = gamesService.exitGame(id, user.user.id)
         return when (game) {
             is Success -> ResponseEntity.status(200).body("Game exited")
             is Failure -> when (game.value) {
@@ -127,7 +127,7 @@ class GamesController(
     @GetMapping(Uris.Games.GAME_STATUS)
     fun gameStatus(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
-        val gameStatus = gamesService.getGameStatus(user.user, id)
+        val gameStatus = gamesService.getGameStatus(user.user.id, id)
         return when (gameStatus) {
             is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
             is Failure -> when (gameStatus.value) {
