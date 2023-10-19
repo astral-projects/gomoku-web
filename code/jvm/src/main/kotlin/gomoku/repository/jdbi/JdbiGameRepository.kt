@@ -5,13 +5,14 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Board
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import gomoku.domain.game.board.BoardDraw
+import gomoku.domain.game.board.BoardRun
+import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
-import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
-import gomoku.repository.jdbi.model.game.JdbiVariantModel
+import gomoku.repository.jdbi.model.game.*
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,7 +29,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
 
-    override fun insertInLobby(variantId: Id, userId: Id): Boolean =
+    override fun waitInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
                     "values (:host_id, :variant_id)"
@@ -36,6 +37,7 @@ class JdbiGameRepository(
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
             .execute() == 1
+
 
     override fun checkIfIsLobby(userId: Id): Boolean {
         handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
@@ -52,11 +54,11 @@ class JdbiGameRepository(
             .execute() == 1
 
 
-    override fun userBelongsToTheGame(user: User, gameId: Id): Boolean {
+    override fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean {
         val query =
             handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)")
                 .bind("gameId", gameId.value)
-                .bind("userId", user.id.value)
+                .bind("userId", userId.value)
         val game = query.mapToMap().findOnly()
         return game != null
     }
@@ -72,11 +74,19 @@ class JdbiGameRepository(
 
     override fun getSystemInfo() = SystemInfo
 
+    //TODO: Review this method
     override fun updateGame(gameId: Id, board: Board): Boolean {
-        val turn = board.turn
-        val jdbiBoard = JdbiBoardRunModel(board.grid, turn)
+        val jdbiBoardModel = when (board) {
+            is BoardWin -> JdbiBoardWinModel(grid = board.grid, winner = board.winner, size = board.size.size)
+            is BoardDraw -> JdbiBoardDrawModel(grid = board.grid, size = board.size.size)
+            is BoardRun -> JdbiBoardRunModel(
+                grid = board.grid,
+                turn = board.turn!!,
+                size = board.size.size,
+            )
+        }
         val mapper = jacksonObjectMapper()
-        val jdbiBoardJson = mapper.writeValueAsString(jdbiBoard)
+        val jdbiBoardJson = mapper.writeValueAsString(jdbiBoardModel)
         val updateQuery = handle.createUpdate(
             """
         UPDATE dbo.Games 
@@ -89,7 +99,7 @@ class JdbiGameRepository(
         return rowsUpdated > 0
     }
 
-    override fun exitGame(id: Id, user: User): Boolean = handle.createUpdate(
+    override fun exitGame(id: Id, userId: Id): Boolean = handle.createUpdate(
         """
         UPDATE dbo.Games 
         SET state = 'FINISHED'
@@ -97,14 +107,13 @@ class JdbiGameRepository(
     """
     )
         .bind("id", id)
-        .bind("userId", user.id.value)
+        .bind("userId", userId.value)
         .execute() == 1
 
 
-
-    override fun getGameStatus(gameId: Id, user: User): Game? =
+    override fun getGameStatus(gameId: Id, userId: Id): Game? =
         handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
-            .bind("id", user.id.value)
+            .bind("id", userId.value)
             .bind("gameId", gameId.value)
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()

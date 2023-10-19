@@ -5,8 +5,6 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Board
-import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 
@@ -16,16 +14,17 @@ interface GamesRepository {
     // TODO fun getAllVariants(): List<GameVariant>
     fun getVariantById(variantId: Id): GameVariant?
     fun waitInLobby(variantId: Id, userId: Id): Boolean
-    fun isMatchmaking(variantId: Id): Lobby?
+    fun isMatchmaking(variantId: Id, userId: Id): Lobby?
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean
     fun deleteUserFromLobby(userId: Id): Boolean
     fun deleteGame(game: Id, userId: Id): Boolean
     fun getSystemInfo(): SystemInfo
-    fun userBelongsToTheGame(user: User, gameId: Id): Boolean
+    fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean
     fun updateGame(id: Id, board: Board): Boolean
-    fun exitGame(id: Id, user: User): Boolean
-    fun getGameStatus(gameId: Id, user: User): Game?
+    fun checkIfIsLobby(userId: Id): Boolean
+    fun exitGame(id: Id, userId: Id): Boolean
+    fun getGameStatus(gameId: Id, userId: Id): Game?
     fun userIsTheHost(userId: Id, gameId: Id): Boolean
 
-    fun updatePoints(gameId: Id,userId: Id): Boolean
+    fun updatePoints(gameId: Id, userId: Id): Boolean
 }

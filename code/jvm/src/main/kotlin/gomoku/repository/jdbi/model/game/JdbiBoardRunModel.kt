@@ -8,18 +8,17 @@ import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.moves.Moves
 import gomoku.http.jackson.serializers.MovesDeserializer
 import gomoku.http.jackson.serializers.MovesSerializer
-import gomoku.repository.jdbi.model.JdbiModel
 
 class JdbiBoardRunModel(
     @field:JsonDeserialize(using = MovesDeserializer::class)
     @field:JsonSerialize(using = MovesSerializer::class)
     val grid: Moves,
-    val boardSize: BoardSize,
+    val size: Int,
     val turn: BoardTurn
-) : JdbiModel<BoardRun> {
+) : JdbiBoardModel {
     override fun toDomainModel(): BoardRun {
         return BoardRun(
-            size = boardSize,
+            size = BoardSize.fromSize(size),
             mvs = grid,
             turn = turn,
             timeLeftInSec = turn.timeLeftInSec

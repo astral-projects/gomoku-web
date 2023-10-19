@@ -17,7 +17,7 @@ class JdbiGameAndVariantModel(
     val state: String,
     @ColumnName("variant_id")
     val variantId: Int,
-    val board: JdbiBoardRunModel,
+    val board: JdbiBoardModel,
     @ColumnName("created_at")
     val createdAt: Instant,
     @ColumnName("updated_at")

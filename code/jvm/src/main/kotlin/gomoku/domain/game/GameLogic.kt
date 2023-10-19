@@ -54,11 +54,11 @@ class GameLogic(
      * Player makes a move. The move is valid if the game is in progress and the position is empty.
      *
      * @param game - game to which the user belongs
-     * @param user - user who makes a move
+     * @param userId - user who makes a move
      * @param pos - Square position on the board
      * @return Game with new move
      */
-    fun play(pos: Square, game: Game, user: User): MakeMoveResult {
+    fun play(pos: Square, game: Game, userId: Id): MakeMoveResult {
         val board = game.board
         if (game.state != GameState.IN_PROGRESS) {
             return failure(MakeMoveError.GameIsNotInProgress)
@@ -66,7 +66,7 @@ class GameLogic(
         if (board !is BoardRun) {
             return failure(MakeMoveError.GameOver)
         }
-        if (board.turn?.player != user.toPlayer(game)) {
+        if (board.turn?.player != userId.toPlayer(game)) {
             return failure(MakeMoveError.NotYourTurn)
         }
         val newBoard = game.board.play(pos)
@@ -95,7 +95,7 @@ class GameLogic(
      *
      * @param game - game to which the user belongs
      */
-    private fun User.toPlayer(game: Game) = if (this.id == game.hostId) Player.w else Player.b
+    private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.w else Player.b
 }
 
 typealias MakeMoveResult = Either<MakeMoveError, Game>

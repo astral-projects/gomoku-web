@@ -2,6 +2,7 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
 import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
