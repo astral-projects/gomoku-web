@@ -1,6 +1,6 @@
 package gomoku.http.model.game
 
-import gomoku.domain.game.GameVariant
+import gomoku.domain.game.variants.GameVariant
 import java.util.*
 
 class GameVariantOutputModel private constructor(

@@ -1,6 +1,6 @@
-package gomoku.domain.game
+package gomoku.domain.game.variants
 
-enum class Variant {
+enum class AcceptableVariant {
     FREESTYLE,
     RENJU,
     CARO,

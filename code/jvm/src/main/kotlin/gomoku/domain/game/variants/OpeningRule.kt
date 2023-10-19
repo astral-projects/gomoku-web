@@ -1,4 +1,4 @@
-package gomoku.domain.game
+package gomoku.domain.game.variants
 
 enum class OpeningRule {
     PRO,

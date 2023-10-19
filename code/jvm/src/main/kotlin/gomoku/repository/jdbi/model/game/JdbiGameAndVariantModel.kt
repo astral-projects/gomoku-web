@@ -3,9 +3,9 @@ package gomoku.repository.jdbi.model.game
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
-import gomoku.domain.game.GameVariant
-import gomoku.domain.game.OpeningRule
-import gomoku.domain.game.Variant
+import gomoku.domain.game.variants.GameVariant
+import gomoku.domain.game.variants.OpeningRule
+import gomoku.domain.game.variants.AcceptableVariant
 import gomoku.domain.game.board.BoardSize
 import gomoku.repository.jdbi.model.JdbiModel
 import kotlinx.datetime.Instant
@@ -17,7 +17,7 @@ class JdbiGameAndVariantModel(
     val state: String,
     @ColumnName("variant_id")
     val variantId: Int,
-    val board: JdbiBoardModel,
+    val board: JdbiBoardRunModel,
     @ColumnName("created_at")
     val createdAt: Instant,
     @ColumnName("updated_at")
@@ -39,7 +39,7 @@ class JdbiGameAndVariantModel(
             state = GameState.valueOf(state.uppercase(Locale.getDefault())),
             variant = GameVariant(
                 id = Id(variantId),
-                name = Variant.valueOf(variantName.uppercase(Locale.getDefault())),
+                name = AcceptableVariant.valueOf(variantName.uppercase(Locale.getDefault())),
                 openingRule = OpeningRule.valueOf(openingRule.uppercase(Locale.getDefault())),
                 boardSize = BoardSize.fromSize(boardSize)
             ),

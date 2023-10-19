@@ -1,18 +1,24 @@
 package gomoku.domain.game
 
 import gomoku.domain.Id
+import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.initialBoard
 import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.play
+import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.user.User
+import gomoku.utils.Either
+import gomoku.utils.failure
+import gomoku.utils.success
 import kotlinx.datetime.Clock
+import org.springframework.stereotype.Component
 
+@Component
 class GameLogic(
     private val clock: Clock
 ) {
@@ -29,7 +35,6 @@ class GameLogic(
     fun createNewGame(
         id: Id,
         gameVariant: GameVariant,
-        boardSize: BoardSize,
         host: User,
         guest: User
     ): Game {
@@ -47,21 +52,30 @@ class GameLogic(
 
     /**
      * Player makes a move. The move is valid if the game is in progress and the position is empty.
+     *
      * @param game - game to which the user belongs
      * @param user - user who makes a move
      * @param pos - Square position on the board
      * @return Game with new move
      */
-    fun play(pos: Square, game: Game, user: User): Game {
+    fun play(pos: Square, game: Game, user: User): MakeMoveResult {
         val board = game.board
-        check(game.state == GameState.IN_PROGRESS) { "Game is not in progress" }
-        check(board is BoardRun) { "Game over" }
-        check(board.turn?.player == user.toPlayer(game)) { "Not your turn" }
+        if (game.state != GameState.IN_PROGRESS) {
+            return failure(MakeMoveError.GameIsNotInProgress)
+        }
+        if (board !is BoardRun) {
+            return failure(MakeMoveError.GameOver)
+        }
+        if (board.turn?.player != user.toPlayer(game)) {
+            return failure(MakeMoveError.NotYourTurn)
+        }
         val newBoard = game.board.play(pos)
-        return game.copy(
-            board = newBoard,
-            state = if (newBoard.isFinished()) GameState.FINISHED else GameState.IN_PROGRESS,
-            updatedAt = clock.now()
+        return success(
+            game.copy(
+                board = newBoard,
+                state = if (newBoard.isFinished()) GameState.FINISHED else GameState.IN_PROGRESS,
+                updatedAt = clock.now()
+            )
         )
     }
 
@@ -83,3 +97,5 @@ class GameLogic(
      */
     private fun User.toPlayer(game: Game) = if (this.id == game.hostId) Player.w else Player.b
 }
+
+typealias MakeMoveResult = Either<MakeMoveError, Game>

@@ -8,14 +8,14 @@ import gomoku.utils.Success
 /**
  * Provides a generic identifier container for domain objects.
  */
-class Id private constructor(val value: Int) {
+class Id (val value: Int) {
     init {
         require(value > 0) { "Value must be positive to be considered a valid identifier" }
     }
 
-    companion object {
-        operator fun invoke(value: Int) = if (value > 0) Success(value) else Failure(InvalidIdError)
-    }
+//    companion object {
+//        operator fun invoke(value: Int) = if (value > 0) Success(value) else Failure(InvalidIdError)
+//    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

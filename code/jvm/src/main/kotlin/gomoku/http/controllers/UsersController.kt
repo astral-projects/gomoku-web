@@ -1,6 +1,7 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
+import gomoku.domain.errors.InvalidIdError
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password
@@ -116,20 +117,14 @@ class UsersController(
         id: Int
     ): ResponseEntity<*> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val ids = Id(id)
-        return when (ids) {
-            is Success -> {
-                val res = userService.getUserById(ids.value)
-                when (res) {
-                    is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
-                    is Failure -> when (res.value) {
-                        is GettingUserError.UserNotFound -> Problem.response(404, Problem.userAlreadyExists)
-                        is GettingUserError.InvalidId -> Problem.response(400, Problem.invalidId)
-                    }
-                }
+        val res = userService.getUserById(Id(id))
+        return when (res) {
+            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
+            is Failure -> when (res.value) {
+                GettingUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
             }
-            is Failure -> Problem.response(400, Problem.invalidId)
         }
+
     }
 
     @GetMapping(Uris.Users.RANKING)

@@ -1,12 +1,14 @@
 package gomoku.services.game
 
 import gomoku.domain.Id
+import gomoku.domain.game.GameLogic
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
-import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
+import gomoku.utils.Failure
+import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import org.springframework.stereotype.Component
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class GamesService(
     private val transactionManager: TransactionManager,
-    private val usersDomain: UsersDomain
+    private val gameLogic: GameLogic,
 ) {
 
     fun getGameById(id: Id): GettingGameResult {
@@ -30,7 +32,11 @@ class GamesService(
     fun findGame(variantId: Id, user: User): GameCreationResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val lobby = gamesRepository.isMatchmaking(variantId, user.id)
+            val lobby = gamesRepository.isMatchmaking(variantId)
+            val variant = gamesRepository.getVariantById(variantId)
+            if (variant == null) {
+                failure(GameCreationError.VariantNotFound)
+            }
             if (lobby != null) {
                 gamesRepository.deleteUserFromLobby(user.id)
                 val res = gamesRepository.createGame(
@@ -92,14 +98,22 @@ class GamesService(
             gamesRepository.getSystemInfo()
         }
 
-    fun makeMove(gameId: Id, user: User, square: Square, player: Player): GameMakeMoveResult {
+    fun updateGame(gameId: Id, user: User, square: Square, player: Player): GameMakeMoveResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
+            val game = gamesRepository.getGameById(gameId)
+                ?: return@run failure(GameMakeMoveError.GameNotFound)
             if (!gamesRepository.userBelongsToTheGame(user, gameId)) {
                 failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
             }
-            if (!gamesRepository.makeMove(gameId, user.id, square, player)) {
-                failure(GameMakeMoveError.MoveNotValid)
+            val playLogic = gameLogic.play(square, game, user)
+            if (playLogic is Failure) {
+                failure(GameMakeMoveError.MoveNotValid(playLogic.value))
+            } else if (playLogic is Success) {
+                when (val makeMove = gamesRepository.updateGame(gameId, playLogic.value.board)) {
+                    false -> failure(GameMakeMoveError.GameNotFound)
+                    true -> success(makeMove)
+                }
             }
             success(true)
         }

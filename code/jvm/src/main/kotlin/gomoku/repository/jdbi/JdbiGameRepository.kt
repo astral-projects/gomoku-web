@@ -3,12 +3,15 @@ package gomoku.repository.jdbi
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
-import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.board.Board
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
+import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
 import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
+import gomoku.repository.jdbi.model.game.JdbiVariantModel
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,7 +31,7 @@ class JdbiGameRepository(
     override fun insertInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                "values (:host_id, :variant_id)"
+                    "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -69,17 +72,19 @@ class JdbiGameRepository(
 
     override fun getSystemInfo() = SystemInfo
 
-    override fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): Boolean {
+    override fun updateGame(gameId: Id, board: Board): Boolean {
+        val turn = board.turn
+        val jdbiBoard = JdbiBoardRunModel(board.grid, turn)
+        val mapper = jacksonObjectMapper()
+        val jdbiBoardJson = mapper.writeValueAsString(jdbiBoard)
         val updateQuery = handle.createUpdate(
             """
         UPDATE dbo.Games 
-        SET board = jsonb_set(board, '{grid, -1}', :square::jsonb, true), 
-            updated_at = extract(epoch from now()) 
+        SET board = :board::jsonb, updated_at = extract(epoch from now()) 
         WHERE id = :gameId;
     """
         ).bind("gameId", gameId.value)
-            .bind("square", "\"$square-${player}\"")
-
+            .bind("board", jdbiBoardJson)
         val rowsUpdated = updateQuery.execute()
         return rowsUpdated > 0
     }
@@ -154,6 +159,13 @@ WHERE
             .bind("loserId", userId.value)
             .execute()
         return true
+    }
+
+    override fun getVariantById(variantId: Id): GameVariant? {
+        return handle.createQuery("select * from dbo.Gamevariants where id = :variantId")
+            .bind("variantId", variantId.value)
+            .mapTo<JdbiVariantModel>()
+            .singleOrNull()?.toDomainModel()
     }
 }
 

@@ -8,11 +8,17 @@ import gomoku.domain.game.board.moves.move.Square
 const val WINNING_PIECES = 5
 
 // TODO: make this configurable in the UI and in the backend
-val boardSize = BoardSize.FIFTEEN
+private val boardSize = BoardSize.FIFTEEN
 
 const val timeout = 60
 
-sealed class Board(val grid: Moves, val turn: BoardTurn?)
+sealed class Board(val grid: Moves, val turn: BoardTurn?) {
+    fun copy(grid: Moves = this.grid, turn: BoardTurn? = this.turn): Board = when (this) {
+        is BoardRun -> BoardRun(size, grid, turn!!, timeLeftInSec)
+        is BoardWin -> BoardWin(size, grid, winner)
+        is BoardDraw -> BoardDraw(size, grid)
+    }
+}
 class BoardRun(val size: BoardSize, mvs: Moves, turn: BoardTurn, val timeLeftInSec: Int) : Board(mvs, turn)
 class BoardWin(val size: BoardSize, mvs: Moves, val winner: Player) : Board(mvs, null)
 class BoardDraw(val size: BoardSize, mvs: Moves) : Board(mvs, null)
