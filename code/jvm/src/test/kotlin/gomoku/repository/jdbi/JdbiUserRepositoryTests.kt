@@ -1,17 +1,17 @@
 package gomoku.repository.jdbi
 
 import gomoku.TestClock
-import gomoku.domain.Id
+import gomoku.TestDataGenerator.newTestEmail
+import gomoku.TestDataGenerator.newTestUserName
+import gomoku.TestDataGenerator.newTokenValidationData
+import gomoku.domain.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
+import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.postgresql.ds.PGSimpleDataSource
-import kotlin.math.abs
-import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -30,32 +30,51 @@ class JdbiUserRepositoryTests {
         val userName = newTestUserName()
         val email = newTestEmail()
         val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
-        repo.storeUser(userName, email, passwordValidationInfo)
+        val createdUserId = repo.storeUser(userName, email, passwordValidationInfo)
 
-        // and: retrieving a user
-        val retrievedUser: User? = repo.getUserByUsername(userName)
+        // and: retrieving the user by id
+        val retrievedUserById: User? = repo.getUserById(createdUserId)
 
         // then:
-        assertNotNull(retrievedUser)
-        assertEquals(userName, retrievedUser.username.value)
-        assertEquals(passwordValidationInfo, retrievedUser.passwordValidation)
-        assertTrue(retrievedUser.id.value >= 0)
+        assertNotNull(retrievedUserById)
+        assertEquals(createdUserId, retrievedUserById.id)
 
-        // when: asking if the user exists
+        // and: retrieving a user by username
+        val retrievedUserByUsername: User? = repo.getUserByUsername(userName)
+
+        // then:
+        assertNotNull(retrievedUserByUsername)
+        assertEquals(userName, retrievedUserByUsername.username)
+        assertEquals(passwordValidationInfo, retrievedUserByUsername.passwordValidation)
+        assertTrue(retrievedUserByUsername.id.value >= 0)
+
+        // when: asking if the user exists by username
         val isUserIsStored = repo.isUserStoredByUsername(userName)
 
         // then: response is true
         assertTrue(isUserIsStored)
 
-        // when: asking if a different user exists
-        val anotherUserIsStored = repo.isUserStoredByUsername("another-$userName")
+        // when: asking if the user exists by email
+        val isUserIsStoredByEmail = repo.isUserStoredByEmail(email)
+
+        // then: response is true
+        assertTrue(isUserIsStoredByEmail)
+
+        // when: asking if a user exists by username that does not exist
+        val anotherUserIsStoredByUsername = repo.isUserStoredByUsername(newTestUserName())
 
         // then: response is false
-        assertFalse(anotherUserIsStored)
+        assertFalse(anotherUserIsStoredByUsername)
+
+        // when: asking if a user exists by email that does not exist
+        val anotherUserIsStoredByEmail = repo.isUserStoredByEmail(newTestEmail())
+
+        // then: response is false
+        assertFalse(anotherUserIsStoredByEmail)
     }
 
     @Test
-    fun `can create and validate tokens`() = runWithHandle { handle ->
+    fun `can create, validate and update tokens`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
         // and: a test clock
@@ -73,12 +92,12 @@ class JdbiUserRepositoryTests {
         // when: creating a token
         val tokenCreationInstant = clock.now()
         val token = Token(
-            testTokenValidationInfo,
-            Id(userId),
+            tokenValidationInfo = testTokenValidationInfo,
+            userId = userId,
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
-        repo.createToken(token, 1)
+        repo.createToken(token, PositiveValue(1))
 
         // then: createToken does not throw errors
         // no exception
@@ -89,26 +108,58 @@ class JdbiUserRepositoryTests {
         // then:
         val (user, retrievedToken) = userAndToken ?: fail("token and associated user must exist")
 
-        // and: ...
-        assertEquals(userName, user.username.value)
+        // and: the user is the same
+        assertEquals(userName.value, user.username.value)
         assertEquals(testTokenValidationInfo.validationInfo, retrievedToken.tokenValidationInfo.validationInfo)
         assertEquals(tokenCreationInstant, retrievedToken.createdAt)
+
+        // when: updating the token last used
+        val tokenLastUsedInstant = clock.now()
+        repo.updateTokenLastUsed(retrievedToken, tokenLastUsedInstant)
+
+        // then: the token last used is updated
+        val userAndTokenAfterUpdate = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
+        val (_, retrievedTokenAfterUpdate) = userAndTokenAfterUpdate ?: fail("token and associated user must exist")
+        assertEquals(tokenLastUsedInstant, retrievedTokenAfterUpdate.lastUsedAt)
     }
 
-    companion object {
+    @Test
+    fun `can revoke tokens`() = runWithHandle { handle ->
+        // given: a UsersRepository
+        val repo = JdbiUsersRepository(handle)
+        // and: a test clock
+        val clock = TestClock()
 
-        private fun runWithHandle(block: (Handle) -> Unit) = jdbi.useTransaction<Exception>(block)
+        // and: a createdUser
+        val userName = newTestUserName()
+        val email = newTestEmail()
+        val passwordValidationInfo = PasswordValidationInfo("not-valid")
+        val userId = repo.storeUser(userName, email, passwordValidationInfo)
 
-        private fun newTestUserName() = "user-${abs(Random.nextLong())}"
+        // and: test TokenValidationInfo
+        val testTokenValidationInfo = TokenValidationInfo(newTokenValidationData())
 
-        private fun newTestEmail() = "email@-${abs(Random.nextLong())}.com"
+        // when: creating a token
+        val tokenCreationInstant = clock.now()
+        val token = Token(
+            tokenValidationInfo = testTokenValidationInfo,
+            userId = userId,
+            createdAt = tokenCreationInstant,
+            lastUsedAt = tokenCreationInstant
+        )
+        repo.createToken(token, PositiveValue(1))
 
-        private fun newTokenValidationData() = "token-${abs(Random.nextLong())}"
+        // when: retrieving the token and associated user
+        val userAndToken = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
 
-        private val jdbi = Jdbi.create(
-            PGSimpleDataSource().apply {
-                setURL("jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit")
-            }
-        ).configureWithAppRequirements()
+        // then:
+        val (_, retrievedToken) = userAndToken ?: fail("token and associated user must exist")
+
+        // when: when token is revoked
+        repo.revokeToken(retrievedToken.tokenValidationInfo)
+
+        // then: token is not found
+        val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
+        assertNull(userAndTokenAfterRevoke)
     }
 }

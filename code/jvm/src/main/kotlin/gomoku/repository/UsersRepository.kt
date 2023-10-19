@@ -1,24 +1,36 @@
 package gomoku.repository
 
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
+import gomoku.domain.UserAndToken
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
+import gomoku.domain.user.Email
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.Username
+import gomoku.utils.NotTested
 import kotlinx.datetime.Instant
 
 interface UsersRepository {
-
-    fun storeUser(username: String, email: String, passwordValidation: PasswordValidationInfo): Int
-    fun getUserByUsername(username: String): User?
-    fun getUserById(id: Id): User?
-    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
-    fun isUserStoredByUsername(username: String): Boolean
-    fun createToken(token: Token, maxTokens: Int)
+    fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id
+    fun getUserByUsername(username: Username): User?
+    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): UserAndToken?
+    fun isUserStoredByUsername(username: Username): Boolean
+    fun isUserStoredByEmail(email: Email): Boolean
+    fun createToken(token: Token, maxTokens: PositiveValue)
     fun updateTokenLastUsed(token: Token, now: Instant)
-    fun logout(tokenValidationInfo: TokenValidationInfo): Int
-    fun getUsersRanking(): List<UserRankInfo>
-    fun getUserStats(userId: Int): UserRankInfo?
-    fun editUser(user: User): Boolean
+    fun getUserById(userId: Id): User?
+    fun revokeToken(tokenValidationInfo: TokenValidationInfo): Boolean
+
+    @NotTested
+    fun getUsersRanking(offset: NonNegativeValue, limit: NonNegativeValue): List<UserRankInfo>
+
+    @NotTested
+    fun getUserStats(userId: Id): UserRankInfo?
+
+    @NotTested
+    fun editUser(userId: Id): User
 }

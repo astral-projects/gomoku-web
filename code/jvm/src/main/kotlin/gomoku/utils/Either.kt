@@ -1,12 +1,23 @@
 package gomoku.utils
 
+/**
+ * Sum type to represent the success or failure in a given operation.
+ */
 sealed class Either<out L, out R> {
     data class Left<out L>(val value: L) : Either<L, Nothing>()
     data class Right<out R>(val value: R) : Either<Nothing, R>()
 }
 
-// Functions for when using Either to represent success or failure
+/**
+ * Used to represent a sucess path in a given operation, which is
+ * associated with [Either.Right] class
+ */
 fun <R> success(value: R) = Either.Right(value)
+
+/**
+ * Used to represent a failure path in a given operation, which is
+ * associated with [Either.Left] class.
+ */
 fun <L> failure(error: L) = Either.Left(error)
 
 typealias Success<S> = Either.Right<S>

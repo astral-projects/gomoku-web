@@ -59,7 +59,7 @@ create table dbo.Games
     state      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
     variant_id int references dbo.GameVariants (id)                     not null,
     board      jsonb                                                    not null,
-    -- TODO: add board json constraints once we have a board representation in domain
+    -- TODO: add board json constraints once we have a clear board representation in domain
     created_at int                                                      not null default extract(epoch from now()),
     updated_at int                                                      not null default extract(epoch from now()),
     host_id    int references dbo.Users (id),

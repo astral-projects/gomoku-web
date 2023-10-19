@@ -11,9 +11,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
 /**
- * Resolves the [Id] argument from the request.
- * The [Id] is a wrapper around an [Int] that represents an id of an entity.
- * The [Id] is used to avoid passing the id as a plain [Int] and to avoid passing the id as a [String].
+ * Resolves the [Id] argument from the request path.
  */
 @Component
 class IdArgumentResolver : HandlerMethodArgumentResolver {
@@ -30,7 +28,8 @@ class IdArgumentResolver : HandlerMethodArgumentResolver {
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             ?: throw IllegalStateException("No HttpServletRequest found")
 
-        val id = request.requestURI.split("/")[3].toIntOrNull() ?: return null
+        val id = request.getParameter("id")?.toIntOrNull()
+            ?: throw IllegalStateException("No id parameter found")
         return try {
             Id(id)
         } catch (e: IllegalArgumentException) {

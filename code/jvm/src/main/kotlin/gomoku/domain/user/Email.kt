@@ -1,12 +1,14 @@
 package gomoku.domain.user
 
-data class Email (
+data class Email(
     val value: String
 ) {
 
+    companion object {
+        const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
+    }
+
     init {
-        // Email format regex from https://www.regular-expressions.info/email.html
-        val emailFormat = Regex(("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"))
-        require(value.matches(emailFormat)) { "Invalid email format" }
+        require(value.matches(Regex(emailFormat))) { "Invalid email format" }
     }
 }

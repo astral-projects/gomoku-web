@@ -5,7 +5,6 @@ import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.boardSize
-import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.Moves
 import gomoku.http.jackson.serializers.MovesDeserializer
 import gomoku.repository.jdbi.model.JdbiModel
@@ -20,7 +19,7 @@ class JdbiBoardModel(
             size = boardSize,
             mvs = grid,
             turn = turn,
-            timeLeftInSec = turn.timeLeftInSec,
+            timeLeftInSec = turn.timeLeftInSec
         )
     }
 }

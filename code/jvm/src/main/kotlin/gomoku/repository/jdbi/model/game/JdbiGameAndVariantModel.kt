@@ -12,7 +12,7 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.util.*
 
-class JdbiGameJoinVariantModel(
+class JdbiGameAndVariantModel(
     val id: Int,
     val state: String,
     @ColumnName("variant_id")
@@ -31,7 +31,7 @@ class JdbiGameJoinVariantModel(
     @ColumnName("opening_rule")
     val openingRule: String,
     @ColumnName("board_size")
-    val boardSize: Int,
+    val boardSize: Int
 ) : JdbiModel<Game> {
     override fun toDomainModel(): Game {
         return Game(

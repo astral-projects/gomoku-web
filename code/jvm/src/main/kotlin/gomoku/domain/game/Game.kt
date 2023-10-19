@@ -12,6 +12,5 @@ data class Game(
     val createdAt: Instant,
     val updatedAt: Instant,
     val hostId: Id,
-    val guestId: Id,
+    val guestId: Id
 )
-

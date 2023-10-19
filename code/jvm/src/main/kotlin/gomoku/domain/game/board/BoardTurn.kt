@@ -9,8 +9,8 @@ data class BoardTurn(
     }
 
     fun other(): BoardTurn = when (player) {
+        // TODO("shouldnt we reset the time left here?")
         Player.w -> BoardTurn(Player.b, timeLeftInSec)
         Player.b -> BoardTurn(Player.w, timeLeftInSec)
     }
-
 }

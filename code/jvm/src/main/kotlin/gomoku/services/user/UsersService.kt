@@ -2,11 +2,14 @@ package gomoku.services.user
 
 import gomoku.domain.Id
 import gomoku.domain.token.Token
+import gomoku.domain.user.Email
+import gomoku.domain.user.Password
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.Username
 import gomoku.domain.user.UsersDomain
 import gomoku.repository.transaction.TransactionManager
-import gomoku.utils.Either
+import gomoku.utils.NotTested
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
@@ -19,17 +22,14 @@ class UsersService(
     private val clock: Clock
 ) {
 
-    fun createUser(username: String, email: String, password: String): UserCreationResult {
-        if (!usersDomain.isSafePassword(password)) {
-            return failure(UserCreationError.InsecurePassword)
-        }
-
-        val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
-
-        return transactionManager.run {
-            val usersRepository = it.usersRepository
+    fun createUser(username: Username, email: Email, password: Password): UserCreationResult {
+        val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password.value)
+        return transactionManager.run { transaction ->
+            val usersRepository = transaction.usersRepository
             if (usersRepository.isUserStoredByUsername(username)) {
-                failure(UserCreationError.UserAlreadyExists)
+                failure(UserCreationError.UsernameAlreadyExists)
+            } else if (usersRepository.isUserStoredByEmail(email)) {
+                failure(UserCreationError.EmailAlreadyExists)
             } else {
                 val id = usersRepository.storeUser(username, email, passwordValidationInfo)
                 success(id)
@@ -37,45 +37,38 @@ class UsersService(
         }
     }
 
-    fun getUserById(id: Id): GettingUserResult {
-        return transactionManager.run {
+    fun getUserById(userId: Id): GettingUserResult =
+        transactionManager.run {
             val usersRepository = it.usersRepository
-            val user: User = usersRepository.getUserById(id)
+            val user: User = usersRepository.getUserById(userId)
                 ?: return@run failure(GettingUserError.UserNotFound)
             success(user)
         }
-    }
 
-    fun createToken(username: String, password: String): TokenCreationResult {
-        if (username.isBlank() || password.isBlank()) {
-            failure(TokenCreationError.UserOrPasswordAreInvalid)
-        }
-        return transactionManager.run {
+    fun createToken(username: Username, password: Password): TokenCreationResult =
+        transactionManager.run {
             val usersRepository = it.usersRepository
             val user: User = usersRepository.getUserByUsername(username)
-                ?: return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
-            if (!usersDomain.validatePassword(password, user.passwordValidation)) {
-                if (!usersDomain.validatePassword(password, user.passwordValidation)) {
-                    return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
-                }
+                ?: return@run failure(TokenCreationError.UsernameIsInvalid)
+            if (!usersDomain.validatePassword(password.value, user.passwordValidation)) {
+                return@run failure(TokenCreationError.PasswordIsInvalid)
             }
             val tokenValue = usersDomain.generateTokenValue()
             val now = clock.now()
             val newToken = Token(
-                usersDomain.createTokenValidationInformation(tokenValue),
-                user.id,
+                tokenValidationInfo = usersDomain.createTokenValidationInformation(tokenValue),
+                userId = user.id,
                 createdAt = now,
                 lastUsedAt = now
             )
             usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
-            Either.Right(
+            success(
                 TokenExternalInfo(
                     tokenValue,
                     usersDomain.getTokenExpiration(newToken)
                 )
             )
         }
-    }
 
     fun getUserByToken(token: String): User? {
         if (!usersDomain.canBeToken(token)) {
@@ -85,8 +78,7 @@ class UsersService(
             val usersRepository = it.usersRepository
             val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
-            if (userAndToken != null) {
-                // TODO(IT WAS GIVING ME PROBLEMS SO I COMMENTED THIS)&& usersDomain.isTokenTimeValid(clock, userAndToken.second))
+            if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 userAndToken.first
             } else {
@@ -98,15 +90,21 @@ class UsersService(
     fun revokeToken(token: String): Boolean {
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         return transactionManager.run {
-            it.usersRepository.logout(tokenValidationInfo)
-            true
+            it.usersRepository.revokeToken(tokenValidationInfo)
         }
     }
 
+    @NotTested
     fun getUsersRanking(): List<UserRankInfo> {
         TODO("Not yet implemented")
     }
 
+    @NotTested
+    fun getUserStats(userId: Id): UserRankInfo? {
+        TODO("Not yet implemented")
+    }
+
+    @NotTested
     fun editUser(user: User): User {
         TODO("Not yet implemented")
     }
