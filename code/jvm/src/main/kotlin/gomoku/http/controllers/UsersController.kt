@@ -1,6 +1,9 @@
 package gomoku.http.controllers
 
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PaginatedResult
+import gomoku.domain.PositiveValue
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password
@@ -8,7 +11,6 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
-import gomoku.http.controllers.aux.validateId
 import gomoku.http.model.IdOutputModel
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
@@ -17,7 +19,6 @@ import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserOutputModel
 import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
-import gomoku.services.user.TokenRevocationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -92,16 +94,14 @@ class UsersController(
     }
 
     @PostMapping(Uris.Users.LOGOUT)
-    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
+    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<String> {
         logger.info("POST ${Uris.Users.LOGOUT}")
         val wasTokenRevoked = userService.revokeToken(authenticatedUser.token)
-        return when (wasTokenRevoked) {
-            is Success -> ResponseEntity.ok("Logged out successfully")
-            is Failure -> when (wasTokenRevoked.value) {
-                TokenRevocationError.TokenIsInvalid -> Problem.response(400, Problem.logoutError)
-            }
+        return if (wasTokenRevoked) {
+            ResponseEntity.ok("Logout successful")
+        } else {
+            ResponseEntity.badRequest().body("Logout failed")
         }
-
     }
 
     @GetMapping(Uris.Users.HOME)
@@ -119,21 +119,22 @@ class UsersController(
         id: Int
     ): ResponseEntity<*> {
         logger.info("GET ${Uris.Users.GET_BY_ID}")
-        val user = userService.getUserById(Id(id))
-        return when (user) {
-            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(user.value))
-            is Failure -> when (user.value) {
+        return when (val res = userService.getUserById(Id(id))) {
+            is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
+            is Failure -> when (res.value) {
                 GettingUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
             }
         }
-
     }
 
     @GetMapping(Uris.Users.RANKING)
-    @NotTested
-    fun getUsersRanking(user: AuthenticatedUser): ResponseEntity<List<UserRankInfo>> {
+    fun getUsersRanking(
+        @RequestParam(name = "offset", defaultValue = "0") offset: Int,
+        @RequestParam(name = "limit", defaultValue = "10") limit: Int
+    ): ResponseEntity<PaginatedResult<UserRankInfo>> {
         logger.info("GET ${Uris.Users.RANKING}")
-        TODO("Not yet implemented")
+        val paginatedResult = userService.getUsersRanking(NonNegativeValue(offset), PositiveValue(limit))
+        return ResponseEntity.ok(paginatedResult)
     }
 
     @GetMapping(Uris.Users.STATS_BY_ID)

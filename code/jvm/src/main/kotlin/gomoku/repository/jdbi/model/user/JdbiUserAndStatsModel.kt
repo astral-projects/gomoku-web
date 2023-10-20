@@ -11,12 +11,10 @@ class JdbiUserAndStatsModel(
     val email: String,
     val points: Int,
     val rank: Int,
-    // TODO("create a domain class that receives positive or zero values only, like in Email and related components")
     @ColumnName("games_played")
     val gamesPlayed: Int,
     @ColumnName("games_won")
-    val wins: Int,
-    val losses: Int
+    val wins: Int
 ) : JdbiModel<UserRankInfo> {
     override fun toDomainModel(): UserRankInfo =
         UserRankInfo(

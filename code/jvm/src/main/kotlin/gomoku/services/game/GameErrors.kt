@@ -34,11 +34,9 @@ sealed class GameDeleteError {
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
 
 sealed class GameMakeMoveError {
-    class MoveNotValid (val error: MakeMoveError): GameMakeMoveError()
+    class MoveNotValid(val error: MakeMoveError) : GameMakeMoveError()
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
-
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
-

@@ -1,11 +1,14 @@
 package gomoku.services.game
 
 import gomoku.domain.Id
+import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
+import gomoku.domain.game.GamePoints
 import gomoku.domain.game.SystemInfo
-import gomoku.domain.game.board.Player
+import gomoku.domain.game.board.*
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.User
+import gomoku.repository.GamesRepository
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Failure
 import gomoku.utils.Success
@@ -16,7 +19,7 @@ import org.springframework.stereotype.Component
 @Component
 class GamesService(
     private val transactionManager: TransactionManager,
-    private val gameLogic: GameLogic,
+    private val gameLogic: GameLogic
 ) {
 
     fun getGameById(id: Id): GettingGameResult {
@@ -55,7 +58,7 @@ class GamesService(
                     failure(GameCreationError.UserAlreadyInLobby)
                 } else {
                     val r = gamesRepository.waitInLobby(variantId, user.id)
-                    //TODO(I think we need to create a argument resolver for the VariandInputModel,
+                    // TODO(I think we need to create a argument resolver for the VariandInputModel,
                     // beacuse if you pass an Integer that isnt created in the database, it will throw an exception)
                     when (r) {
                         false -> failure(GameCreationError.VariantNotFound)
@@ -98,18 +101,19 @@ class GamesService(
             gamesRepository.getSystemInfo()
         }
 
-    fun makeMove(gameId: Id, user: Id, square: Square, player: Player): GameMakeMoveResult {
+    fun makeMove(gameId: Id, userId: Id, square: Square, player: Player): GameMakeMoveResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameMakeMoveError.GameNotFound)
-            if (!gamesRepository.userBelongsToTheGame(user, gameId)) {
+            if (!gamesRepository.userBelongsToTheGame(userId, gameId)) {
                 failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
             }
-            val playLogic = gameLogic.play(square, game, user)
+            val playLogic = gameLogic.play(square, game, userId)
             if (playLogic is Failure) {
                 failure(GameMakeMoveError.MoveNotValid(playLogic.value))
             } else if (playLogic is Success) {
+                gamePointsBoard(gamesRepository, gameId, userId, game, playLogic.value.board)
                 when (val makeMove = gamesRepository.updateGame(gameId, playLogic.value.board)) {
                     false -> failure(GameMakeMoveError.GameNotFound)
                     true -> success(makeMove)
@@ -122,15 +126,55 @@ class GamesService(
     fun exitGame(gameId: Id, userId: Id): GameDeleteResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val res = gamesRepository.exitGame(gameId, userId)
-            if (res) {
-                gamesRepository.updatePoints(gameId, userId)
-
-            }
-            when (res) {
-                false -> failure(GameDeleteError.GameNotFound)
-                true -> success(res)
+            val winner = gamesRepository.exitGame(gameId, userId)
+            if (winner != null) {
+                val p = GamePoints()
+                gamesRepository.updatePoints(
+                    gameId,
+                    winner,
+                    userId,
+                    p.winner_points,
+                    p.loser_points,
+                    p.itsDraw
+                )
+                success(true)
+            }else{
+                failure(GameDeleteError.GameNotFound)
             }
         }
     }
+
+    private fun gamePointsBoard(gamesRepository:GamesRepository, gameId: Id, userId: Id, game: Game, board:Board):Boolean =
+        when (board) {
+            is BoardWin -> {
+                val p = GamePoints()
+                gamesRepository.updatePoints(
+                    gameId,
+                    userId,
+                    if (userId == game.hostId) game.guestId else game.hostId,
+                    p.winner_points,
+                    p.loser_points,
+                    p.itsWin
+                )
+            }
+
+            is BoardDraw -> {
+                val p = GamePoints()
+                gamesRepository.updatePoints(
+                    gameId,
+                    userId,
+                    if (userId == game.hostId) game.guestId else game.hostId,
+                    p.draw_points,
+                    p.draw_points,
+                    p.itsDraw
+                )
+            }
+
+            is BoardRun -> {
+                true
+            }
+        }
+
 }
+
+

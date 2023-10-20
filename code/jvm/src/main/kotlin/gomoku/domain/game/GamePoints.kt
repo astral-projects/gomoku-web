@@ -1,21 +1,19 @@
 package gomoku.domain.game
 
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
+
 class GamePoints {
-    companion object {
-        const val WINNER_POINTS = 300
-        const val LOSER_POINTS = 100
-        const val DRAW_POINTS = 50
-    }
+    val winner_points :PositiveValue
+        get() =  PositiveValue(300)
+    val loser_points
+        get() =  PositiveValue(100)
+    val draw_points
+        get() =  PositiveValue(50)
+    val itsWin
+        get() =  NonNegativeValue(1)
+    val itsDraw
+        get()  = NonNegativeValue(0)
 
-    fun getWinnerPoints(): Int {
-        return WINNER_POINTS
-    }
 
-    fun getLoserPoints(): Int {
-        return LOSER_POINTS
-    }
-
-    fun getDrawPoints(): Int {
-        return DRAW_POINTS
-    }
 }

@@ -8,7 +8,7 @@ import gomoku.domain.game.board.moves.Moves
 import gomoku.http.jackson.serializers.MovesDeserializer
 import gomoku.http.jackson.serializers.MovesSerializer
 
-class JdbiBoardDrawModel (
+class JdbiBoardDrawModel(
     @field: JsonDeserialize(using = MovesDeserializer::class)
     @field:JsonSerialize(using = MovesSerializer::class)
     val grid: Moves,

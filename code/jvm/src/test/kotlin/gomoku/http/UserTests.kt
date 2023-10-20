@@ -3,6 +3,7 @@ package gomoku.http
 import gomoku.TestDataGenerator.newTestEmail
 import gomoku.TestDataGenerator.newTestPassword
 import gomoku.TestDataGenerator.newTestUserName
+import gomoku.domain.PaginatedResult
 import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserOutputModel
@@ -178,5 +179,75 @@ class UserTests {
             .exchange()
             .expectStatus().isUnauthorized
             .expectHeader().valueEquals("WWW-Authenticate", "bearer")
+    }
+
+    @Test
+    fun `can retrieve user ranking information`() {
+        // given: an HTTP client
+        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
+
+        // and: a set random users
+        val nrOfUsers = 15
+        repeat(nrOfUsers) {
+            val username = newTestUserName()
+            val password = newTestPassword()
+            val email = newTestEmail()
+            client.post().uri("/users")
+                .bodyValue(
+                    mapOf(
+                        "username" to username.value,
+                        "password" to password.value,
+                        "email" to email.value
+                    )
+                )
+                .exchange()
+                .expectStatus().isCreated
+                .expectHeader().value("location") {
+                    assertTrue(it.startsWith("/api/users/"))
+                }
+        }
+
+        // when: getting the user ranking information with no offset or limit
+        // then: the response is a 200 with the proper representation
+        val result = client.get().uri("/users/ranking")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(PaginatedResult::class.java)
+            .returnResult()
+            .responseBody!!
+
+        // and: the result is correctly paginated
+        assertEquals(1, result.currentPage)
+        assertEquals(10, result.itemsPerPage)
+
+        // when: getting the user ranking information with a offset and limit combination that do not exceed the total
+        // number of users
+        val offset = 2
+        val limit = 5
+        // then: the response is a 200 with the proper representation
+        val resultB = client.get().uri("/users/ranking?offset=$offset&limit=$limit")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(PaginatedResult::class.java)
+            .returnResult()
+            .responseBody!!
+
+        // and: the result is correctly paginated
+        assertEquals(offset / limit + 1, resultB.currentPage)
+        assertEquals(limit, resultB.itemsPerPage)
+
+        // when: getting the user ranking information with an invalid offset
+        // then: the response is a 400
+        client.get().uri("/users/ranking?offset=-1")
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+
+        // when: getting the user ranking information with an invalid limit
+        // then: the response is a 400
+        client.get().uri("/users/ranking?limit=0")
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
     }
 }
