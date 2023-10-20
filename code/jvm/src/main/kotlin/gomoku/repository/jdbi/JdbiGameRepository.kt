@@ -188,7 +188,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     override fun findIfUserIsInGame(userId: Id): JdbiGameAndVariantModel? =
-        handle.createQuery("select * from dbo.Games where state!=FINISHED and (host_id = :userId or guest_id = :userId)")
+        handle.createQuery("select * from dbo.Games where state != 'FINISHED' and (host_id = :userId or guest_id = :userId)")
             .bind("userId", userId.value)
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()

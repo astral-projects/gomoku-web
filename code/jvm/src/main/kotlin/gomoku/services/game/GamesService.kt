@@ -53,8 +53,8 @@ class GamesService(
                             lobbyId = lobby.lobbyId
                         )
                         when (res) {
-                            false -> failure(GameCreationError.UserAlreadyInGame)
-                            true -> success("Joining game")
+                            null -> failure(GameCreationError.UserAlreadyInGame)
+                            else -> success("Joining game")
                         }
 
                     }
@@ -63,10 +63,10 @@ class GamesService(
                     if (check) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
-                        val r = gamesRepository.waitInLobby(variantId, user.id)
+                        val r = gamesRepository.addUserToLobby(variantId, user.id)
                         when (r) {
-                            false -> failure(GameCreationError.VariantNotFound)
-                            true -> success("Waiting in lobby")
+                            null -> failure(GameCreationError.VariantNotFound)
+                            else -> success("Waiting in lobby")
                         }
                     }
                 }
