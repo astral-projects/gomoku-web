@@ -8,6 +8,7 @@ sealed class GameCreationError {
     object UserAlreadyInLobby : GameCreationError()
     object UserAlreadyInGame : GameCreationError()
     object GameNotFound : GameCreationError()
+
     object VariantNotFound : GameCreationError()
 }
 

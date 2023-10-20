@@ -2,15 +2,19 @@ package gomoku.repository.jdbi
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
 import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
+import gomoku.domain.game.board.initialBoard
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
+import gomoku.repository.jdbi.model.JdbiIdModel
 import gomoku.repository.jdbi.model.game.*
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
@@ -126,9 +130,9 @@ class JdbiGameRepository(
             .bind("lobby_id", lobbyId.value)
             .execute() == 1
 
-    override fun deleteUserFromLobby(userId: Id): Boolean =
-        handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
-            .bind("userId", userId.value)
+    override fun deleteUserFromLobby(lobbyId: Id): Boolean =
+        handle.createUpdate("Delete from dbo.Lobbies where id = :lobbyId")
+            .bind("lobbyId", lobbyId.value)
             .execute() == 1
 
     //TODO(It needs do be Implemented if its araw maybe create class that represents the statics,example class draw nobody gets a win ,
@@ -172,6 +176,12 @@ class JdbiGameRepository(
             .bind("variantId", variantId.value)
             .mapTo<JdbiVariantModel>()
             .singleOrNull()?.toDomainModel()
+
+    override fun findIfUserIsInGame(userId: Id): JdbiGameAndVariantModel? =
+        handle.createQuery("select * from dbo.Games where state!=FINISHED and (host_id = :userId or guest_id = :userId)")
+            .bind("userId", userId.value)
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()
 
 
     private fun convertBoardToJdbiJsonString(board: Board): String? {
