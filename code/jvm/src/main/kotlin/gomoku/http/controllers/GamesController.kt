@@ -36,7 +36,7 @@ class GamesController(
     private val gamesService: GamesService,
     private val usersService: UsersService
 ) {
-
+    //Teste
     @GetMapping(Uris.Games.GET_BY_ID)
     fun getById(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
