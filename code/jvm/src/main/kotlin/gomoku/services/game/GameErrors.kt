@@ -1,5 +1,6 @@
 package gomoku.services.game
 
+import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.utils.Either
@@ -40,3 +41,14 @@ sealed class GameMakeMoveError {
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
+
+sealed class FindingGameResult {
+    object GameNotFound : FindingGameResult()
+    object UserAlreadyInGame : FindingGameResult()
+    object UserAlreadyInLobby : FindingGameResult()
+    object UserNotFound : FindingGameResult()
+    object VariantNotFound : FindingGameResult()
+    object LobbyNotFound : FindingGameResult()
+}
+
+typealias FindingGameResultResult = Either<FindingGameResult, Any>

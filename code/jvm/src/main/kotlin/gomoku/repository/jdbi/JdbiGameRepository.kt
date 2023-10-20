@@ -2,16 +2,24 @@ package gomoku.repository.jdbi
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PositiveValue
 import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
+import gomoku.domain.game.board.initialBoard
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.game.*
+import gomoku.repository.jdbi.model.JdbiIdModel
+import gomoku.repository.jdbi.model.game.JdbiBoardDrawModel
+import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
+import gomoku.repository.jdbi.model.game.JdbiBoardWinModel
+import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
+import gomoku.repository.jdbi.model.game.JdbiVariantModel
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -27,14 +35,18 @@ class JdbiGameRepository(
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun waitInLobby(variantId: Id, userId: Id): Boolean =
+    override fun addUserToLobby(variantId: Id, userId: Id): Id? =
         handle.createUpdate(
-            "insert into dbo.Lobbies (host_id, variant_id) " +
-                "values (:host_id, :variant_id)"
+            """
+                insert into dbo.Lobbies (host_id, variant_id)
+                values (:host_id, :variant_id)
+           """.trimIndent()
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
-            .execute() == 1
+            .executeAndReturnGeneratedKeys()
+            .mapTo<JdbiIdModel>()
+            .single()?.toDomainModel()
 
     override fun checkIfIsLobby(userId: Id): Boolean {
         handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
@@ -46,8 +58,8 @@ class JdbiGameRepository(
 
     override fun deleteGame(gameId: Id, userId: Id): Boolean =
         handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
-            .bind("gameId", gameId)
-            .bind("hostId", gameId)
+            .bind("gameId", gameId.value)
+            .bind("hostId", userId.value)
             .execute() == 1
 
     override fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean {
@@ -74,7 +86,7 @@ class JdbiGameRepository(
     override fun getSystemInfo() = SystemInfo
 
     //TODO: Review this method
-    override fun updateGame(gameId: Id, board: Board): Boolean=
+    override fun updateGame(gameId: Id, board: Board): Boolean =
         handle.createUpdate(
             """
         UPDATE dbo.Games 
@@ -82,7 +94,7 @@ class JdbiGameRepository(
         WHERE id = :gameId;
     """
         ).bind("gameId", gameId.value)
-        .bind("board", convertBoardToJdbiJsonString(board)).execute() > 0
+            .bind("board", convertBoardToJdbiJsonString(board)).execute() > 0
 
     override fun exitGame(gameId: Id, userId: Id): Id? =
         handle.createQuery(
@@ -116,7 +128,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     //TODO(The board isn't being initialize correctly. Review the insertion query)
-    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean =
+    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Id? =
         handle.createUpdate("insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)")
             .bind("variant_id", variantId.value)
             .bind("host_id", hostId.value)
@@ -124,7 +136,9 @@ class JdbiGameRepository(
             .bind("state", "IN_PROGRESS")
             .bind("board", convertBoardToJdbiJsonString(initialBoard()))
             .bind("lobby_id", lobbyId.value)
-            .execute() == 1
+            .executeAndReturnGeneratedKeys()
+            .mapTo<JdbiIdModel>()
+            .singleOrNull()?.toDomainModel()
 
     override fun deleteUserFromLobby(userId: Id): Boolean =
         handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")

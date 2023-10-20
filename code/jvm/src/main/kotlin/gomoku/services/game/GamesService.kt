@@ -49,20 +49,20 @@ class GamesService(
                     lobbyId = lobby.lobbyId
                 )
                 when (res) {
-                    false -> failure(GameCreationError.UserAlreadyInGame)
-                    true -> success("Joining game")
+                    null -> failure(GameCreationError.UserAlreadyInGame)
+                    else -> success("Joining game")
                 }
             } else {
                 val check = gamesRepository.checkIfIsLobby(user.id)
                 if (check) {
                     failure(GameCreationError.UserAlreadyInLobby)
                 } else {
-                    val r = gamesRepository.waitInLobby(variantId, user.id)
+                    val userWaiting = gamesRepository.addUserToLobby(variantId, user.id)
                     // TODO(I think we need to create a argument resolver for the VariandInputModel,
                     // beacuse if you pass an Integer that isnt created in the database, it will throw an exception)
-                    when (r) {
-                        false -> failure(GameCreationError.VariantNotFound)
-                        true -> success("Waiting in lobby")
+                    when (userWaiting) {
+                        null -> failure(GameCreationError.VariantNotFound)
+                        else -> success("Waiting in lobby")
                     }
                 }
             }

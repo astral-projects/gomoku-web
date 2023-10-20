@@ -94,13 +94,12 @@ class UsersController(
     }
 
     @PostMapping(Uris.Users.LOGOUT)
-    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<String> {
+    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Users.LOGOUT}")
         val wasTokenRevoked = userService.revokeToken(authenticatedUser.token)
-        return if (wasTokenRevoked) {
-            ResponseEntity.ok("Logout successful")
-        } else {
-            ResponseEntity.badRequest().body("Logout failed")
+        return when (wasTokenRevoked) {
+            is Success -> ResponseEntity.ok("Logout successful")
+            is Failure -> Problem.response(400, Problem.logoutError)
         }
     }
 
