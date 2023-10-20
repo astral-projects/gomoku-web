@@ -13,7 +13,7 @@ import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -25,91 +25,175 @@ class JdbiGameRepositoryTests {
 
     @Test
     fun `can create a game, get game and variant and then delete the game`() = runWithHandle { handle ->
-        //given: a GamesRepository
-        val repo = JdbiGameRepository(handle)
+        //given: a GamesRepository and a UsersRepository
+        val repoGames = JdbiGameRepository(handle)
+        val repoUsers = JdbiUsersRepository(handle)
 
-        //when: creating a game
+        //when: creating a host waiting for a game
+        val username1 = newTestUserName()
+        val email1 = newTestEmail()
+        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
+        val host = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+
+        //and: creating a guest waiting for a game
+        val username2 = newTestUserName()
+        val email2 = newTestEmail()
+        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
+        val guest = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
+
+
+        //and: choosing a variant
         val variantId = Id(1)
-        val hostId = Id(1)
-        val guestId = Id(2)
-        val lobbyId = Id(6)
-        val createdGameId = repo.createGame(variantId, hostId, guestId, lobbyId)
+        val variant = repoGames.getVariantById(variantId)
+        //then:
+        assertNotNull(variant)
+        assertEquals(variantId, variant.id)
 
+        //and: creating a game
+        val createdGameId = repoGames.createGame(variant.id, host, guest, Id(5))
         //then:
         assertNotNull(createdGameId)
 
         //and: retrieving the game by id
-        val retrievedGameById = repo.getGameById(createdGameId)
+        val retrievedGameById = repoGames.getGameById(createdGameId)
 
         //then:
         assertNotNull(retrievedGameById)
         assertEquals(createdGameId, retrievedGameById.id)
+        assertEquals(retrievedGameById.hostId, host)
+        assertEquals(retrievedGameById.guestId, guest)
+        assertEquals(retrievedGameById.variant, variant)
 
-        //and: retrieving the variant by variantId
-        val retrieveVariant = repo.getVariantById(variantId)
-        assertNotNull(retrieveVariant)
-        assertEquals(variantId, retrieveVariant.id)
 
-        //and: deleting the game
-        val isDeletedGame = repo.deleteGame(createdGameId, hostId)
-
-        //and: getting again the game
-        val deletedGame = repo.getGameById(createdGameId)
+        //and: trying to delete a game with the guest id
+        val isGameDeleted = repoGames.deleteGame(createdGameId, guest)
 
         //then:
-        assertTrue(isDeletedGame)
-        assertNull(deletedGame)
+        assertFalse(isGameDeleted)
+
+        //and: trying to delete a game with the guest id
+        val isGameDeletedByHost = repoGames.deleteGame(createdGameId, host)
+
+        //then:
+        assertTrue(isGameDeletedByHost)
+
+        //and: getting again the game
+        val gameAfterDeleted = repoGames.getGameById(createdGameId)
+
+        //then:
+        assertNull(gameAfterDeleted)
 
     }
 
     @Test
-    fun `user choosing a variant and entering in a lobby, and then deleting the user from the lobby`() = runWithHandle {
-        //given: a repository
+    fun `user enters in a lobby`() = runWithHandle {
+        //given: a GamesRepository and a UsersRepository
         val repoGames = JdbiGameRepository(it)
-        val repoUser = JdbiUsersRepository(it)
+        val repoUsers = JdbiUsersRepository(it)
 
-        //and: storing a user that chooses a variant
+        //when: creating a host
         val username1 = newTestUserName()
         val email1 = newTestEmail()
         val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val host = repoUser.storeUser(username1, email1, passwordValidationInfo1)
-        val variantChooseId = Id(1)
+        val variant = repoGames.getVariantById(Id(1))
+        assertNotNull(variant)
+        val host = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
 
-        val gameVariant = repoGames.getVariantById(Id(1))
-
-        //then:
-        assertNotNull(gameVariant)
-        assertEquals(variantChooseId, gameVariant.id)
-
-        //and: adding host to the lobby
-        val lobby = repoGames.addUserToLobby(variantChooseId, host)
-
-        //then: user is added
-        assertNotNull(lobby)
-
-        //and: check if the user is in a lobby
-        val isUserInLobby = repoGames.checkIfIsLobby(host)
+        //and: adding the user in the lobby
+        val lobbyId = repoGames.addUserToLobby(variant.id, host)
 
         //then:
-        assertTrue(isUserInLobby)
+        assertNotNull(lobbyId)
 
-        //and: deleting the user from a lobby
-        val deleted = repoGames.deleteUserFromLobby(host)
-
-        //then:
-        assertTrue(deleted)
-
-        //and: verify that the host in not in lobby anymore
-        val isUserContinueInLobby = repoGames.checkIfIsLobby(host)
+        //and: checking if the user is waiting in the lobby
+        val waitingLobby = repoGames.waitingInLobby(host)
 
         //then:
-        assertFalse(isUserContinueInLobby)
+        assertNotNull(waitingLobby)
+        assertEquals(lobbyId, waitingLobby.lobbyId)
+        assertEquals(host, waitingLobby.userId)
+        assertEquals(variant.id, waitingLobby.variantId)
 
 
+        //and: deleting the user from the lobby
+        val isUserDeleted = repoGames.deleteUserFromLobby(lobbyId)
+
+        //then:
+        assertTrue(isUserDeleted)
+
+        //and: checking if the user is waiting in the lobby again
+        val waitingLobbyAfterDelete = repoGames.waitingInLobby(host)
+
+        //then:
+        assertNull(waitingLobbyAfterDelete)
 
     }
 
+    @Test
+    fun `there is already a user waiting in lobby with the variant choose for user created`() = runWithHandle {
+        //given: a GamesRepository and a UsersRepository
+        val repoGames = JdbiGameRepository(it)
+        val repoUsers = JdbiUsersRepository(it)
+        //when: a user waiting in lobby
+        val username1 = newTestUserName()
+        val email1 = newTestEmail()
+        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
+        val variant = repoGames.getVariantById(Id(4))
+        assertNotNull(variant)
+        val host = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val lobbyId = repoGames.addUserToLobby(variant.id, host)
+        assertNotNull(lobbyId)
+        //and: creating another user to enter in lobby
+        val username2 = newTestUserName()
+        val email2 = newTestEmail()
+        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
+        val guest = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
 
+        //when: adding the guest in the lobby
+        val lobbyId2 = repoGames.addUserToLobby(variant.id, guest)
+
+        //then:
+        assertNotNull(lobbyId2)
+
+        //and: isMatchmaking to see if there is a user waiting in a lobby with the variant choose for user created
+        val isMatchmaking = repoGames.isMatchmaking(variant.id, guest)
+
+        //then:
+        assertNotNull(isMatchmaking)
+        assertEquals(lobbyId, isMatchmaking.lobbyId)
+        assertEquals(host, isMatchmaking.userId)
+        assertEquals(variant.id, isMatchmaking.variantId)
+        //and: deleting the users from the lobby
+
+        val isUserDeleted = repoGames.deleteUserFromLobby(lobbyId)
+        val isUserDeleted2 = repoGames.deleteUserFromLobby(lobbyId)
+
+        //then:
+        assertTrue(isUserDeleted)
+        assertFalse(isUserDeleted2)
+    }
+
+    @Test
+    fun `get system info`() = runWithHandle {
+        //given: a repository
+        val repo = JdbiGameRepository(it)
+
+        //when: getting system info
+        val systemInfo = repo.getSystemInfo()
+        val authorsQuantity = 3
+
+        //then:
+        assertNotNull(systemInfo)
+        assertEquals("1.0.9", systemInfo.VERSION)
+        assertEquals("Gomoku Royale", systemInfo.GAME_NAME)
+        assertEquals(authorsQuantity, systemInfo.authors.size)
+    }
+
+    @Test
+    fun `check if `() = runWithHandle {
+
+
+    }
 
 
 

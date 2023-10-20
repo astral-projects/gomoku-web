@@ -96,9 +96,10 @@ class TestBoard {
             .play(Square(Column('c'), Row(4)))
             .play(Square(Column('d'), Row(4)))
             .play(Square(Column('d'), Row(5)))
+            .play(Square(Column('e'), Row(6)))
             .play(Square(Column('e'), Row(5)))
 
         assertTrue(sut is BoardWin)
-        assertEquals(Player.w, sut.winner)
+        assertEquals(Player.b, sut.winner)
     }
 }

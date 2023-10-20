@@ -48,13 +48,11 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .single()?.toDomainModel()
 
-    override fun checkIfIsLobby(userId: Id): Boolean {
+    override fun waitingInLobby(userId: Id): Lobby? =
         handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
             .bind("userId", userId.value)
             .mapTo<JdbiLobbyModel>()
-            .singleOrNull() ?: return false
-        return true
-    }
+            .singleOrNull()?.toDomainModel()
 
     override fun deleteGame(gameId: Id, userId: Id): Boolean =
         handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
@@ -141,7 +139,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     override fun deleteUserFromLobby(lobbyId: Id): Boolean =
-        handle.createUpdate("Delete from dbo.Lobbies where id = :lobbyId")
+        handle.createUpdate("delete from dbo.Lobbies where id = :lobbyId")
             .bind("lobbyId", lobbyId.value)
             .execute() == 1
 

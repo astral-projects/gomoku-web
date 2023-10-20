@@ -59,8 +59,8 @@ class GamesService(
 
                     }
                 } else {
-                    val check = gamesRepository.checkIfIsLobby(user.id)
-                    if (check) {
+                    val check = gamesRepository.waitingInLobby(user.id)
+                    if (check != null) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
                         val r = gamesRepository.addUserToLobby(variantId, user.id)

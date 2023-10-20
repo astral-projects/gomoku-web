@@ -46,6 +46,7 @@ fun Board.isFinished(): Boolean = when (this) {
     is BoardRun -> timeLeftInSec <= 0
 }
 
+// TODO: Look at this again, there is an error that it is board win with pieces black and white
 private fun BoardRun.checkWin(pos: Square): Boolean {
     // slash and backslash are the diagonals
     require(turn != null) { "Game is running" }
