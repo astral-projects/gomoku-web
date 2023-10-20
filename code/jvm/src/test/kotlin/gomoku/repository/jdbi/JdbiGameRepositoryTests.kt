@@ -20,8 +20,9 @@ class JdbiGameRepositoryTests {
     @Test
     fun `can make a move`() = runWithHandle { handle ->
 
-        val repo = JdbiGameRepository(handle)
 
+        val repo = JdbiGameRepository(handle)
+//        repo.updatePoints(Id(1), Id(1))
         val game = repo.getGameById(Id(1))
             ?: fail("Game not found")
         val grid = mapOf(
@@ -37,6 +38,8 @@ class JdbiGameRepositoryTests {
         require(game.board is BoardRun)
         val newBoard = game.board.copy(grid = grid)
         repo.updateGame(game.id, newBoard)
+
+
 
     }
 }

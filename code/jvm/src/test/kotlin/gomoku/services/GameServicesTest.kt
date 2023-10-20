@@ -24,8 +24,8 @@ class GameServicesTests {
 
 
         //when: the game is won
-        gamesService.makeMove(Id(1), Id(1), Square(Column('c'), Row(5)),Player.w)
-
+        //gamesService.makeMove(Id(1), Id(1), Square(Column('c'), Row(5)),Player.w)
+        gamesService.exitGame(Id(2), Id(4))
     }
     companion object {
 

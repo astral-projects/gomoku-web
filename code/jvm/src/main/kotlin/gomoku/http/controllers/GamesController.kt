@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -36,9 +37,9 @@ class GamesController(
 ) {
 
     @GetMapping(Uris.Games.GET_BY_ID)
-    fun getById(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
+    fun getById(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GET_BY_ID}")
-        val res = gamesService.getGameById(id)
+        val res = gamesService.getGameById(Id(id))
         return when (res) {
             is Success ->
                 ResponseEntity
@@ -71,9 +72,9 @@ class GamesController(
     }
 
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
-    fun deleteById(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
+    fun deleteById(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
-        val game = gamesService.deleteGame(id, user.user.id)
+        val game = gamesService.deleteGame(Id(id), user.user.id)
         return when (game) {
             is Success -> ResponseEntity.status(200).body("Game deleted")
             is Failure -> when (game.value) {
@@ -92,7 +93,7 @@ class GamesController(
 
     @PutMapping(Uris.Games.MAKE_MOVE)
     fun makeMove(
-        id: Id,
+        @PathVariable id: Int,
         @RequestBody move: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
@@ -100,7 +101,7 @@ class GamesController(
         val pl = requireNotNull(findPlayer(move.move)) {
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
-        val responseEntity = gamesService.makeMove(id, user.user.id, Square.toSquare(move.move), pl)
+        val responseEntity = gamesService.makeMove(Id(id), user.user.id, Square.toSquare(move.move), pl)
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("Move made")
             is Failure -> when (responseEntity.value) {
@@ -112,9 +113,9 @@ class GamesController(
     }
 
     @PostMapping(Uris.Games.EXIT_GAME)
-    fun exitGame(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
+    fun exitGame(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
-        val game = gamesService.exitGame(id, user.user.id)
+        val game = gamesService.exitGame(Id(id), user.user.id)
         return when (game) {
             is Success -> ResponseEntity.status(200).body("Game exited")
             is Failure -> when (game.value) {
@@ -125,9 +126,9 @@ class GamesController(
     }
 
     @GetMapping(Uris.Games.GAME_STATUS)
-    fun gameStatus(id: Id, user: AuthenticatedUser): ResponseEntity<*> {
+    fun gameStatus(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GAME_STATUS}")
-        val gameStatus = gamesService.getGameStatus(user.user.id, id)
+        val gameStatus = gamesService.getGameStatus(user.user.id, Id(id))
         return when (gameStatus) {
             is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
             is Failure -> when (gameStatus.value) {
