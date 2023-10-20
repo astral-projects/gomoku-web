@@ -19,7 +19,7 @@ class BoardSerializerTests {
     companion object {
         val boardToTest = BoardRun(
             size = BoardSize.FIFTEEN,
-            mvs = mapOf(
+            moves = mapOf(
                 Move(Square(Column('c'), Row(9)), Piece(Player.w)),
                 Move(Square(Column('d'), Row(8)), Piece(Player.b)),
                 Move(Square(Column('a'), Row(6)), Piece(Player.w)),

@@ -4,6 +4,8 @@ enum class Player {
     w,
     b
 }
+
+// TODO("should be inside Player class")
 fun findPlayer(s: String): Player? {
     val parts = s.split("-")
     return if (parts.size > 1) {

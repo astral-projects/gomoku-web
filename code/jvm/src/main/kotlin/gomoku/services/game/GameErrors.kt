@@ -31,6 +31,7 @@ typealias GamePutResult = Either<GamePutError, Boolean>
 sealed class GameDeleteError {
     object UserDoesntBelongToThisGame : GameDeleteError()
     object GameNotFound : GameDeleteError()
+    object VariantNotFound : GameDeleteError()
 }
 
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
@@ -39,6 +40,7 @@ sealed class GameMakeMoveError {
     class MoveNotValid(val error: MakeMoveError) : GameMakeMoveError()
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
+    object VariantNotFound : GameMakeMoveError()
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>

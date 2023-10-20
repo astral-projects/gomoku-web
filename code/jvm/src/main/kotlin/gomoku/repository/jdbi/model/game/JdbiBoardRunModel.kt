@@ -13,15 +13,12 @@ class JdbiBoardRunModel(
     @field:JsonDeserialize(using = MovesDeserializer::class)
     @field:JsonSerialize(using = MovesSerializer::class)
     val grid: Moves,
-    val size: Int,
     val turn: BoardTurn
 ) : JdbiBoardModel {
     override fun toDomainModel(): BoardRun {
         return BoardRun(
-            size = BoardSize.fromSize(size),
-            mvs = grid,
-            turn = turn,
-            timeLeftInSec = turn.timeLeftInSec
+            moves = grid,
+            turn = turn
         )
     }
 }

@@ -39,9 +39,9 @@ create table dbo.Statistics
 create table dbo.GameVariants
 (
     id           serial primary key,
-    name         varchar(64) not null,
-    opening_rule varchar(64) not null,
-    board_size   varchar(64) not null
+    name         varchar(64) unique not null,
+    opening_rule varchar(64)        not null,
+    board_size   varchar(64)        not null
 );
 
 create table dbo.Lobbies

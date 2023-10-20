@@ -11,13 +11,9 @@ import gomoku.http.jackson.serializers.MovesSerializer
 class JdbiBoardDrawModel(
     @field: JsonDeserialize(using = MovesDeserializer::class)
     @field:JsonSerialize(using = MovesSerializer::class)
-    val grid: Moves,
-    val size: Int
+    val grid: Moves
 ) : JdbiBoardModel {
     override fun toDomainModel(): BoardDraw {
-        return BoardDraw(
-            size = BoardSize.fromSize(size),
-            mvs = grid
-        )
+        return BoardDraw(moves = grid)
     }
 }

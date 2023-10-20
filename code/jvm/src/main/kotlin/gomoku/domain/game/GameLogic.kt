@@ -6,11 +6,11 @@ import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.initialBoard
 import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.play
-import gomoku.domain.game.variants.GameVariant
+import gomoku.domain.game.variant.GameVariant
+import gomoku.domain.game.variant.Variant
 import gomoku.domain.user.User
 import gomoku.utils.Either
 import gomoku.utils.failure
@@ -20,17 +20,17 @@ import org.springframework.stereotype.Component
 
 @Component
 class GameLogic(
+    private val variant: Variant,
     private val clock: Clock
 ) {
 
     /**
-     * The New game is created with empty board and initial turn.
-     * @param id - game id
-     * @param gameVariant - game variant
-     * @param boardSize - board size
-     * @param host - host user
-     * @param guest - guest user
-     * @return new game
+     * Creates a new game.
+     * @param id game id
+     * @param gameVariant game variant
+     * @param host host user
+     * @param guest guest user
+     * @return the new game instance.
      */
     fun createNewGame(
         id: Id,
@@ -42,7 +42,7 @@ class GameLogic(
             id = id,
             state = GameState.IN_PROGRESS,
             variant = gameVariant,
-            board = initialBoard(),
+            board = variant.initialBoard(),
             createdAt = clock.now(),
             updatedAt = clock.now(),
             hostId = host.id,
@@ -69,11 +69,11 @@ class GameLogic(
         if (board.turn?.player != userId.toPlayer(game)) {
             return failure(MakeMoveError.NotYourTurn)
         }
-        val newBoard = game.board.play(pos)
+        val newBoard = game.board.play(pos, variant)
         return success(
             game.copy(
                 board = newBoard,
-                state = if (newBoard.isFinished()) GameState.FINISHED else GameState.IN_PROGRESS,
+                state = if (newBoard.isFinished(variant)) GameState.FINISHED else GameState.IN_PROGRESS,
                 updatedAt = clock.now()
             )
         )
@@ -86,7 +86,7 @@ class GameLogic(
      */
     fun isGameOver(game: Game) = when (val board = game.board) {
         is BoardWin, is BoardDraw -> true
-        is BoardRun -> board.timeLeftInSec <= 0
+        is BoardRun -> false
     }
 
     /**
