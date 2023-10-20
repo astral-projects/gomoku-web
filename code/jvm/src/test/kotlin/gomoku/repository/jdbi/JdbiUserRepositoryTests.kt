@@ -4,6 +4,7 @@ import gomoku.TestClock
 import gomoku.TestDataGenerator.newTestEmail
 import gomoku.TestDataGenerator.newTestUserName
 import gomoku.TestDataGenerator.newTokenValidationData
+import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
@@ -161,5 +162,61 @@ class JdbiUserRepositoryTests {
         // then: token is not found
         val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         assertNull(userAndTokenAfterRevoke)
+    }
+
+    @Test
+    fun `retrieves all users ranking information that is paginated`() = runWithHandle { handle ->
+        // given: a UsersRepository
+        val repo = JdbiUsersRepository(handle)
+
+        // when: storing several users
+        val nrOfUsers = 10
+        repeat(nrOfUsers) {
+            val userName = newTestUserName()
+            val email = newTestEmail()
+            val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
+            repo.storeUser(userName, email, passwordValidationInfo)
+        }
+
+        // and: retrieving the first 3 users ranking information
+        val limitValue = 3
+        val usersRanking = repo.getUsersRanking(
+            offset = NonNegativeValue(0),
+            limit = PositiveValue(limitValue)
+        )
+
+        // then: the users ranking is paginated
+        assertEquals(1, usersRanking.currentPage)
+        assertEquals(limitValue, usersRanking.itemsPerPage)
+
+        // when: comparing with user information
+        // then: the users ranking information is correct
+        repeat(3) {
+            val retrievedUserByUsername: User? = repo.getUserByUsername(usersRanking.items[it].username)
+            assertNotNull(retrievedUserByUsername)
+            assertEquals(usersRanking.items[it].username, retrievedUserByUsername.username)
+            assertEquals(usersRanking.items[it].email, retrievedUserByUsername.email)
+        }
+
+        // when: retrieving all users ranking information
+        val secondLimitValue = nrOfUsers
+        val allUsersRanking = repo.getUsersRanking(
+            offset = NonNegativeValue(0),
+            limit = PositiveValue(secondLimitValue)
+        )
+
+        // then: the users ranking is paginated
+        assertEquals(1, allUsersRanking.currentPage)
+        assertEquals(secondLimitValue, allUsersRanking.itemsPerPage)
+
+        // when: when retrieving the second page of users ranking information
+        val secondPageUsersRanking = repo.getUsersRanking(
+            offset = NonNegativeValue(limitValue),
+            limit = PositiveValue(limitValue)
+        )
+
+        // then:
+        assertEquals(2, secondPageUsersRanking.currentPage)
+        assertEquals(limitValue, secondPageUsersRanking.itemsPerPage)
     }
 }

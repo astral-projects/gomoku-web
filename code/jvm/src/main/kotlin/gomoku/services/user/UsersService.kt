@@ -1,6 +1,9 @@
 package gomoku.services.user
 
 import gomoku.domain.Id
+import gomoku.domain.NonNegativeValue
+import gomoku.domain.PaginatedResult
+import gomoku.domain.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password
@@ -95,9 +98,10 @@ class UsersService(
     }
 
     @NotTested
-    fun getUsersRanking(): List<UserRankInfo> {
-        TODO("Not yet implemented")
-    }
+    fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> =
+        transactionManager.run {
+            it.usersRepository.getUsersRanking(offset, limit)
+        }
 
     @NotTested
     fun getUserStats(userId: Id): UserRankInfo? {

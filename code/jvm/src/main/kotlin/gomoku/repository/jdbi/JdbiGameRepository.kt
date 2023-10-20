@@ -1,16 +1,16 @@
 package gomoku.repository.jdbi
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.SystemInfo
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.PositiveValue
-import gomoku.domain.game.board.*
+import gomoku.domain.game.board.Board
+import gomoku.domain.game.board.BoardDraw
+import gomoku.domain.game.board.BoardRun
+import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
-import gomoku.repository.jdbi.model.JdbiIdModel
 import gomoku.repository.jdbi.model.game.*
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
@@ -27,16 +27,14 @@ class JdbiGameRepository(
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
 
-
     override fun waitInLobby(variantId: Id, userId: Id): Boolean =
         handle.createUpdate(
             "insert into dbo.Lobbies (host_id, variant_id) " +
-                    "values (:host_id, :variant_id)"
+                "values (:host_id, :variant_id)"
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
             .execute() == 1
-
 
     override fun checkIfIsLobby(userId: Id): Boolean {
         handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
@@ -52,12 +50,12 @@ class JdbiGameRepository(
             .bind("hostId", gameId)
             .execute() == 1
 
-
     override fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean {
         val query =
             handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)")
                 .bind("gameId", gameId.value)
                 .bind("userId", userId.value)
+        // TODO("remove findOnly and use mapTo<JdbiModels..> instead")
         val game = query.mapToMap().findOnly()
         return game != null
     }
@@ -67,6 +65,7 @@ class JdbiGameRepository(
             handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND host_id = :userId")
                 .bind("gameId", gameId.value)
                 .bind("userId", userId.value)
+        // TODO("remove findOnly and use mapTo<JdbiModels..> instead")
         val game = query.mapToMap().findOnly()
         return game != null
     }
@@ -102,14 +101,12 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-
     override fun getGameStatus(gameId: Id, userId: Id): Game? =
         handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
             .bind("id", userId.value)
             .bind("gameId", gameId.value)
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
-
 
     override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
         handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id")
@@ -128,7 +125,6 @@ class JdbiGameRepository(
             .bind("board", convertBoardToJdbiJsonString(initialBoard()))
             .bind("lobby_id", lobbyId.value)
             .execute() == 1
-
 
     override fun deleteUserFromLobby(userId: Id): Boolean =
         handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component
 @Component
 class GamesService(
     private val transactionManager: TransactionManager,
-    private val gameLogic: GameLogic,
+    private val gameLogic: GameLogic
 ) {
 
     fun getGameById(id: Id): GettingGameResult {
@@ -58,7 +58,7 @@ class GamesService(
                     failure(GameCreationError.UserAlreadyInLobby)
                 } else {
                     val r = gamesRepository.waitInLobby(variantId, user.id)
-                    //TODO(I think we need to create a argument resolver for the VariandInputModel,
+                    // TODO(I think we need to create a argument resolver for the VariandInputModel,
                     // beacuse if you pass an Integer that isnt created in the database, it will throw an exception)
                     when (r) {
                         false -> failure(GameCreationError.VariantNotFound)

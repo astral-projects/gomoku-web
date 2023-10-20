@@ -21,7 +21,7 @@ sealed class Board(val grid: Moves, val size: BoardSize, val turn: BoardTurn?) {
 }
 class BoardRun(size: BoardSize, mvs: Moves, turn: BoardTurn, val timeLeftInSec: Int) : Board(mvs, size, turn)
 class BoardWin(size: BoardSize, mvs: Moves, val winner: Player) : Board(mvs, size, null)
-class BoardDraw(size: BoardSize, mvs: Moves) : Board(mvs, size ,null)
+class BoardDraw(size: BoardSize, mvs: Moves) : Board(mvs, size, null)
 
 fun initialBoard() = BoardRun(boardSize, emptyMap(), BoardTurn(Player.w, timeout), timeout)
 

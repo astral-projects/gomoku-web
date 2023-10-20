@@ -52,9 +52,6 @@ class GamesController(
         }
     }
 
-    /*
-    This method is used to the user express his intention to start a game.
-     */
     @PostMapping(Uris.Games.START_GAME)
     fun findGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.START_GAME}")
