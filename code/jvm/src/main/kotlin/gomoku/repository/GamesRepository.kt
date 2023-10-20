@@ -12,16 +12,15 @@ import gomoku.utils.NotTested
 
 interface GamesRepository {
     fun getGameById(id: Id): Game?
+
     // TODO fun getAllVariants(): List<GameVariant>
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Id?
     fun getVariantById(variantId: Id): GameVariant?
-    fun deleteGame(gameId: Id, userId: Id): Boolean
-    fun addUserToLobby(variantId: Id, userId: Id): Id?
-    fun deleteUserFromLobby(userId: Id): Boolean
-    fun checkIfIsLobby(userId: Id): Boolean
-    @NotTested
+    fun waitInLobby(variantId: Id, userId: Id): Boolean
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
-    @NotTested
+    fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean
+    fun deleteUserFromLobby(lobbyId: Id): Boolean
+    fun deleteGame(gameId: Id, userId: Id): Boolean
     fun getSystemInfo(): SystemInfo
     @NotTested
     fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean
@@ -34,5 +33,7 @@ interface GamesRepository {
     @NotTested
     fun userIsTheHost(userId: Id, gameId: Id): Boolean
     @NotTested
+
+    fun findIfUserIsInGame(userId: Id): JdbiGameAndVariantModel?
     fun updatePoints(gameId: Id, winnerId: Id, loserId:Id , winnerPoints:PositiveValue, loserPoints:PositiveValue , gamePoint:NonNegativeValue): Boolean
 }

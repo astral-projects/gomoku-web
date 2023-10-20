@@ -140,9 +140,9 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun deleteUserFromLobby(userId: Id): Boolean =
-        handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
-            .bind("userId", userId.value)
+    override fun deleteUserFromLobby(lobbyId: Id): Boolean =
+        handle.createUpdate("Delete from dbo.Lobbies where id = :lobbyId")
+            .bind("lobbyId", lobbyId.value)
             .execute() == 1
 
     //TODO(It needs do be Implemented if its araw maybe create class that represents the statics,example class draw nobody gets a win ,
@@ -186,6 +186,12 @@ class JdbiGameRepository(
             .bind("variantId", variantId.value)
             .mapTo<JdbiVariantModel>()
             .singleOrNull()?.toDomainModel()
+
+    override fun findIfUserIsInGame(userId: Id): JdbiGameAndVariantModel? =
+        handle.createQuery("select * from dbo.Games where state!=FINISHED and (host_id = :userId or guest_id = :userId)")
+            .bind("userId", userId.value)
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()
 
 
     private fun convertBoardToJdbiJsonString(board: Board): String? {
