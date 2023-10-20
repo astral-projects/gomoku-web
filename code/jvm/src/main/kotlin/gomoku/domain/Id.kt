@@ -1,7 +1,7 @@
 package gomoku.domain
 
 import gomoku.domain.errors.InvalidIdError
-import gomoku.utils.Either
+import gomoku.domain.errors.GettingIdResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
@@ -9,13 +9,13 @@ import gomoku.utils.Success
  * Provides a generic identifier container for domain objects.
  */
 class Id (val value: Int) {
-    init {
-        require(value > 0) { "Value must be positive to be considered a valid identifier" }
-    }
 
-//    companion object {
-//        operator fun invoke(value: Int) = if (value > 0) Success(value) else Failure(InvalidIdError)
-//    }
+    companion object {
+        operator fun invoke(value: Int): GettingIdResult = when {
+            value <= 0 -> Failure(InvalidIdError.InvalidId)
+            else -> Success(Id(value))
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -29,4 +29,6 @@ class Id (val value: Int) {
     override fun hashCode(): Int {
         return value
     }
+
+    override fun toString() = "$value"
 }

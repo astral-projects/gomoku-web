@@ -100,7 +100,7 @@ class UserTests {
 
         // when: getting the user with an invalid id
         // then: the response is a 400
-        client.get().uri("/users/0")
+        client.get().uri("/users/abc")
             .exchange()
             .expectStatus().isBadRequest
             .expectBody()

@@ -15,7 +15,7 @@ interface GamesRepository {
     fun getVariantById(variantId: Id): GameVariant?
     fun waitInLobby(variantId: Id, userId: Id): Boolean
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
-    fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean
+    fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Id
     fun deleteUserFromLobby(userId: Id): Boolean
     fun deleteGame(game: Id, userId: Id): Boolean
     fun getSystemInfo(): SystemInfo

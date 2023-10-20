@@ -1,4 +1,4 @@
-package gomoku.http.pipeline.argumentResolvers
+package gomoku.http.pipeline.resolvers
 
 import gomoku.domain.Id
 import jakarta.servlet.http.HttpServletRequest

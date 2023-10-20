@@ -3,7 +3,7 @@ package gomoku
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.http.pipeline.argumentResolvers.IdArgumentResolver
+import gomoku.http.pipeline.resolvers.IdArgumentResolver
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
 import gomoku.repository.jdbi.configureWithAppRequirements

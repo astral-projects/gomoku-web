@@ -6,6 +6,7 @@ import gomoku.domain.game.board.findPlayer
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
+import gomoku.http.controllers.aux.validateId
 import gomoku.http.model.Problem
 import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.MoveInputModel

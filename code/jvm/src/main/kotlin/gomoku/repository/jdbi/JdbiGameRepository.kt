@@ -9,6 +9,7 @@ import gomoku.domain.game.variants.GameVariant
 import gomoku.domain.lobby.Lobby
 import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
+import gomoku.repository.jdbi.model.JdbiIdModel
 import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
 import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
 import gomoku.repository.jdbi.model.game.JdbiVariantModel
@@ -26,6 +27,13 @@ class JdbiGameRepository(
             .bind("id", id.value)
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
+
+    override fun getVariantById(variantId: Id): GameVariant? {
+        return handle.createQuery("select * from dbo.Gamevariants where id = :variantId")
+            .bind("variantId", variantId.value)
+            .mapTo<JdbiVariantModel>()
+            .singleOrNull()?.toDomainModel()
+    }
 
 
     override fun waitInLobby(variantId: Id, userId: Id): Boolean =
@@ -71,11 +79,15 @@ class JdbiGameRepository(
         return game != null
     }
 
+    override fun updatePoints(gameId: Id, userId: Id): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun getSystemInfo() = SystemInfo
 
     override fun updateGame(gameId: Id, board: Board): Boolean {
-        val turn = board.turn
-        val jdbiBoard = JdbiBoardRunModel(board.grid, turn)
+        if (board.turn == null) return false
+        val jdbiBoard = JdbiBoardRunModel(board.grid, board.size.size, board.turn)
         val mapper = jacksonObjectMapper()
         val jdbiBoardJson = mapper.writeValueAsString(jdbiBoard)
         val updateQuery = handle.createUpdate(
@@ -118,7 +130,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     //TODO(The board isn't being initialize correctly. Review the insertion query)
-    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Boolean = handle.createUpdate(
+    override fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id): Id = handle.createUpdate(
         "insert into dbo.Games (state, board, variant_id, host_id, guest_id, lobby_id) values (:state, CAST(:board AS jsonb), :variant_id, :host_id, :guest_id, :lobby_id)"
     ).bind("variant_id", variantId.value)
         .bind("host_id", hostId.value)
@@ -126,20 +138,14 @@ class JdbiGameRepository(
         .bind("state", "IN_PROGRESS")
         .bind("board", "[]")
         .bind("lobby_id", lobbyId.value)
-        .execute() == 1
+        .executeAndReturnGeneratedKeys()
+        .mapTo<JdbiIdModel>()
+        .single().toDomainModel()
 
 
     override fun deleteUserFromLobby(userId: Id): Boolean =
         handle.createUpdate("Delete from dbo.Lobbies where host_id = :userId")
             .bind("userId", userId.value)
-            .execute()
-        return r == 1
-    }
+            .execute() == 1
 
-    override fun getVariantById(variantId: Id): GameVariant? {
-        return handle.createQuery("select * from dbo.Gamevariants where id = :variantId")
-            .bind("variantId", variantId.value)
-            .mapTo<JdbiVariantModel>()
-            .singleOrNull()?.toDomainModel()
-    }
 }

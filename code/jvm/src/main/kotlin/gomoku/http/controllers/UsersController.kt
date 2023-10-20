@@ -8,6 +8,7 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
+import gomoku.http.controllers.aux.validateId
 import gomoku.http.model.IdOutputModel
 import gomoku.http.model.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel

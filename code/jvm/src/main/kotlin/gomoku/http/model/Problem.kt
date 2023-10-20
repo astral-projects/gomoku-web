@@ -21,6 +21,7 @@ class Problem(
         val insecurePassword = Problem(URI("${baseUrl}insecure-password"))
         val usernameIsInvalid = Problem(URI("${baseUrl}username-is-invalid"))
         val passwordIsInvalid = Problem(URI("${baseUrl}password-is-invalid"))
+        val idIsInvalid = Problem(URI("${baseUrl}id-is-invalid"))
         val invalidRequestContent = Problem(URI("${baseUrl}invalid-request-content"))
         val gameNotFound = Problem(URI("${baseUrl}game-not-found"))
         val userAlreadyInLobby = Problem(URI("${baseUrl}user-already-in-lobby"))
