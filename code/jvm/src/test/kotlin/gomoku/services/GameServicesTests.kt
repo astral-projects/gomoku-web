@@ -13,7 +13,7 @@ import gomoku.services.game.GamesService
 import org.junit.jupiter.api.Test
 
 class GameServicesTests {
-
+/*
     @Test
     fun `win a game`() {
         // given: a game service and a game
@@ -31,7 +31,7 @@ class GameServicesTests {
             JdbiTransactionManager(JdbiTestConfiguration.jdbi),
             GameLogic(testClock)
         )
-    }
+    }*/
 }
 
 

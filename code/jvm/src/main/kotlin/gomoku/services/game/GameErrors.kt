@@ -21,6 +21,8 @@ typealias GettingGameResult = Either<GettingGameError, Game>
 
 sealed class GamePutError {
     object UserIsNotTheHost : GamePutError()
+
+    object GameIsInprogress : GamePutError()
     object GameNotFound : GamePutError()
 }
 
@@ -29,6 +31,8 @@ typealias GamePutResult = Either<GamePutError, Boolean>
 sealed class GameDeleteError {
     object UserDoesntBelongToThisGame : GameDeleteError()
     object GameNotFound : GameDeleteError()
+
+    object GameAlreadyFinished : GameDeleteError()
     object VariantNotFound : GameDeleteError()
 }
 

@@ -18,9 +18,6 @@ interface GamesRepository {
     @NotTested
     fun getVariants(): List<GameVariant>
 
-    @NotTested
-    fun getVariantById(gameId: Id): Id?
-
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id, board: Board): Id?
     fun deleteGame(gameId: Id, userId: Id): Boolean
     fun addUserToLobby(variantId: Id, userId: Id): Id?
@@ -30,14 +27,14 @@ interface GamesRepository {
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
 
     @NotTested
-    fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean
+    fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
     fun updateGame(gameId: Id, board: Board): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
-    fun exitGame(gameId: Id, userId: Id): Id
+    fun exitGame(gameId: Id, userId: Id): Id?
     fun getGameStatus(gameId: Id, userId: Id): Game?
 
     @NotTested
-    fun userIsTheHost(userId: Id, gameId: Id): Boolean
+    fun userIsTheHost(userId: Id, gameId: Id): Game?
 
     @NotTested
     fun updatePoints(

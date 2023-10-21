@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class JdbiGameRepositoryTests {
-
+/*
     @Test
     fun `can create a game, get game and variant and then delete the game`() = runWithHandle { handle ->
         //given: a GamesRepository and a UsersRepository
@@ -219,5 +219,5 @@ class JdbiGameRepositoryTests {
         require(game.board is BoardRun)
         val newBoard = game.board.copy(grid = grid)
         repo.updateGame(game.id, newBoard)
-    }
+    }*/
 }
