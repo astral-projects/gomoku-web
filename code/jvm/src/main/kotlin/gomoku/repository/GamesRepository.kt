@@ -3,6 +3,7 @@ package gomoku.repository
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameState
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.VariantConfig
@@ -10,7 +11,7 @@ import gomoku.domain.lobby.Lobby
 import gomoku.utils.NotTested
 
 interface GamesRepository {
-    fun getGameById(id: Id): Game?
+    fun getGameById(gameid: Id): Game?
 
     @NotTested
     fun insertVariants(variants: List<VariantConfig>): Boolean
@@ -28,7 +29,7 @@ interface GamesRepository {
 
     @NotTested
     fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
-    fun updateGame(gameId: Id, board: Board): Boolean
+    fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
     fun exitGame(gameId: Id, userId: Id): Id?
     fun getGameStatus(gameId: Id, userId: Id): Game?

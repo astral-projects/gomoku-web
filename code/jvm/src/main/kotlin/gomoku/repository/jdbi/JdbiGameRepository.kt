@@ -137,15 +137,16 @@ class JdbiGameRepository(
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun updateGame(gameId: Id, board: Board): Boolean =
+    override fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean =
         handle.createUpdate(
             """
         UPDATE dbo.Games 
-        SET board = :board::jsonb, updated_at = extract(epoch from now()) 
+        SET board = :board::jsonb, updated_at = extract(epoch from now()), state = :state 
         WHERE id = :gameId;
     """
         )
             .bind("gameId", gameId.value)
+            .bind("state",gameState.name)
             .bind("board", convertBoardToJdbiModelInJson(board)).execute() > 0
 
     override fun exitGame(gameId: Id, userId: Id): Id? =
