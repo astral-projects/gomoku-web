@@ -138,7 +138,7 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun deleteUserFromLobby(lobbyId: Id): Boolean =
+    override fun deleteLobby(lobbyId: Id): Boolean =
         handle.createUpdate("delete from dbo.Lobbies where id = :lobbyId")
             .bind("lobbyId", lobbyId.value)
             .execute() == 1

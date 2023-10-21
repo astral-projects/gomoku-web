@@ -20,7 +20,7 @@ interface GamesRepository {
     fun deleteGame(gameId: Id, userId: Id): Boolean
     fun waitingInLobby(userId: Id): Lobby?
     fun addUserToLobby(variantId: Id, userId: Id): Id?
-    fun deleteUserFromLobby(lobbyId: Id): Boolean
+    fun deleteLobby(lobbyId: Id): Boolean
     fun getSystemInfo(): SystemInfo
     @NotTested
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?

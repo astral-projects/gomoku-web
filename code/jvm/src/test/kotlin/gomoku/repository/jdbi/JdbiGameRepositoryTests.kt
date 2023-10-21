@@ -115,8 +115,9 @@ class JdbiGameRepositoryTests {
         assertEquals(variant.id, waitingLobby.variantId)
 
 
+        //TODO(change here because it was the lobby beeing deleted and not the user)
         //and: deleting the user from the lobby
-        val isUserDeleted = repoGames.deleteUserFromLobby(lobbyId)
+        val isLobbyDeleted = repoGames.deleteLobby(lobbyId)
 
         //then:
         assertTrue(isUserDeleted)
@@ -126,6 +127,9 @@ class JdbiGameRepositoryTests {
 
         //then:
         assertNull(waitingLobbyAfterDelete)
+
+        //and: deleting the lobby
+        val isLobbyDeleted = repoGames.deleteLobby(lobbyId)
 
     }
 
@@ -165,8 +169,8 @@ class JdbiGameRepositoryTests {
         assertEquals(variant.id, isMatchmaking.variantId)
         //and: deleting the users from the lobby
 
-        val isUserDeleted = repoGames.deleteUserFromLobby(lobbyId)
-        val isUserDeleted2 = repoGames.deleteUserFromLobby(lobbyId)
+        val isUserDeleted = repoGames.deleteLobby(lobbyId)
+        val isUserDeleted2 = repoGames.deleteLobby(lobbyId)
 
         //then:
         assertTrue(isUserDeleted)
@@ -187,12 +191,6 @@ class JdbiGameRepositoryTests {
         assertEquals("1.0.9", systemInfo.VERSION)
         assertEquals("Gomoku Royale", systemInfo.GAME_NAME)
         assertEquals(authorsQuantity, systemInfo.authors.size)
-    }
-
-    @Test
-    fun `check if `() = runWithHandle {
-
-
     }
 
 
