@@ -118,6 +118,12 @@ class GamesController(
                     detail = "The user with id <$userId> is not the host of the game with id <$id>",
                     instance = Uris.Games.deleteById(id)
                 ).toResponse()
+                GamePutError.GameIsInprogress -> Problem(
+                    type = Problem.gameIsInProgress,
+                    title = "Game is in progress",
+                    status = 400,
+                    instance = Uris.Games.deleteById(id)
+                ).toResponse()
             }
         }
     }
@@ -203,6 +209,12 @@ class GamesController(
                     type = Problem.gameVariantNotFound,
                     title = "Game variant not found",
                     status = 404,
+                    instance = Uris.Games.exitGame(id)
+                ).toResponse()
+                GameDeleteError.GameAlreadyFinished -> Problem(
+                    type = Problem.gameAlreadyFinished,
+                    title = "Game already finished",
+                    status = 400,
                     instance = Uris.Games.exitGame(id)
                 ).toResponse()
             }

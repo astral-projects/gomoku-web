@@ -34,5 +34,7 @@ data class Problem (
         val userNotFound = URI("${baseUrl}user-not-found")
         val gameVariantNotFound = URI("${baseUrl}game-variant-not-found")
         val tokenIsInvalid = URI("${baseUrl}token-is-invalid")
+        val gameAlreadyFinished = URI("${baseUrl}game-already-finished")
+        val gameIsInProgress = URI("${baseUrl}game-is-in-progress")
     }
 }

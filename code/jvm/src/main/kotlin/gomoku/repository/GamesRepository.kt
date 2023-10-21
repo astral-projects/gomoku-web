@@ -26,16 +26,17 @@ interface GamesRepository {
 
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
 
-    fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean
+    @NotTested
+    fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
     @NotTested
     fun updateGame(gameId: Id, board: Board): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
     @NotTested
-    fun exitGame(gameId: Id, userId: Id): Id
-
+    fun exitGame(gameId: Id, userId: Id): Id?
     fun getGameStatus(gameId: Id, userId: Id): Game?
 
-    fun userIsTheHost(userId: Id, gameId: Id): Boolean
+    @NotTested
+    fun userIsTheHost(userId: Id, gameId: Id): Game?
 
     @NotTested
     fun updatePoints(

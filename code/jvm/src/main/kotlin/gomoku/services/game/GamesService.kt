@@ -62,8 +62,7 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val isAlreadyInGame = gamesRepository.findIfUserIsInGame(userId)
-            if (isAlreadyInGame == null) {
+            if (gamesRepository.findIfUserIsInGame(userId) == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
@@ -80,18 +79,12 @@ class GamesService(
                             null -> failure(GameCreationError.UserAlreadyInGame)
                             else -> success("Joining game")
                         }
-
                     }
                 } else {
-                    val check = gamesRepository.checkIfUserIsInLobby(userId)
-                    if (check != null) {
-                        failure(GameCreationError.UserAlreadyInLobby)
-                    } else {
-                        val r = gamesRepository.addUserToLobby(variantId, userId)
-                        when (r) {
-                            null -> failure(GameCreationError.VariantNotFound)
-                            else -> success("Waiting in lobby")
-                        }
+                    gamesRepository.checkIfUserIsInLobby(userId) ?: failure(GameCreationError.UserAlreadyInLobby)
+                    when (gamesRepository.addUserToLobby(variantId, userId)) {
+                        null -> failure(GameCreationError.VariantNotFound)
+                        else -> success("Waiting in lobby")
                     }
                 }
             } else {
@@ -99,21 +92,17 @@ class GamesService(
             }
         }
 
-    fun deleteGame(gameId: Id, userId: Id): GamePutResult {
-        return transactionManager.run { transaction ->
+    fun deleteGame(gameId: Id, userId: Id): GamePutResult =
+        transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val u = gamesRepository.userIsTheHost(gameId, userId)
-            if (!u) {
-                failure(GamePutError.UserIsNotTheHost)
-            } else {
-                val g = gamesRepository.deleteGame(gameId, userId)
-                when (g) {
-                    false -> failure(GamePutError.GameNotFound)
-                    true -> success(g)
-                }
+            gamesRepository.getGameById(gameId) ?: return@run failure(GamePutError.GameNotFound)
+            gamesRepository.userIsTheHost(gameId, userId) ?: return@run failure(GamePutError.UserIsNotTheHost)
+            val res = gamesRepository.deleteGame(gameId, userId)
+            when (res) {
+                false -> failure(GamePutError.GameIsInprogress)
+                true -> success(res)
             }
         }
-    }
 
     fun getGameStatus(userId: Id, gameId: Id): GettingGameResult {
         return transactionManager.run { transaction ->
@@ -133,9 +122,8 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameMakeMoveError.GameNotFound)
-            if (!gamesRepository.userBelongsToTheGame(user, gameId)) {
+            gamesRepository.userBelongsToTheGame(user, gameId) ?:
                 return@run failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
-            }
             val variant = gameVariantMap[game.variant.id]
                 ?: return@run failure(GameMakeMoveError.VariantNotFound)
             val gameLogic = GameLogic(variant, clock)
@@ -156,25 +144,27 @@ class GamesService(
     fun exitGame(gameId: Id, userId: Id): GameDeleteResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val userBelongsToTheGame = gamesRepository.userBelongsToTheGame(userId, gameId)
-            if (!userBelongsToTheGame) {
-                return@run failure(GameDeleteError.UserDoesntBelongToThisGame)
-            }
+            gamesRepository.userBelongsToTheGame(userId, gameId)
+                ?: return@run failure(GameDeleteError.UserDoesntBelongToThisGame)
             val winner = gamesRepository.exitGame(gameId, userId)
-            val game = gamesRepository.getGameById(gameId)
-                ?: return@run failure(GameDeleteError.GameNotFound)
-            val variant = gameVariantMap[game.variant.id]
-                ?: return@run failure(GameDeleteError.VariantNotFound)
-            success(
-                gamesRepository.updatePoints(
-                    gameId = gameId,
-                    winnerId = winner,
-                    loserId = if (userId == game.hostId) game.guestId else game.hostId,
-                    winnerPoints = variant.points.onForfeitOrTimer.winner,
-                    loserPoints = variant.points.onForfeitOrTimer.forfeiter,
-                    shouldCountAsGameWin = false
+            if (winner!= null) {
+                val game = gamesRepository.getGameById(gameId)
+                    ?: return@run failure(GameDeleteError.GameNotFound)
+                val variant = gameVariantMap[game.variant.id]
+                    ?: return@run failure(GameDeleteError.VariantNotFound)
+                success(
+                    gamesRepository.updatePoints(
+                        gameId = gameId,
+                        winnerId = winner,
+                        loserId = if (userId != game.hostId) game.guestId else game.hostId,
+                        winnerPoints = variant.points.onForfeitOrTimer.winner,
+                        loserPoints = variant.points.onForfeitOrTimer.forfeiter,
+                        shouldCountAsGameWin = true
+                    )
                 )
-            )
+            } else {
+                failure(GameDeleteError.GameAlreadyFinished)
+            }
         }
     }
 

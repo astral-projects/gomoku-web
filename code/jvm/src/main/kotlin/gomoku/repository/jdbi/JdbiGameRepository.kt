@@ -44,13 +44,6 @@ class JdbiGameRepository(
             .execute() > 0
     }
 
-    override fun getVariantById(gameId: Id): Id {
-        return handle.createQuery("select * from dbo.Games where id = :id")
-            .bind("id", gameId.value)
-            .mapTo<JdbiIdModel>()
-            .single().toDomainModel()
-    }
-
     override fun getVariants(): List<GameVariant> =
         handle.createQuery("select * from dbo.Gamevariants")
             .mapTo<JdbiVariantModel>()
@@ -77,30 +70,29 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     override fun deleteGame(gameId: Id, userId: Id): Boolean =
-        handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId")
+        handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId and state = :state")
             .bind("gameId", gameId.value)
             .bind("hostId", userId.value)
+            .bind("state", GameState.FINISHED.name)
             .execute() == 1
 
-    override fun userBelongsToTheGame(userId: Id, gameId: Id): Boolean {
-        val query =
-            handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND (host_id = :userId OR guest_id = :userId)")
+    override fun userBelongsToTheGame(userId: Id, gameId: Id): Game?=
+            handle.createQuery("SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
+                    "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND (g.host_id = :userId OR g.guest_id = :userId)")
                 .bind("gameId", gameId.value)
                 .bind("userId", userId.value)
-        // TODO("remove findOnly and use mapTo<JdbiModels..> instead")
-        val game = query.mapToMap().findOnly()
-        return game != null
-    }
+                .mapTo<JdbiGameAndVariantModel>()
+                .singleOrNull()?.toDomainModel()
 
-    override fun userIsTheHost(userId: Id, gameId: Id): Boolean {
-        val query =
-            handle.createQuery("SELECT * FROM dbo.Games WHERE id = :gameId AND host_id = :userId")
+
+    override fun userIsTheHost(userId: Id, gameId: Id): Game? =
+            handle.createQuery("SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
+                    "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND g.host_id = :userId")
                 .bind("gameId", gameId.value)
                 .bind("userId", userId.value)
-        // TODO("remove findOnly and use mapTo<JdbiModels..> instead")
-        val game = query.mapToMap().findOnly()
-        return game != null
-    }
+                .mapTo<JdbiGameAndVariantModel>()
+                .singleOrNull()?.toDomainModel()
+
 
     override fun updatePoints(
         gameId: Id,
@@ -136,7 +128,10 @@ class JdbiGameRepository(
             .execute() > 0
 
     override fun findIfUserIsInGame(userId: Id): Game? =
-        handle.createQuery("select * from dbo.Games where state != :state and (host_id = :userId or guest_id = :userId)")
+        handle.createQuery(
+            """SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id  WHERE
+                g.state != :state AND (g.host_id = :userId OR g.guest_id = :userId);"""
+        )
             .bind("userId", userId.value)
             .bind("state", GameState.FINISHED.name)
             .mapTo<JdbiGameAndVariantModel>()
@@ -153,12 +148,12 @@ class JdbiGameRepository(
             .bind("gameId", gameId.value)
             .bind("board", convertBoardToJdbiModelInJson(board)).execute() > 0
 
-    override fun exitGame(gameId: Id, userId: Id): Id =
+    override fun exitGame(gameId: Id, userId: Id): Id? =
         handle.createQuery(
             """
             UPDATE dbo.Games 
             SET state = 'FINISHED'
-            WHERE id = :id AND (host_id = :userId OR guest_id = :userId)
+            WHERE id = :id AND (host_id = :userId OR guest_id = :userId) AND state = 'IN_PROGRESS'
             RETURNING 
                 CASE
                     WHEN host_id != :userId THEN host_id
@@ -169,7 +164,7 @@ class JdbiGameRepository(
             .bind("id", gameId.value)
             .bind("userId", userId.value)
             .mapTo<JdbiIdModel>()
-            .single().toDomainModel()
+            .singleOrNull()?.toDomainModel()
 
     override fun getGameStatus(gameId: Id, userId: Id): Game? =
         handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
