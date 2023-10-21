@@ -71,33 +71,35 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            if (gamesRepository.findIfUserIsInGame(userId) == null) {
+            val g=gamesRepository.findIfUserIsInGame(userId)
+            if (g == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
-                        val res = gamesRepository.createGame(
+                        val gameId = gamesRepository.createGame(
                             variantId = variantId,
                             hostId = lobby.userId,
                             guestId = userId,
                             lobbyId = lobby.lobbyId,
                             board = variant.initialBoard()
                         )
-                        when (res) {
+                        when (gameId) {
                             null -> failure(GameCreationError.UserAlreadyInGame)
-                            else -> success("Joining game")
+                            else -> success(Pair(gameId,"Joining game"))
                         }
                     }
                 } else {
                     gamesRepository.checkIfUserIsInLobby(userId) ?: failure(GameCreationError.UserAlreadyInLobby)
-                    when (gamesRepository.addUserToLobby(variantId, userId)) {
+                    val lobbyId =gamesRepository.addUserToLobby(variantId, userId)
+                    when (lobbyId) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success("Waiting in lobby")
+                        else -> success(Pair(lobbyId,"Waiting in lobby"))
                     }
                 }
             } else {
-                success("You already in the Game")
+                success(Pair(g.id,"You already in the Game"))
             }
         }
 
@@ -117,20 +119,6 @@ class GamesService(
                 true -> success(res)
             }
         }
-
-    /**
-     * Returns the game state with the given id if the user is in the game
-     * If the user is not in the game, returns an error.
-     */
-    fun getGameStatus(gameId: Id): GettingGameResult {
-        return transactionManager.run { transaction ->
-            val gamesRepository = transaction.gamesRepository
-            when (val game = gamesRepository.getGameById(gameId)) {
-                null -> failure(GettingGameError.GameNotFound)
-                else -> success(game)
-            }
-        }
-    }
 
     /**
      * Returns the system info.

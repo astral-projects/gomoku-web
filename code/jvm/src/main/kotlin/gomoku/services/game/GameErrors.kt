@@ -1,5 +1,6 @@
 package gomoku.services.game
 
+import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.utils.Either
@@ -10,7 +11,7 @@ sealed class GameCreationError {
     object VariantNotFound : GameCreationError()
 }
 
-typealias GameCreationResult = Either<GameCreationError, String>
+typealias GameCreationResult = Either<GameCreationError, Pair<Id,String>>
 
 sealed class GettingGameError {
     object GameNotFound : GettingGameError()

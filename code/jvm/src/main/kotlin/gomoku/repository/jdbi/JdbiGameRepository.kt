@@ -85,7 +85,7 @@ class JdbiGameRepository(
                 .singleOrNull()?.toDomainModel()
 
 
-    override fun userIsTheHost(userId: Id, gameId: Id): Game? =
+    override fun userIsTheHost(gameId: Id, userId: Id): Game? =
             handle.createQuery("SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
                     "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND g.host_id = :userId")
                 .bind("gameId", gameId.value)
