@@ -30,7 +30,7 @@ interface GamesRepository {
     fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
     fun exitGame(gameId: Id, userId: Id): Id?
-    fun userIsTheHost(userId: Id, gameId: Id): Game?
+    fun userIsTheHost(gameId: Id, userId: Id,): Game?
     fun updatePoints(
         gameId: Id,
         winnerId: Id,
