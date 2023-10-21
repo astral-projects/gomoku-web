@@ -8,6 +8,8 @@ by two players.
 This project is divided into two phases:
 
 - The first phase consists of the development of the **backend service**.
+  - [Backend Documentation](code/jvm/docs/README.md)
+  - [Backend API Documentation](docs/gomoku-backend-api.md)
 - The second phase consists of the development of a **browser-based frontend application**, which will use the backend
   service developed in the first phase.
 

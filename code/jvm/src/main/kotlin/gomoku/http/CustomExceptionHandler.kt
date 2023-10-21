@@ -1,6 +1,6 @@
 package gomoku.http
 
-import gomoku.http.model.Problem
+import gomoku.http.media.Problem
 import gomoku.http.pipeline.errors.HttpServletRequestRequiredException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders

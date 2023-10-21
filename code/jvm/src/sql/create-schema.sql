@@ -7,7 +7,6 @@ create table dbo.Users
     email               varchar(64) unique not null,
     password_validation varchar(256)       not null,
     constraint email_is_valid check (email ~ '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$'),
-    -- TODO: if necessary, add a password regex constraint
     constraint username_min_length check (char_length(username) >= 5),
     constraint username_max_length check (char_length(username) <= 30)
 );
@@ -17,7 +16,7 @@ create table dbo.Tokens
     token_validation varchar(256) primary key,
     created_at       bigint not null default extract(epoch from now()),
     last_used_at     bigint not null default extract(epoch from now()),
-    user_id          int references dbo.Users (id),
+    user_id          int references dbo.Users (id) on delete cascade on update cascade,
     constraint created_before_last_used check (created_at <= last_used_at),
     constraint created_at_is_valid check (created_at > 0),
     constraint last_used_at_is_valid check (last_used_at > 0)
@@ -42,14 +41,14 @@ create table dbo.GameVariants
     name         varchar(64) unique not null,
     opening_rule varchar(64)        not null,
     board_size   varchar(64)        not null
+        constraint board_size_is_positive check (board_size > 0)
 );
 
 create table dbo.Lobbies
 (
     id         int generated always as identity,
-    host_id    int,
-    variant_id int references dbo.GameVariants (id),
-    foreign key (host_id) references dbo.Users (id) on delete cascade on update cascade,
+    host_id    int references dbo.Users (id) on delete cascade on update cascade,
+    variant_id int references dbo.GameVariants (id) on delete cascade on update cascade,
     primary key (id, host_id)
 );
 
@@ -59,7 +58,6 @@ create table dbo.Games
     state      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
     variant_id int references dbo.GameVariants (id)                     not null,
     board      jsonb                                                    not null,
-    -- TODO: add board json constraints once we have a clear board representation in domain
     created_at int                                                      not null default extract(epoch from now()),
     updated_at int                                                      not null default extract(epoch from now()),
     host_id    int references dbo.Users (id),

@@ -9,7 +9,13 @@
     - [Conceptual Model](#conceptual-model)
     - [Physical Model](#physical-model)
 - [Application Architecture](#application-architecture)
-- [Critical Evaluation](#critical-evaluation)
+- [Presentation Layer](#presentation-layer)
+- [Service Layer](#service-layer)
+- [Data Access Layer](#data-access-layer)
+- [Data Representation](#data-representation)
+- [Error Handling](#error-handling)
+- [Implementation Challenges](#implementation-challenges)
+- [Further Improvements](#further-improvements)
 
 ---
 
@@ -31,11 +37,11 @@ Some dependencies used in this project are:
 
 ### Conceptual Model
 
-The following diagram holds the Entity-Relationship model for the information managed by the system.
+The following diagram holds the Enhanced Entity-Relationship (EER) model for the information managed by the system.
 
 | ![Entity Relationship Diagram](../../../docs/diagrams/gomoku-er-diagram.png) |
 |:----------------------------------------------------------------------------:|
-|                        *Entity relationship diagram*                         |
+|                    *Enhanced Entity relationship diagram*                    |
 
 We highlight the following aspects:
 
@@ -43,24 +49,30 @@ The conceptual model has the following restrictions:
 
 - `User` entity:
     - The `username` and `email` attributes should be unique;
-    - The `password` attribute length should be 8-40 characters long;
     - The `username` attribute length should be 5-30 characters long;
     - The `email` attribute needs to follow the following regex pattern: `^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$`.
 
-- `Game` entity:
-    - The `state` attribute only accepts the following values: `IN-PROGRESS`, `FINISHED`;
-    - The `board` attribute is of type `jsob` and should be a valid `JSON` object;
-    - The `updated` and `created` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
-    - The `updated` attribute should be greater than or equal to the `created` attribute;
-    - The `host` and `guest` attributes reference the same user;
+- `Token` entity:
+    - The `created_at` and `last_used_at` attributes represent the seconds since
+      the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
+    - The `last_used` attribute should be greater than or equal to the `created_at` attribute;
 
 - `Statistics` entity:
     - The `gamesPlayed`, `gamesWon` and `points` attributes should be greater than 0;
     - The `gamesPlayed` attribute should be greater than or equal to the `gamesWon` attribute;
 
-- `Token` entity:
-    - The `created_at` and `last_used_at` attributes represent the seconds since the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
-    - The `last_used` attribute should be greater than or equal to the `created_at` attribute;
+- `GameVariants` entity:
+    - The `name` attribute should be unique;
+    - The `boardSize` attribute should be greater than 0;
+
+- `Game` entity:
+    - The `state` attribute only accepts the following values: `IN_PROGRESS`, `FINISHED`;
+    - The `board` attribute is of type `jsob` and should be a valid `JSON` object.
+    - The `updated_at` and `created_at` attributes represent the seconds since
+      the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
+    - The `updated_at` attribute should be greater than or equal to the `created_at` attribute;
+    - The `host_id` and `guest_id` attributes reference the same user;
+    - The `lobby_id` attribute has to be unique;
 
 ### Physical Model
 
@@ -79,21 +91,29 @@ We highlight the following aspects of this model:
   identify an entity have been marked as unique. This ensures that these attributes maintain their uniqueness throughout
   the data, contributing to data integrity.
 
-- **Choice of Jsonb for the board attribute**: The decision to use the jsonb data type for the `board` attribute in
-  the `Game` entity was made after careful consideration. This choice was based on the following factors:
-    - **Efficiency of storage and retrieval**: The `board` attribute is the most frequently queried attribute and is
-      updated frequently. Using jsonb allows for efficient storage and retrieval of structured data.
-    - **Ease of expansion**: Jsonb provides flexibility for future expansion and modification of the `board` structure,
-      making it suitable for handling evolving game data.
+- **Selection of the Jsonb Data Type for the Board Attribute**: The choice to utilize the jsonb data type for the board
+  attribute within the Game entity was a deliberate decision shaped by several key considerations:
 
-- **Lobby Entity and Game Configuration**: The decision not to make the `Game` entity weak of the `Lobby` entity and
-  instead repeat game configuration attributes was made for efficiency and practicality. The `Lobby` entity serves as a
-  storage for the game configuration chosen by a host user. When a user attempts to create a game with a specific game
-  configuration that matches an existing entry in the `Lobby` table (where each row represents a user's intention to
-  start a game), a new game is created with the same configuration and all game configuration data is transferred to
-  the `Game` table. The original `Lobby` row is then deleted to allow another user to create a game with the same
+    - **Efficient Storage and Retrieval**: Given that the `board` attribute is an abstract entity that can be
+      represented
+      in different ways by other entites (specialization relation in this case),
+      the jsonb data type was chosen to allow for flexibility in the representation of board subtypes.
+
+    - **Ease of representation**: Since the `board` attribute could be represented in different ways, according to the
+      game
+      state, the jsonb data type was chosen to allow for flexibility in the representation of the board.
+
+- **Lobby Entity and Game Configuration**: The decision to not make the `Game` entity weak of the `Lobby` entity and
+  instead repeat the `variant_id` attribute which points to the game configuration, was made for efficiency and
+  practicality. The `Lobby` entity serves as a
+  storage for the game configuration chosen by a host user.
+  When another user attempts to create a game with a specific game
+  configuration (represented by the variant id) that matches an existing entry in the `Lobby` table, a new game is
+  created with both players instead.
+  The host `Lobby` row is then deleted to allow another user to create a game with the same
   configuration. This approach simplifies the match-making algorithm, as it only needed to search in the `Lobby` table,
-  which is smaller and only contains one row per game configuration combination.
+  which is smaller and only contains one row per game configuration combination instead of the ever-growing `Game`
+  table.
 
 - **Not always using check constraints for data integrity**: Not all restrictions described in the conceptual model have
   been directly implemented using check constraints in the physical model. In cases where certain restrictions might
@@ -101,10 +121,190 @@ We highlight the following aspects of this model:
   values. Additionally, a foreign key was added to the `Game` entity to ensure data consistency and referential
   integrity while allowing for flexibility in adding new supported values.
 
-- **Using epoch seconds for timestamps**: The decision to use epoch seconds for the `created` and `updated` attributes
+- **Using epoch seconds for timestamps**: The decision to use epoch seconds for the `created_at` and `updated_at`
+  attributes
   was made for efficiency and simplicity. Epoch seconds are easy to work with and are more efficient to store and
   retrieve than other formats.
 
 ### Application Architecture
 
-### Critical Evaluation
+The JVM application is organized as follows:
+
+- [`/domain`](../src/main/kotlin/gomoku/domain) - contains the domain classes
+  of the application ensure data integrity throughout the application;
+- [`/http`](../src/main/kotlin/gomoku/http) - contains the HTTP layer of the application. This layer
+  is responsible for handling the HTTP requests and generating the responses, orchestrating the service layer;
+- [`/repository`](../src/main/kotlin/gomoku/repository) - contains the repository layer of
+  the application, which provides implementations that can access the database;
+- [`/services`](../src/main/kotlin/gomoku/services) - contains the services that manage the
+  business logic of the application and orchestrate the repository layer;
+- [`/utils`](../src/main/kotlin/gomoku/utils) - contains utility classes used by the
+  application in all layers, such as the `Either` class which serves as an abstract representation of an
+  operation result (either a success or a failure);
+- [`GomokuApplication.kt`](../src/main/kotlin/gomoku/GomokuApplication.kt) - contains the spring boot class
+  configuration and
+  the entry point of the application.
+
+### [Presentation Layer](../src/main/kotlin/gomoku/http)
+
+The presentation layer is responsible for receiving the requests from the client,
+processing them in a way the service layer is expecting,
+sending them and returning the responses to the client, using the appropriate
+media type.
+
+To represent the data in the requests, several models were created:
+
+- **input models** - used to represent the data in the requests.
+- **output models** - used to represent the data in the responses.
+
+This layer is implemented using Spring Web MVC and Spring Validation for input models.
+
+The presentation layer is organized as follows:
+
+- [`/controllers`](../src/main/kotlin/gomoku/http/controllers) - contains the controllers that handle the HTTP requests
+  and generate the responses;
+- [`/jackson`](../src/main/kotlin/gomoku/http/jackson) - contains jackson config used by Spring, and several serializers
+  and deserializers used by the application;
+- [`/media`](../src/main/kotlin/gomoku/http/media) - contains the classes that represent the media types used in the
+  application such as `application/problem+json`;
+- [`/pipeline`](../src/main/kotlin/gomoku/http/jackson) - contains all interceptors, argument resolvers and request
+  processors used by the application before and after the request is handled by the controllers;
+- [`CustomExceptionHandler`](../src/main/kotlin/gomoku/http/CustomExceptionHandler.kt) - contains exception handlers
+  that generate the responses for the exceptions thrown by the application;
+- [`Uris`](../src/main/kotlin/gomoku/http/Uris.kt) - object that contains the URIs of the application used by the
+  controllers;
+
+### [Service Layer](../src/main/kotlin/gomoku/services)
+
+The service layer is responsible for managing the business logic of the application, receiving the requests from the
+presentation layer, processing them, sending them to the data access layer and returning the responses to the
+presentation layer.
+
+To represent the result of a service operation, the [`Either`](../src/main/kotlin/gomoku/utils/Either.kt) class
+was created.
+This class ensures both the success and failure cases are always represented, which then allows the presentation layer
+to generate the appropriate response based on the result of the service operation.
+
+Each service provided by the application does not have an interface because it is not expected to have multiple
+implementations of the same service.
+In a service constructor,
+a [TransacationManager](../src/main/kotlin/gomoku/repository/transaction/TransactionManager.kt) is received,
+which then allows the service to manage the transaction scope of the service operation and the underlying data access.
+
+The service layer is organized as follows:
+
+- [`UsersService`](../src/main/kotlin/gomoku/services/user/UsersService.kt) - manages the requests related to the users;
+- [`GamesService`](../src/main/kotlin/gomoku/services/game/GamesService.kt) - manages the requests related to the games;
+
+Associated with each service package, there are one or more classes that represent the result of the service operation.
+Some are defined as typealiases to improve readability.
+
+### [Data Access Layer](../src/main/kotlin/gomoku/repository)
+
+The data access layer is responsible for interacting with the database to persist and retrieve the data.
+
+An interface was created for each entity of the application, which then has an implementation that uses JDBI fluent
+api to interact with the database.
+Only domain classes can be used in the operations of the data access layer as parameters or return types.
+
+The data access layer is organized as follows:
+
+- [`/jdbi`](../src/main/kotlin/gomoku/repository/jdbi) - contains the configuration, repository and transcation
+  implementations,
+  mappers and models that work with Jdbi directly;
+- [`/transaction`](../src/main/kotlin/gomoku/repository/transaction) - contains the transaction abstractions used by the
+  service layer to manage the transaction scope of the service operation;
+- [`UsersRepository`](../src/main/kotlin/gomoku/repository/UsersRepository.kt) - exposes the operations related to the
+  users;
+- [`GamesRepository`](../src/main/kotlin/gomoku/repository/GamesRepository.kt) - exposes the operations related to the
+  game;
+
+### Data Representation
+
+There are types of data representation in the application:
+
+- **Json Models** - which are tied to the JSON representation of the data;
+    - **Input Models** - used to represent the data in the requests;
+    - **Output Models** - used to represent the data in the responses;
+- **Jdbi Models** - used to represent the data from the database using the JDBI interface;
+- **Domain Classes** - used to represent the data in the application domain;
+
+To ease the transformation between these models and the domain classes, several interfaces were created.
+
+The Json output models are tied to [Jackson library](https://github.com/FasterXML/jackson) while Json input models use
+the [Spring Validation Library](https://docs.spring.io/spring-framework/docs/4.1.x/spring-framework-reference/html/validation.html)
+to validate the data in the requests.
+
+### Error Handling
+
+To handle errors/exceptions, we implemented the `CustomExceptionHandler` class, which is annotated
+with `@ControllerAdvice`, and is responsible for intercepting the harder to detect errors that occur in the
+application and generating the appropriate response.
+
+As mentioned before, the [`Either`](../src/main/kotlin/gomoku/utils/Either.kt) class is used to
+represent the result of a service operation.
+Which then the presentation layer can generate the appropriate response
+based on the result type of the service.
+
+Example:
+
+```kotlin
+// service returns:
+Either<UserCreationError, Board>
+
+// controller receives the result and evaluates it:
+return when (result) {
+    is Either.Right -> ResponseEntity.status(HttpStatus.CREATED).body(result.value)
+    is Either.Left -> when (result.value) {
+        is UserCreationError.UsernameAlreadyExists -> Problem(
+            type = URI.create("https://example.com/probs/user-already-exists"),
+            title = "User already exists",
+            status = HttpStatus.CONFLICT,
+            detail = "The username provided already exists",
+            instance = URI.create("https://example.com/users/12345")
+        ).toResponse()
+        // (...) other errors
+    }
+}
+```
+
+To represent an error in the presentation layer, the media type chosen was `application/problem+json`, which is a
+standard
+media type for
+representing errors in HTTP APIs.
+The [RFC 7807](https://tools.ietf.org/html/rfc7807) defines the standard for this media type.
+
+It consists of:
+
+- **type** - a URI reference that identifies the problem type;
+- **title** - a short, human-readable summary of the problem type;
+- **status** - the HTTP status code generated by the origin server for this occurrence of the problem;
+- **detail** - a human-readable explanation specific to this occurrence of the problem;
+- **instance** - a URI reference that identifies the specific occurrence of the problem;
+
+### Implementation Challenges
+
+- **Database Design**: Finding the best way to represent the data in the database was a challenge.
+  We had to consider the data integrity, the performance and the flexibility of the database, and was no easy
+  task to find the best balance between these aspects.
+- **Abstracting Code**: We tried to abstract the code as much as possible, using interfaces, abstract classes and
+  generics, to make the code more reusable and easier to maintain. But sometimes we lacked the knowledge to abstract the
+  code in a better way.
+- **The Concurrency Problem**: Since the application will run later in a distributed environment, which means that
+  multiple instances of the application will be running at the same time, we needed to ensure that the application was
+  thread-safe.
+  We had to make sure that the database transactions were atomic and isolated, but finding the best isolation level
+  that does not compromise the performance of the application was a challenge.
+
+### Further Improvements
+
+- **Add Siren media type**: The Siren media type is a hypermedia type that allows the client to navigate through the
+  API and discover the available resources.
+  We didn't have the time to implement this media type,
+  but it would be a great improvement for the next phase of the project.
+- **Add more variants**: We only implemented the standard variant of the game.
+  It would make the application more interesting if we implemented more variants of the game, and give more options
+  to the users to choose from.
+- **Add more routes**: We plan to add more routes to further enhance the application functionality.
+  However, we will make sure that the new routes are backward compatible with the existing ones, so we can add new
+  features without breaking the existing ones.

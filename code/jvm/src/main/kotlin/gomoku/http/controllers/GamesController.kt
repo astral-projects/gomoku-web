@@ -8,7 +8,7 @@ import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
-import gomoku.http.model.Problem
+import gomoku.http.media.Problem
 import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
@@ -22,6 +22,8 @@ import gomoku.services.game.GettingGameError
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
+import jakarta.validation.Valid
+import org.hibernate.validator.constraints.Range
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -44,7 +46,7 @@ class GamesController(
      */
     @GetMapping(Uris.Games.GAME_STATUS_BY_ID)
     @NotTested
-    fun getGameById(@PathVariable id: Int): ResponseEntity<*> {
+    fun getGameById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<*> {
         logger.info("GET ${Uris.Games.GAME_STATUS_BY_ID}")
         return when (val res = gamesService.getGameById(Id(id))) {
             is Success ->
@@ -88,6 +90,7 @@ class GamesController(
                     detail = "The game variant with id <${variantInputModel.id}> was not found",
                     instance = Uris.Games.create()
                 ).toResponse()
+
                 GameCreationError.UserAlreadyInLobby -> Problem(
                     type = Problem.userAlreadyInLobby,
                     title = "User already in lobby",
@@ -95,6 +98,7 @@ class GamesController(
                     detail = "The user with id <$userId> is already in a lobby",
                     instance = Uris.Games.create()
                 ).toResponse()
+
                 GameCreationError.UserAlreadyInGame -> Problem(
                     type = Problem.userAlreadyInGame,
                     title = "User already in game",
@@ -131,6 +135,7 @@ class GamesController(
                     detail = "The game with id <$id> was not found",
                     instance = Uris.Games.deleteById(id)
                 ).toResponse()
+
                 GamePutError.UserIsNotTheHost -> Problem(
                     type = Problem.userIsNotTheHost,
                     title = "User is not the host",
@@ -138,6 +143,7 @@ class GamesController(
                     detail = "The user with id <$userId> is not the host of the game with id <$id>",
                     instance = Uris.Games.deleteById(id)
                 ).toResponse()
+
                 GamePutError.GameIsInprogress -> Problem(
                     type = Problem.gameIsInProgress,
                     title = "Game is in progress",
@@ -175,7 +181,7 @@ class GamesController(
     @PutMapping(Uris.Games.MAKE_MOVE)
     @NotTested
     fun makeMove(
-        @PathVariable id: Int,
+        @Valid @Range(min = 1) @PathVariable id: Int,
         @RequestBody play: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
@@ -184,7 +190,7 @@ class GamesController(
             return ResponseEntity.status(400).body("Your movement is not correct")
         }
         val userId = user.user.id
-        val responseEntity = gamesService.makeMove(Id(id), userId, Move(Square.toSquare(play.move),Piece(player)))
+        val responseEntity = gamesService.makeMove(Id(id), userId, Move(Square.toSquare(play.move), Piece(player)))
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("The move was performed successfully")
             is Failure -> when (responseEntity.value) {
@@ -195,6 +201,7 @@ class GamesController(
                     detail = "The user is not the host of the game with id <$userId>",
                     instance = Uris.Games.makeMove(id)
                 ).toResponse()
+
                 GameMakeMoveError.GameNotFound -> Problem(
                     type = Problem.gameNotFound,
                     title = "Game not found",
@@ -202,12 +209,14 @@ class GamesController(
                     detail = "The game with id <$id> was not found",
                     instance = Uris.Games.makeMove(id)
                 ).toResponse()
+
                 GameMakeMoveError.VariantNotFound -> Problem(
                     type = Problem.gameVariantNotFound,
                     title = "Game variant not found",
                     status = 404,
                     instance = Uris.Games.makeMove(id)
                 ).toResponse()
+
                 is GameMakeMoveError.MoveNotValid -> Problem(
                     type = Problem.invalidMove,
                     title = "Invalid move",
@@ -231,7 +240,7 @@ class GamesController(
      */
     @PostMapping(Uris.Games.EXIT_GAME)
     @NotTested
-    fun exitGame(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
+    fun exitGame(@Valid @Range(min = 1) @PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.EXIT_GAME}")
         val userId = user.user.id
         return when (val game = gamesService.exitGame(Id(id), userId)) {
@@ -244,6 +253,7 @@ class GamesController(
                     detail = "The game with id <$id> was not found",
                     instance = Uris.Games.exitGame(id)
                 ).toResponse()
+
                 GameDeleteError.UserDoesntBelongToThisGame -> Problem(
                     type = Problem.userIsNotTheHost,
                     title = "User is not the host",
@@ -251,12 +261,14 @@ class GamesController(
                     detail = "The user with id <$userId> is not in the game with id <$id>",
                     instance = Uris.Games.exitGame(id)
                 ).toResponse()
+
                 GameDeleteError.VariantNotFound -> Problem(
                     type = Problem.gameVariantNotFound,
                     title = "Game variant not found",
                     status = 404,
                     instance = Uris.Games.exitGame(id)
                 ).toResponse()
+
                 GameDeleteError.GameAlreadyFinished -> Problem(
                     type = Problem.gameAlreadyFinished,
                     title = "Game already finished",
