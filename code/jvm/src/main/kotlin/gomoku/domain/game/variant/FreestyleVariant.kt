@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component
 private const val WINNING_PIECES = 5
 
 @Component
-// TODO("revisited game logic")
+// TODO("revisited game variant logic")
 class FreestyleVariant : Variant {
     override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
 

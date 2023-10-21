@@ -15,8 +15,8 @@
 - [User Login](#user-login)
 - [User Logout](#user-logout)
 - [Requests](#requests)
-    - [User](#user)
-    - [Game](#game)
+  - [User](#user)
+  - [Game](#game)
 
 ---
 
@@ -87,20 +87,19 @@ Information about the requests:
 
 - For endpoints marked with 🔒 (indicating authentication is required):
   - Include an `Authorization` header using the `Bearer` scheme, with the user's `token`.
-- Ensure the `Content-Type` header is set to `application/json`.
+- For endpoints marked with 📦 (indicating a request body is required):
+  - Include a request body with the required information.
+  - Ensure the `Content-Type` header is set to `application/json`.
 - All endpoints should be prefixed with `/api`.
-
-#### Home
-
-- `GET /home 🔒` - returns logged-in user's information;
 
 #### User
 
 The API provides the following operations/resources related to the `User` entity:
 
-- `POST /users` - creates a new user; See [User Creation](#user-creation) for more information;
-- `POST /users/token` - authenticates a user; See [User Login](#user-login) for more information;
+- `POST /users 📦` - creates a new user; See [User Creation](#user-creation) for more information;
+- `POST /users/token 📦` - authenticates a user; See [User Login](#user-login) for more information;
 - `POST /users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
+- `GET /users/home 🔒` - returns logged-in user's information;
 - `GET /users/{id}` - returns the user with the given id;
 - `GET /users/ranking` - returns the users ranking. This route is paginated and accepts the following optional query
   parameters:
@@ -111,9 +110,9 @@ The API provides the following operations/resources related to the `User` entity
 
 The API provides the following operations/resources related to the `Game` entity:
 
-- `POST /games 🔒` - joins a lobby or creates a new game;
+- `POST /games 🔒📦` - joins a lobby or creates a new game with the given variant id;
 - `GET /games/{id}` - returns the game with the given id;
 - `DELETE /games/{id}` 🔒 - deletes the game with the given id;
 - `GET /system` - returns the system information;
-- `POST /games/{id}/move 🔒` - makes a move in the game with the given id;
+- `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id;
 - `POST /games/{id}/exit 🔒` - exits the game with the given id;

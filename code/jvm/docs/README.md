@@ -105,9 +105,9 @@ We highlight the following aspects of this model:
 
 - **Lobby Entity and Game Configuration**: The decision to not make the `Game` entity weak of the `Lobby` entity and
   instead repeat the `variant_id` attribute which points to the game configuration, was made for efficiency and
-  practicality. The `Lobby` entity serves as a
-  storage for the game configuration chosen by a host user.
-  When another user attempts to create a game with a specific game
+  practicality.
+  The `Lobby` entity serves as a user intention to start ame with a specific game configuration. When another user
+  attempts to create a game with a specific game
   configuration (represented by the variant id) that matches an existing entry in the `Lobby` table, a new game is
   created with both players instead.
   The host `Lobby` row is then deleted to allow another user to create a game with the same
@@ -292,19 +292,18 @@ It consists of:
   code in a better way.
 - **The Concurrency Problem**: Since the application will run later in a distributed environment, which means that
   multiple instances of the application will be running at the same time, we needed to ensure that the application was
-  thread-safe.
-  We had to make sure that the database transactions were atomic and isolated, but finding the best isolation level
-  that does not compromise the performance of the application was a challenge.
+  thread-safe. We had to make sure that the database transactions were atomic and isolated, but finding the most optimal
+  solution for addressing this concurrency issue was demanding.
 
 ### Further Improvements
 
-- **Add Siren media type**: The Siren media type is a hypermedia type that allows the client to navigate through the
+- **Siren media type**: The Siren media type is a hypermedia type that allows the client to navigate through the
   API and discover the available resources.
   We didn't have the time to implement this media type,
-  but it would be a great improvement for the next phase of the project.
-- **Add more variants**: We only implemented the standard variant of the game.
+  but it would be a great improvement for the next phase of the project where we will implement the frontend.
+- **More variants**: We only implemented the standard variant of the game.
   It would make the application more interesting if we implemented more variants of the game, and give more options
   to the users to choose from.
-- **Add more routes**: We plan to add more routes to further enhance the application functionality.
-  However, we will make sure that the new routes are backward compatible with the existing ones, so we can add new
+- **Support operations**: We plan to add more service operations to further enhance the application functionality.
+  However, we will make sure that the new services are backward compatible with the existing ones, so we can add new
   features without breaking the existing ones.

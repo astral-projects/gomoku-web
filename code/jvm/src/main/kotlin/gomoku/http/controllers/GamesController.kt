@@ -44,10 +44,10 @@ class GamesController(
      * @return the game with the given id
      * If the game with the given id does not exist, returns a 404 Not Found error.
      */
-    @GetMapping(Uris.Games.GAME_STATUS_BY_ID)
+    @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GAME_STATUS_BY_ID}")
+        logger.info("GET ${Uris.Games.GET_BY_ID}")
         return when (val res = gamesService.getGameById(Id(id))) {
             is Success ->
                 ResponseEntity
@@ -67,7 +67,7 @@ class GamesController(
     }
 
     /**
-     * This method is used to find a game,and also if isn't possible to find a match the user will be added to the Lobby.
+     * This method is used to find a game,and also if isn't possible to find a match, the user will be added to the Lobby.
      * @param variantInputModel the variant of the game
      * @param user the authenticated user
      * @return a 201 Created response if the game was created successfully
@@ -75,20 +75,21 @@ class GamesController(
      * If the user is already in a lobby, returns a 404 Not Found error.
      * If the user is already in a game, returns a 404 Not Found error.
      */
-    @PostMapping(Uris.Games.START_GAME)
+    @PostMapping(Uris.Games.FIND_GAME)
     @NotTested
     fun findGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Games.START_GAME}")
+        logger.info("POST ${Uris.Games.FIND_GAME}")
         val userId = user.user.id
-        return when (val result = gamesService.findGame(Id(variantInputModel.id), userId)) {
+        val variantId = variantInputModel.id
+        return when (val result = gamesService.findGame(Id(variantId), userId)) {
             is Success -> ResponseEntity.status(201).body(result.value)
             is Failure -> when (result.value) {
                 GameCreationError.VariantNotFound -> Problem(
                     type = Problem.gameVariantNotFound,
                     title = "Requested game variant not found",
                     status = 404,
-                    detail = "The game variant with id <${variantInputModel.id}> was not found",
-                    instance = Uris.Games.create()
+                    detail = "The game variant with id <${variantId}> was not found",
+                    instance = Uris.Games.findGame()
                 ).toResponse()
 
                 GameCreationError.UserAlreadyInLobby -> Problem(
@@ -96,7 +97,7 @@ class GamesController(
                     title = "User already in lobby",
                     status = 404,
                     detail = "The user with id <$userId> is already in a lobby",
-                    instance = Uris.Games.create()
+                    instance = Uris.Games.findGame()
                 ).toResponse()
 
                 GameCreationError.UserAlreadyInGame -> Problem(
@@ -104,7 +105,7 @@ class GamesController(
                     title = "User already in game",
                     status = 404,
                     detail = "The user with id <$userId> is already in game",
-                    instance = Uris.Games.create()
+                    instance = Uris.Games.findGame()
                 ).toResponse()
             }
         }

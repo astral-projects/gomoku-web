@@ -17,7 +17,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"postman-username2\",\r\n    \"email\": \"example@postman.com\",\r\n    \"password\": \"password\"\r\n}",
+							"raw": "{\r\n    \"username\": \"postman-username\",\r\n    \"email\": \"example@postman.com\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -25,14 +25,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/{{api}}/users/register",
+							"raw": "{{base_url}}/{{api}}/users",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"{{api}}",
-								"users",
-								"register"
+								"users"
 							]
 						}
 					},
@@ -48,7 +47,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"postman-username2\",\r\n    \"password\": \"password\"\r\n}",
+							"raw": "{\r\n    \"username\": \"postman-username\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -95,17 +94,47 @@
 					"response": []
 				},
 				{
-					"name": "Home",
+					"name": "Get users ranking info",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/{{api}}/home",
+							"raw": "{{base_url}}/{{api}}/users/ranking?offset=3&limit=10",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"{{api}}",
+								"users",
+								"ranking"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "3"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Home",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{api}}/users/home",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api}}",
+								"users",
 								"home"
 							]
 						}
@@ -167,80 +196,14 @@
 			"name": "Game",
 			"item": [
 				{
-					"name": "Leave Game",
+					"name": "Find game",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "pEEOvqmzc60ca5wBE03IyuLA5aFOPcJ-2Jh3z1jEsF4=",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/{{api}}/games/:gameid/exit",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{api}}",
-								"games",
-								":gameid",
-								"exit"
-							],
-							"variable": [
-								{
-									"key": "gameid",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get games",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/games?limit=10&offset=0",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"games"
-							],
-							"query": [
-								{
-									"key": "limit",
-									"value": "10"
-								},
-								{
-									"key": "offset",
-									"value": "0"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create game",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "A7TeL-k9PDnOqgQmIg6HCmgCQ9fWuCS0NvOB98WlNG0=",
+									"value": "ZQIY9wZ-owOgVgU_VtYLz8-C9w5kRBP8lR83xxAHMVE=",
 									"type": "string"
 								}
 							]
@@ -249,7 +212,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n   \"id\" : 4\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -305,48 +268,84 @@
 					"response": []
 				},
 				{
-					"name": "Game Status",
+					"name": "Get games",
 					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "XgspjE-1XEDc121Xc7KZUj0X9EOXlyAhh6PmNs9JVgA=",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/{{api}}/games/1/status",
+							"raw": "{{base_url}}/games?limit=10&offset=0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"{{api}}",
-								"games",
-								"1",
-								"status"
+								"games"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get System Info",
+					"name": "Leave Game",
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "pEEOvqmzc60ca5wBE03IyuLA5aFOPcJ-2Jh3z1jEsF4=",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/{{api}}/info",
+							"raw": "{{base_url}}/{{api}}/games/:gameid/exit",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"{{api}}",
-								"info"
+								"games",
+								":gameid",
+								"exit"
+							],
+							"variable": [
+								{
+									"key": "gameid",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get system Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{api}}/system",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api}}",
+								"system"
 							]
 						}
 					},
@@ -389,36 +388,6 @@
 							""
 						]
 					}
-				}
-			]
-		},
-		{
-			"name": "Player",
-			"item": [
-				{
-					"name": "Make a play",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/{{api}}/game/:gameId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{api}}",
-								"game",
-								":gameId"
-							],
-							"variable": [
-								{
-									"key": "gameId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		}

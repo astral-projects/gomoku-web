@@ -190,10 +190,10 @@ class UsersController(
         TODO("Not yet implemented")
     }
 
-    @PutMapping(Uris.Users.EDIT_USER_PROFILE)
+    @PutMapping(Uris.Users.EDIT_BY_ID)
     @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
-        logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
+        logger.info("PUT ${Uris.Users.EDIT_BY_ID}")
         TODO("Not yet implemented")
     }
 
