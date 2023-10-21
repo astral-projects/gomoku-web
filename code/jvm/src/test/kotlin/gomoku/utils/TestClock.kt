@@ -1,4 +1,4 @@
-package gomoku
+package gomoku.utils
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

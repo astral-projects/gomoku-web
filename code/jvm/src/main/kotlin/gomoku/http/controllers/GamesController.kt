@@ -77,7 +77,7 @@ class GamesController(
      */
     @PostMapping(Uris.Games.FIND_GAME)
     @NotTested
-    fun findGame(@RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
+    fun findGame(@Valid @RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Games.FIND_GAME}")
         val userId = user.user.id
         val variantId = variantInputModel.id
@@ -95,7 +95,7 @@ class GamesController(
                 GameCreationError.UserAlreadyInLobby -> Problem(
                     type = Problem.userAlreadyInLobby,
                     title = "User already in lobby",
-                    status = 404,
+                    status = 400,
                     detail = "The user with id <$userId> is already in a lobby",
                     instance = Uris.Games.findGame()
                 ).toResponse()
@@ -103,7 +103,7 @@ class GamesController(
                 GameCreationError.UserAlreadyInGame -> Problem(
                     type = Problem.userAlreadyInGame,
                     title = "User already in game",
-                    status = 404,
+                    status = 400,
                     detail = "The user with id <$userId> is already in game",
                     instance = Uris.Games.findGame()
                 ).toResponse()
@@ -183,7 +183,7 @@ class GamesController(
     @NotTested
     fun makeMove(
         @Valid @Range(min = 1) @PathVariable id: Int,
-        @RequestBody play: MoveInputModel,
+        @Valid @RequestBody play: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")

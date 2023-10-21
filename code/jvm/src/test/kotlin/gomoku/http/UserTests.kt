@@ -1,8 +1,8 @@
 package gomoku.http
 
-import gomoku.TestDataGenerator.newTestEmail
-import gomoku.TestDataGenerator.newTestPassword
-import gomoku.TestDataGenerator.newTestUserName
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.domain.PaginatedResult
 import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel

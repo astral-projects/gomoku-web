@@ -1,9 +1,9 @@
 package gomoku.services
 
-import gomoku.TestClock
-import gomoku.TestDataGenerator.newTestEmail
-import gomoku.TestDataGenerator.newTestPassword
-import gomoku.TestDataGenerator.newTestUserName
+import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder

@@ -1,4 +1,4 @@
-package gomoku
+package gomoku.utils
 
 import gomoku.domain.user.Email
 import gomoku.domain.user.Password

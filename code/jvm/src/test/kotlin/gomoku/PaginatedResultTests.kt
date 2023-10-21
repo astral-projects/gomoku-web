@@ -1,6 +1,6 @@
 package gomoku
 
-import gomoku.TestDataGenerator.randomTo
+import gomoku.utils.TestDataGenerator.randomTo
 import gomoku.domain.PaginatedResult
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test

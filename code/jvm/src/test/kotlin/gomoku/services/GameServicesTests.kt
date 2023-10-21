@@ -1,7 +1,5 @@
 package gomoku.services
 
-import gomoku.TestClock
-import gomoku.TestDataGenerator
 import gomoku.domain.Id
 import gomoku.domain.PositiveValue
 import gomoku.domain.game.GameState
@@ -26,8 +24,11 @@ import gomoku.services.game.GamesService
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
-
-import org.junit.jupiter.api.Assertions.*
+import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import kotlin.test.fail
@@ -40,12 +41,10 @@ class GameServicesTests {
         gameVariantMap
     }
 
-
     @Test
     fun `create a game`() {
         val user = createRandomUser()
         val user2 = createRandomUser()
-
 
         // given: a game service
         val testClock = TestClock()
@@ -57,7 +56,7 @@ class GameServicesTests {
         // then: the creation is successful
         when (gameCreationResult) {
             is Failure -> fail("Unexpected $gameCreationResult")
-            is Success -> assertEquals("Waiting in lobby", gameCreationResult.value.second)
+            is Success -> assertEquals("Waiting in lobby", gameCreationResult.value.message)
         }
 
         val gameCreationResult2 = gameService.findGame(Id(1), user2.id)
@@ -65,19 +64,17 @@ class GameServicesTests {
         // then: the creation is successful
         when (gameCreationResult2) {
             is Failure -> fail("Unexpected $gameCreationResult2")
-            is Success -> assertEquals("Joining game", gameCreationResult2.value.second)
+            is Success -> assertEquals("Joining game", gameCreationResult2.value.message)
         }
-        if (gameCreationResult is Success && gameCreationResult2 is Success) {
-            assertNotEquals(gameCreationResult.value.second, gameCreationResult2.value.second)
 
-            val gameResult = gameService.findGame(Id(1), user.id)
-            if (gameResult is Success)
-                assertEquals(gameCreationResult2.value.first, gameResult.value.first)
-            else
-                fail("Unexpected $gameResult")
-        } else {
-            fail("Unexpected $gameCreationResult or $gameCreationResult2")
-        }
+        assertNotEquals(gameCreationResult.value.message, gameCreationResult2.value.message)
+
+        val gameResult = gameService.findGame(Id(1), user.id)
+        if (gameResult is Success)
+            assertEquals(gameCreationResult2.value.id, gameResult.value.id)
+        else
+            fail("Unexpected $gameResult")
+
     }
 
 
@@ -92,9 +89,8 @@ class GameServicesTests {
         val gameService = createGamesService(testClock)
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
 
-        //after the correct creation of the game, we can get the game by id
-        val gameResult = gameService.getGameById(gameId)
-        when (gameResult) {
+        // after the correct creation of the game, we can get the game by id
+        when (val gameResult = gameService.getGameById(gameId)) {
             is Failure -> fail("Unexpected $gameResult")
             is Success -> assertEquals(gameId, gameResult.value.id)
         }
@@ -148,7 +144,7 @@ class GameServicesTests {
     }
 
     @Test
-    fun `makeAmove`() {
+    fun `make a move`() {
         val user = createRandomUser()
         val user2 = createRandomUser()
         val gameService = createGamesService(TestClock())
@@ -176,17 +172,21 @@ class GameServicesTests {
     }
 
     private fun createRandomGame(gameService: GamesService, user: User, user2: User): Id? {
-        val gameCreationResult = gameService.findGame(Id(1), user.id)
-        val gameCreationResult2 = gameService.findGame(Id(1), user2.id)
+        val gameId = Id(1)
+        val gameResult = gameService.getGameById(gameId)
+        if (gameResult is Success) {
+            gameService.deleteGame(gameId, gameResult.value.hostId)
+        }
+        val gameCreationResult = gameService.findGame(gameId, user.id)
+        val gameCreationResult2 = gameService.findGame(gameId, user2.id)
 
-        if (gameCreationResult is Success && gameCreationResult2 is Success) return gameCreationResult2.value.first
+        if (gameCreationResult is Success && gameCreationResult2 is Success) return gameCreationResult2.value.id
 
         return null
     }
 
     private fun createRandomUser(): User {
         // given: a user service
-        val maxTokensPerUser = 5
         val userService = createUsersService(TestClock())
 
         // when: creating a user
@@ -194,13 +194,12 @@ class GameServicesTests {
         val email = TestDataGenerator.newTestEmail()
         val password = TestDataGenerator.newTestPassword()
         userService.createUser(username, email, password)
-        val createTokenResult = userService.createToken(username, password)
-        val token = when (createTokenResult) {
-            is Failure -> kotlin.test.fail(createTokenResult.toString())
+        val token = when (val createTokenResult = userService.createToken(username, password)) {
+            is Failure -> fail(createTokenResult.toString())
             is Success -> createTokenResult.value.tokenValue
         }
 
-        return userService.getUserByToken(token) ?: kotlin.test.fail("User not found")
+        return userService.getUserByToken(token) ?: fail("User not found")
 
     }
 

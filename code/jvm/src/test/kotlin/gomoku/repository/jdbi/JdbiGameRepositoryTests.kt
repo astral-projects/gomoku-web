@@ -1,9 +1,9 @@
 package gomoku.repository.jdbi
 
-import gomoku.TestClock
-import gomoku.TestDataGenerator.newTestEmail
-import gomoku.TestDataGenerator.newTestUserName
-import gomoku.TestDataGenerator.newTokenValidationData
+import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestUserName
+import gomoku.utils.TestDataGenerator.newTokenValidationData
 import gomoku.domain.Id
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column

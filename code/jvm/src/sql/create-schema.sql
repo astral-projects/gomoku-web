@@ -41,7 +41,6 @@ create table dbo.GameVariants
     name         varchar(64) unique not null,
     opening_rule varchar(64)        not null,
     board_size   varchar(64)        not null
-        constraint board_size_is_positive check (board_size > 0)
 );
 
 create table dbo.Lobbies

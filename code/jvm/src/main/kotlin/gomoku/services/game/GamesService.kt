@@ -72,8 +72,10 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val g = gamesRepository.findIfUserIsInGame(userId)
-            if (g == null) {
+            val game = gamesRepository.findIfUserIsInGame(userId)
+            if(gamesRepository.checkIfUserIsInLobby(userId) != null)
+                return@run failure(GameCreationError.UserAlreadyInLobby)
+            if (game == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
@@ -88,19 +90,19 @@ class GamesService(
                         )
                         when (gameId) {
                             null -> failure(GameCreationError.UserAlreadyInGame)
-                            else -> success(Pair(gameId, "Joining game"))
+                            else -> success(FindGameSuccess(gameId, "Joining game"))
                         }
                     }
                 } else {
-                    gamesRepository.checkIfUserIsInLobby(userId) ?: failure(GameCreationError.UserAlreadyInLobby)
-                    val lobbyId = gamesRepository.addUserToLobby(variantId, userId)
-                    when (lobbyId) {
+                    gamesRepository.checkIfUserIsInLobby(userId)
+                        ?: failure(GameCreationError.UserAlreadyInLobby)
+                    when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success(Pair(lobbyId, "Waiting in lobby"))
+                        else -> success(FindGameSuccess(lobbyId, "Waiting in lobby"))
                     }
                 }
             } else {
-                success(Pair(g.id, "You already in the Game"))
+                failure(GameCreationError.UserAlreadyInGame)
             }
         }
 
@@ -114,10 +116,9 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             gamesRepository.getGameById(gameId) ?: return@run failure(GamePutError.GameNotFound)
             gamesRepository.userIsTheHost(gameId, userId) ?: return@run failure(GamePutError.UserIsNotTheHost)
-            val res = gamesRepository.deleteGame(gameId, userId)
-            when (res) {
+            when (val wasGameDeleted = gamesRepository.deleteGame(gameId, userId)) {
                 false -> failure(GamePutError.GameIsInprogress)
-                true -> success(res)
+                true -> success(wasGameDeleted)
             }
         }
 
