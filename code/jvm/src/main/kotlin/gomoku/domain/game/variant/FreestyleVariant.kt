@@ -21,9 +21,11 @@ import org.springframework.stereotype.Component
 private const val WINNING_PIECES = 5
 
 @Component
+// TODO("revisited game variant logic")
 class FreestyleVariant : Variant {
     override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
 
+    // TODO("change return type to Either<MakeMoveError, Board>")
     override fun isMoveValid(board: Board, square: Square): Board {
         return when (board) {
             is BoardWin, is BoardDraw -> error("Game is over")

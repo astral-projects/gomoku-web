@@ -1,4 +1,4 @@
-package gomoku.http.model
+package gomoku.http.media
 
 import org.springframework.http.ResponseEntity
 import java.net.URI

@@ -27,9 +27,16 @@ repositories {
 }
 
 dependencies {
+    // for Spring boot
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
-    // implementation("org.springframework.hateoas:spring-hateoas:2.0.4")
+
+    // for Spring validation
+    implementation("org.springframework.boot:spring-boot-starter-validation:3.0.4")
+
+    // for jackson json library
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+
+    // for kotlin reflection that other tools need
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
 
     // for JDBI
@@ -37,9 +44,6 @@ dependencies {
     implementation("org.jdbi:jdbi3-kotlin:3.37.1")
     implementation("org.jdbi:jdbi3-postgres:3.37.1")
     implementation("org.postgresql:postgresql:42.5.4")
-
-    // for Spring validation
-    implementation("org.springframework.boot:spring-boot-starter-validation:3.0.4")
 
     // to use Kotlin specific date and time functions
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

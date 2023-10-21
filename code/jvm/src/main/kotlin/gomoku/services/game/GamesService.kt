@@ -5,11 +5,11 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
 import gomoku.domain.SystemInfo
+import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
-import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
 import gomoku.repository.GamesRepository
@@ -47,51 +47,67 @@ class GamesService(
         gameVariantMap
     }
 
+    /**
+     * Gets the game with the given id if it exists.
+     * If the game does not exist, returns an error.
+     */
     @NotTested
-    fun getGameById(id: Id): GettingGameResult {
+    fun getGameById(gameId: Id): GettingGameResult {
         return transactionManager.run {
-            when (val game = (it.gamesRepository.getGameById(id))) {
+            when (val game = (it.gamesRepository.getGameById(gameId))) {
                 null -> failure(GettingGameError.GameNotFound)
                 else -> success(game)
             }
         }
     }
-
+    /**
+     * Creates a game with the given variant and the given user as the host.
+     * If the user is already in a game, returns an error.
+     * If the user is already in a lobby, removes the user from the lobby and creates the game.
+     * If the user is not in a lobby, creates a lobby and adds the user to it.
+     */
     fun findGame(variantId: Id, userId: Id): GameCreationResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            if (gamesRepository.findIfUserIsInGame(userId) == null) {
+            val g=gamesRepository.findIfUserIsInGame(userId)
+            if (g == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
-                        val res = gamesRepository.createGame(
+                        val gameId = gamesRepository.createGame(
                             variantId = variantId,
                             hostId = lobby.userId,
                             guestId = userId,
                             lobbyId = lobby.lobbyId,
                             board = variant.initialBoard()
                         )
-                        when (res) {
+                        when (gameId) {
                             null -> failure(GameCreationError.UserAlreadyInGame)
-                            else -> success("Joining game")
+                            else -> success(Pair(gameId,"Joining game"))
                         }
                     }
                 } else {
                     gamesRepository.checkIfUserIsInLobby(userId) ?: failure(GameCreationError.UserAlreadyInLobby)
-                    when (gamesRepository.addUserToLobby(variantId, userId)) {
+                    val lobbyId =gamesRepository.addUserToLobby(variantId, userId)
+                    when (lobbyId) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success("Waiting in lobby")
+                        else -> success(Pair(lobbyId,"Waiting in lobby"))
                     }
                 }
             } else {
-                success("You already in the Game")
+                success(Pair(g.id,"You already in the Game"))
             }
         }
 
+    /**
+     * Deletes the game with the given id if the user is the host.
+     * If the game is in progress, returns an error.
+     * If the user is not the host, returns an error.
+     */
     fun deleteGame(gameId: Id, userId: Id): GamePutResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
@@ -104,20 +120,21 @@ class GamesService(
             }
         }
 
-    fun getGameStatus(userId: Id, gameId: Id): GettingGameResult {
-        return transactionManager.run { transaction ->
-            val gamesRepository = transaction.gamesRepository
-            when (val game = gamesRepository.getGameStatus(gameId, userId)) {
-                null -> failure(GettingGameError.GameNotFound)
-                else -> success(game)
-            }
-        }
-    }
-
+    /**
+     * Returns the system info.
+     */
     fun getSystemInfo(): SystemInfo = SystemInfo
 
+    /**
+     * Makes a move in the game , passing the user id and the move.
+     * If the user does not belong to the game, returns an error.
+     * If the move is not valid, returns an error.
+     * If the game is not found, returns an error.
+     * Depending on the board type, updates the points of the players.Using function updatedPointsBasedOnBoardType
+     * Finally, returns the updated game.Or returns an error
+     */
     @NotTested
-    fun makeMove(gameId: Id, user: Id, square: Square, player: Player): GameMakeMoveResult =
+    fun makeMove(gameId: Id, user: Id, move:Move): GameMakeMoveResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
@@ -127,12 +144,14 @@ class GamesService(
             val variant = gameVariantMap[game.variant.id]
                 ?: return@run failure(GameMakeMoveError.VariantNotFound)
             val gameLogic = GameLogic(variant, clock)
-            when (val playLogic = gameLogic.play(square, game, user)) {
+            when (val playLogic = gameLogic.play(move.first, game, user)) {
                 is Failure -> failure(GameMakeMoveError.MoveNotValid(playLogic.value))
                 is Success -> {
                     val updatedGame = playLogic.value
+                    val gameState=if(updatedGame.board is BoardWin || updatedGame.board is BoardDraw) GameState.FINISHED else GameState.IN_PROGRESS
                     updatedPointsBasedOnBoardType(gamesRepository, variant.points, user, updatedGame)
-                    when (val makeMove = gamesRepository.updateGame(gameId, updatedGame.board)) {
+                    when (val makeMove =
+                        gamesRepository.updateGame(gameId, updatedGame.board,gameState)) {
                         false -> failure(GameMakeMoveError.GameNotFound)
                         true -> success(makeMove)
                     }
@@ -140,6 +159,13 @@ class GamesService(
             }
         }
 
+    /**
+     * Exits the game with the given id if the user belongs to the game.
+     * If the user is not in the game, returns an error.
+     * If the game is already finished, returns an error.
+     * If the user forfeits, the winner is the other user.
+     * The points are updated based on the board type.
+     */
     @NotTested
     fun exitGame(gameId: Id, userId: Id): GameDeleteResult {
         return transactionManager.run { transaction ->
@@ -168,6 +194,9 @@ class GamesService(
         }
     }
 
+    /**
+     * This function updates the points of the players based on the board type.
+     */
     private fun updatedPointsBasedOnBoardType(
         gamesRepository: GamesRepository,
         gamePoints: GamePoints,

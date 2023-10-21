@@ -206,22 +206,6 @@ class JdbiGameRepository(
             .execute() > 0
 
     /**
-     * Checks if a user is in a game.
-     *
-     * @param userId the id of the user to check
-     * @return the game the user is in, or null if the user is not in a game
-     */
-    override fun findIfUserIsInGame(userId: Id): Game? =
-        handle.createQuery(
-            """SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id  WHERE
-                g.state != :state AND (g.host_id = :userId OR g.guest_id = :userId);"""
-        )
-            .bind("userId", userId.value)
-            .bind("state", GameState.FINISHED.name)
-            .mapTo<JdbiGameAndVariantModel>()
-            .singleOrNull()?.toDomainModel()
-
-    /**
      * Deletes a variant from the database. This method is only used for testing.
      *
      * @param name the name of the variant to delete
@@ -252,15 +236,16 @@ class JdbiGameRepository(
      * @param board the board to update the game with
      * @return true if the game was updated successfully, false otherwise
      */
-    override fun updateGame(gameId: Id, board: Board): Boolean =
+    override fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean =
         handle.createUpdate(
             """
         UPDATE dbo.Games 
-        SET board = :board::jsonb, updated_at = extract(epoch from now()) 
+        SET board = :board::jsonb, updated_at = extract(epoch from now()), state = :state 
         WHERE id = :gameId;
     """
         )
             .bind("gameId", gameId.value)
+            .bind("state",gameState.name)
             .bind("board", convertBoardToJdbiModelInJson(board)).execute() > 0
 
     /**
@@ -288,30 +273,8 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-    /**
-     * Retrieves the status of a game.
-     * Includes the board, the variant, and the players.
-     *
-     * @param gameId the id of the game to retrieve the status of
-     * @param userId the id of the user who is retrieving the status of the game
-     */
-    override fun getGameStatus(gameId: Id, userId: Id): Game? =
-        handle.createQuery("select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :gameId AND (g.host_id = :id OR g.guest_id = :id)")
-            .bind("id", userId.value)
-            .bind("gameId", gameId.value)
-            .mapTo<JdbiGameAndVariantModel>()
-            .singleOrNull()?.toDomainModel()
-
-    /**
-     * Checks if a user is in matchmaking.
-     * Verifies if there is a lobby with the given variant id and a different host id.
-     *
-     * @param variantId the id of the variant to check
-     * @param userId the id of the user to check
-     * @return the lobby that has the given variant id and a different host id, or null if no such lobby exists
-     */
     override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
-        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id")
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id FOR UPDATE")
             .bind("variant_id", variantId.value)
             .bind("host_id", userId.value)
             .mapTo<JdbiLobbyModel>()

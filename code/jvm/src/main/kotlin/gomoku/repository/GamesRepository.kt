@@ -3,6 +3,7 @@ package gomoku.repository
 import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameState
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.VariantConfig
@@ -15,7 +16,9 @@ import gomoku.utils.NotTested
  * This repository provides methods to interact with game data, lobbies, and variants.
  */
 interface GamesRepository {
-    fun getGameById(id: Id): Game?
+    fun getGameById(gameId: Id): Game?
+
+    @NotTested
     fun insertVariants(variants: List<VariantConfig>): Boolean
     fun getVariants(): List<GameVariant>
     fun getVariantByName(variantName: VariantName): Id?
@@ -25,12 +28,10 @@ interface GamesRepository {
     fun deleteUserFromLobby(lobbyId: Id): Boolean
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
     fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
+    fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
-    fun getGameStatus(gameId: Id, userId: Id): Game?
-    fun userIsTheHost(userId: Id, gameId: Id): Game?
     fun exitGame(gameId: Id, userId: Id): Id?
-    fun findIfUserIsInGame(userId: Id): Game?
-    fun updateGame(gameId: Id, board: Board): Boolean
+    fun userIsTheHost(userId: Id, gameId: Id): Game?
     fun updatePoints(
         gameId: Id,
         winnerId: Id,

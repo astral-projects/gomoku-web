@@ -10,11 +10,11 @@ import gomoku.http.model.JsonOutputModel
 class BoardOutputModel private constructor(
     @field:JsonSerialize(using = MovesSerializer::class)
     val grid: Moves,
-    val turn: BoardTurn
+    val turn: BoardTurn?
 ) {
     companion object : JsonOutputModel<Board, BoardOutputModel> {
         override fun serializeFrom(domainClass: Board): BoardOutputModel {
-            val turn = domainClass.turn ?: error("Game is over")
+            val turn = domainClass.turn
             return BoardOutputModel(
                 grid = domainClass.grid,
                 turn = turn

@@ -12,7 +12,7 @@ import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
 import gomoku.http.model.IdOutputModel
-import gomoku.http.model.Problem
+import gomoku.http.media.Problem
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
@@ -186,14 +186,14 @@ class UsersController(
     @GetMapping(Uris.Users.STATS_BY_ID)
     @NotTested
     fun getUserStats(user: AuthenticatedUser): ResponseEntity<UserRankInfo> {
-        logger.info("GET ${Uris.Users.RANKING}")
+        logger.info("GET ${Uris.Users.STATS_BY_ID}")
         TODO("Not yet implemented")
     }
 
-    @PutMapping(Uris.Users.EDIT_USER_PROFILE)
+    @PutMapping(Uris.Users.EDIT_BY_ID)
     @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
-        logger.info("PUT ${Uris.Users.EDIT_USER_PROFILE}")
+        logger.info("PUT ${Uris.Users.EDIT_BY_ID}")
         TODO("Not yet implemented")
     }
 

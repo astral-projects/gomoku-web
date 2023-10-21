@@ -1,1 +1,7 @@
-Please edit this file with instructions on how to build and run the project.
+### Run the project
+
+With [Docker Compose](https://docs.docker.com/compose/) installed, run the following command:
+
+```bash
+docker-compose up
+```
