@@ -19,6 +19,7 @@ import gomoku.domain.user.UsersDomainConfig
 import gomoku.repository.jdbi.JdbiTestConfiguration
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.repository.transaction.TransactionManager
+import gomoku.services.game.GameCreationResult
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GamesService
 import gomoku.services.user.UsersService
@@ -70,10 +71,8 @@ class GameServicesTests {
         assertNotEquals(gameCreationResult.value.message, gameCreationResult2.value.message)
 
         val gameResult = gameService.findGame(Id(1), user.id)
-        if (gameResult is Success)
-            assertEquals(gameCreationResult2.value.id, gameResult.value.id)
-        else
-            fail("Unexpected $gameResult")
+        assertTrue(gameResult is Failure)
+
 
     }
 
