@@ -17,8 +17,6 @@ import gomoku.utils.NotTested
  */
 interface GamesRepository {
     fun getGameById(gameId: Id): Game?
-
-    @NotTested
     fun insertVariants(variants: List<VariantConfig>): Boolean
     fun getVariants(): List<GameVariant>
     fun getVariantByName(variantName: VariantName): Id?
@@ -27,6 +25,7 @@ interface GamesRepository {
     fun addUserToLobby(variantId: Id, userId: Id): Id?
     fun deleteUserFromLobby(lobbyId: Id): Boolean
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
+    fun findIfUserIsInGame(userId: Id): Game?
     fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
     fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
@@ -40,6 +39,6 @@ interface GamesRepository {
         loserPoints: NonNegativeValue,
         shouldCountAsGameWin: Boolean
     ): Boolean
-    fun deleteVariant(name: VariantName): Boolean // just for testing
-    fun deleteLobby(lobbyId: Id): Boolean // just for testing
+    fun deleteVariant(name: VariantName): Boolean
+    fun deleteLobby(lobbyId: Id): Boolean
 }

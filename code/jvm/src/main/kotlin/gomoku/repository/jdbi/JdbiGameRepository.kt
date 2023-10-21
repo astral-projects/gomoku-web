@@ -132,6 +132,22 @@ class JdbiGameRepository(
             .execute() == 1
 
     /**
+     * Checks if a user is in a game.
+     *
+     * @param userId the id of the user to check
+     * @return the game the user is in, or null if the user is not in a game
+     */
+    override fun findIfUserIsInGame(userId: Id): Game? =
+        handle.createQuery(
+            """SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id  WHERE
+                g.state != :state AND (g.host_id = :userId OR g.guest_id = :userId);"""
+        )
+            .bind("userId", userId.value)
+            .bind("state", GameState.FINISHED.name)
+            .mapTo<JdbiGameAndVariantModel>()
+            .singleOrNull()?.toDomainModel()
+
+    /**
      * Checks if a user belongs to a game.
      *
      * @param userId the id of the user to check
@@ -234,6 +250,7 @@ class JdbiGameRepository(
      *
      * @param gameId the id of the game to update
      * @param board the board to update the game with
+     * @param gameState the state to update the game with
      * @return true if the game was updated successfully, false otherwise
      */
     override fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean =
@@ -273,6 +290,14 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
+    /**
+     * Checks if a user is in matchmaking.
+     * This means that it already exists a lobby with the given variant id and the user is not the host of the lobby.
+     *
+     * @param variantId the id of the variant to check
+     * @param userId the id of the user to check
+     * @return the lobby the user is in matchmaking, or null if the user is not in matchmaking
+     */
     override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
         handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id FOR UPDATE")
             .bind("variant_id", variantId.value)

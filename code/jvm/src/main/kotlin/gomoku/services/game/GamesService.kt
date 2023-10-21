@@ -1,10 +1,10 @@
 package gomoku.services.game
 
 import gomoku.domain.Id
+import gomoku.domain.SystemInfo
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
-import gomoku.domain.SystemInfo
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
@@ -60,6 +60,7 @@ class GamesService(
             }
         }
     }
+
     /**
      * Creates a game with the given variant and the given user as the host.
      * If the user is already in a game, returns an error.
@@ -71,7 +72,7 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val g=gamesRepository.findIfUserIsInGame(userId)
+            val g = gamesRepository.findIfUserIsInGame(userId)
             if (g == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
@@ -87,19 +88,19 @@ class GamesService(
                         )
                         when (gameId) {
                             null -> failure(GameCreationError.UserAlreadyInGame)
-                            else -> success(Pair(gameId,"Joining game"))
+                            else -> success(Pair(gameId, "Joining game"))
                         }
                     }
                 } else {
                     gamesRepository.checkIfUserIsInLobby(userId) ?: failure(GameCreationError.UserAlreadyInLobby)
-                    val lobbyId =gamesRepository.addUserToLobby(variantId, userId)
+                    val lobbyId = gamesRepository.addUserToLobby(variantId, userId)
                     when (lobbyId) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success(Pair(lobbyId,"Waiting in lobby"))
+                        else -> success(Pair(lobbyId, "Waiting in lobby"))
                     }
                 }
             } else {
-                success(Pair(g.id,"You already in the Game"))
+                success(Pair(g.id, "You already in the Game"))
             }
         }
 
@@ -134,13 +135,13 @@ class GamesService(
      * Finally, returns the updated game.Or returns an error
      */
     @NotTested
-    fun makeMove(gameId: Id, user: Id, move:Move): GameMakeMoveResult =
+    fun makeMove(gameId: Id, user: Id, move: Move): GameMakeMoveResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameMakeMoveError.GameNotFound)
-            gamesRepository.userBelongsToTheGame(user, gameId) ?:
-                return@run failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
+            gamesRepository.userBelongsToTheGame(user, gameId)
+                ?: return@run failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
             val variant = gameVariantMap[game.variant.id]
                 ?: return@run failure(GameMakeMoveError.VariantNotFound)
             val gameLogic = GameLogic(variant, clock)
@@ -148,10 +149,11 @@ class GamesService(
                 is Failure -> failure(GameMakeMoveError.MoveNotValid(playLogic.value))
                 is Success -> {
                     val updatedGame = playLogic.value
-                    val gameState=if(updatedGame.board is BoardWin || updatedGame.board is BoardDraw) GameState.FINISHED else GameState.IN_PROGRESS
+                    val gameState =
+                        if (updatedGame.board is BoardWin || updatedGame.board is BoardDraw) GameState.FINISHED else GameState.IN_PROGRESS
                     updatedPointsBasedOnBoardType(gamesRepository, variant.points, user, updatedGame)
                     when (val makeMove =
-                        gamesRepository.updateGame(gameId, updatedGame.board,gameState)) {
+                        gamesRepository.updateGame(gameId, updatedGame.board, gameState)) {
                         false -> failure(GameMakeMoveError.GameNotFound)
                         true -> success(makeMove)
                     }
@@ -173,7 +175,7 @@ class GamesService(
             gamesRepository.userBelongsToTheGame(userId, gameId)
                 ?: return@run failure(GameDeleteError.UserDoesntBelongToThisGame)
             val winner = gamesRepository.exitGame(gameId, userId)
-            if (winner!= null) {
+            if (winner != null) {
                 val game = gamesRepository.getGameById(gameId)
                     ?: return@run failure(GameDeleteError.GameNotFound)
                 val variant = gameVariantMap[game.variant.id]

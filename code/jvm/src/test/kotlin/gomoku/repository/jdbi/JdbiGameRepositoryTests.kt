@@ -88,6 +88,11 @@ class JdbiGameRepositoryTests {
         assertEquals(hostBelongsToGame.id, createdGameId)
         assertNull(randomUserBelongsToGame)
 
+        //and: checking if the user is in a game
+        val userInGame = repoGames.findIfUserIsInGame(host)
+        checkNotNull(userInGame)
+        assertEquals(userInGame.id, createdGameId)
+
         //and: checking who is the host
         val isHost = repoGames.userIsTheHost(host, createdGameId)
         val isGuest = repoGames.userIsTheHost(guest, createdGameId)
@@ -98,23 +103,6 @@ class JdbiGameRepositoryTests {
         assertEquals(isHost.hostId, host)
         assertNull(isGuest)
 
-        //and: getting game status for the host and guest and a random user
-        val gameStatus = repoGames.getGameStatus(createdGameId, host)
-        val gameStatus2 = repoGames.getGameStatus(createdGameId, guest)
-        val gameStatus3 = repoGames.getGameStatus(createdGameId, Id(100))
-
-        //then:
-        assertNotNull(gameStatus)
-        assertEquals(gameStatus.id, createdGameId)
-        assertEquals(gameStatus.hostId, host)
-        assertEquals(gameStatus.guestId, guest)
-        assertEquals(gameStatus.variant.id, variantId)
-        assertNotNull(gameStatus2)
-        assertEquals(gameStatus2.id, createdGameId)
-        assertEquals(gameStatus2.hostId, host)
-        assertEquals(gameStatus2.guestId, guest)
-        assertEquals(gameStatus2.variant.id, variantId)
-        assertNull(gameStatus3)
 
         //and: host exiting the game
         val userStayedInGame = repoGames.exitGame(createdGameId, host)
@@ -315,7 +303,7 @@ class JdbiGameRepositoryTests {
             //and: updating the game with a new board
             val newBoard =
                 board.play(Square(Column('b'), Row(1)), freestyle).play(Square(Column('c'), Row(1)), freestyle)
-            val updatedGame = repoGames.updateGame(game2.id, newBoard)
+            val updatedGame = repoGames.updateGame(game2.id, newBoard, game2.state)
 
             //then:
             assertTrue(updatedGame)
