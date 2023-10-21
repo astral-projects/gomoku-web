@@ -10,35 +10,27 @@ import gomoku.domain.game.variant.VariantName
 import gomoku.domain.lobby.Lobby
 import gomoku.utils.NotTested
 
+/**
+ * Interface for managing games and related operations in the API.
+ * This repository provides methods to interact with game data, lobbies, and variants.
+ */
 interface GamesRepository {
     fun getGameById(id: Id): Game?
-
     fun insertVariants(variants: List<VariantConfig>): Boolean
-
     fun getVariants(): List<GameVariant>
-
     fun getVariantByName(variantName: VariantName): Id?
-
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id, board: Board): Id?
     fun deleteGame(gameId: Id, userId: Id): Boolean
     fun addUserToLobby(variantId: Id, userId: Id): Id?
     fun deleteUserFromLobby(lobbyId: Id): Boolean
-
     fun isMatchmaking(variantId: Id, userId: Id): Lobby?
-
-    @NotTested
     fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
-    @NotTested
-    fun updateGame(gameId: Id, board: Board): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
-    @NotTested
-    fun exitGame(gameId: Id, userId: Id): Id?
     fun getGameStatus(gameId: Id, userId: Id): Game?
-
-    @NotTested
     fun userIsTheHost(userId: Id, gameId: Id): Game?
-
-    @NotTested
+    fun exitGame(gameId: Id, userId: Id): Id?
+    fun findIfUserIsInGame(userId: Id): Game?
+    fun updateGame(gameId: Id, board: Board): Boolean
     fun updatePoints(
         gameId: Id,
         winnerId: Id,
@@ -47,9 +39,6 @@ interface GamesRepository {
         loserPoints: NonNegativeValue,
         shouldCountAsGameWin: Boolean
     ): Boolean
-
-
-    fun findIfUserIsInGame(userId: Id): Game?
-
     fun deleteVariant(name: VariantName): Boolean // just for testing
+    fun deleteLobby(lobbyId: Id): Boolean // just for testing
 }

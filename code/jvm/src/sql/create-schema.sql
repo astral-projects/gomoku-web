@@ -57,7 +57,7 @@ create table dbo.Games
 (
     id         int generated always as identity primary key,
     state      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
-    variant_id int references dbo.GameVariants (id)                     not null,
+    variant_id int                                                      not null,
     board      jsonb                                                    not null,
     -- TODO: add board json constraints once we have a clear board representation in domain
     created_at int                                                      not null default extract(epoch from now()),
@@ -65,6 +65,7 @@ create table dbo.Games
     host_id    int references dbo.Users (id),
     guest_id   int references dbo.Users (id),
     lobby_id   int unique                                               not null,
+    foreign key (variant_id) references dbo.GameVariants (id) on delete cascade on update cascade,
     constraint host_and_guest_are_different check (host_id != guest_id),
     constraint created_before_updated check (created_at <= updated_at),
     constraint created_is_valid check (created_at > 0),

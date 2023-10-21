@@ -5,6 +5,9 @@ import gomoku.TestDataGenerator.newTestEmail
 import gomoku.TestDataGenerator.newTestUserName
 import gomoku.TestDataGenerator.newTokenValidationData
 import gomoku.domain.Id
+import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.board.moves.square.Column
+import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.variant.FreestyleVariant
 import gomoku.domain.game.variant.VariantName
 import gomoku.domain.user.PasswordValidationInfo
@@ -12,6 +15,7 @@ import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -23,7 +27,7 @@ class JdbiGameRepositoryTests {
     }
 
     @Test
-    fun `can create a game with a certain variant, get that game status and see who is the host`() = runWithHandle { handle ->
+    fun `can create a game, do inner verifications and user exiting the game`() = runWithHandle { handle ->
         //given: a GamesRepository and a UsersRepository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
@@ -78,17 +82,21 @@ class JdbiGameRepositoryTests {
         val randomUserBelongsToGame = repoGames.userBelongsToTheGame(Id(100), createdGameId)
 
         //then:
-        assertTrue(guestBelongsToGame)
-        assertTrue(hostBelongsToGame)
-        assertFalse(randomUserBelongsToGame)
+        assertNotNull(guestBelongsToGame)
+        assertEquals(guestBelongsToGame.id, createdGameId)
+        assertNotNull(hostBelongsToGame)
+        assertEquals(hostBelongsToGame.id, createdGameId)
+        assertNull(randomUserBelongsToGame)
 
         //and: checking who is the host
         val isHost = repoGames.userIsTheHost(host, createdGameId)
         val isGuest = repoGames.userIsTheHost(guest, createdGameId)
 
         //then:
-        assertTrue(isHost)
-        assertFalse(isGuest)
+        assertNotNull(isHost)
+        assertEquals(isHost.id, createdGameId)
+        assertEquals(isHost.hostId, host)
+        assertNull(isGuest)
 
         //and: getting game status for the host and guest and a random user
         val gameStatus = repoGames.getGameStatus(createdGameId, host)
@@ -108,6 +116,11 @@ class JdbiGameRepositoryTests {
         assertEquals(gameStatus2.variant.id, variantId)
         assertNull(gameStatus3)
 
+        //and: host exiting the game
+        val userStayedInGame = repoGames.exitGame(createdGameId, host)
+        assertNotNull(userStayedInGame)
+        assertEquals(userStayedInGame, guest)
+
         //and: trying to delete a game with the guest id
         val isGameDeleted = repoGames.deleteGame(createdGameId, guest)
 
@@ -126,6 +139,7 @@ class JdbiGameRepositoryTests {
         //then:
         assertNull(gameAfterDeleted)
 
+        repoGames.deleteLobby(Id(5))
         repoGames.deleteVariant(VariantName.FREESTYLE)
 
     }
@@ -185,6 +199,7 @@ class JdbiGameRepositoryTests {
         //then:
         assertNull(userInLobbyAfterDeleted)
 
+        repoGames.deleteLobby(lobbyId)
         repoGames.deleteVariant(VariantName.FREESTYLE)
 
     }
@@ -241,29 +256,79 @@ class JdbiGameRepositoryTests {
         //then:
         assertTrue(isUserDeleted)
         assertTrue(isUserDeleted2)
+        repoGames.deleteLobby(lobbyId)
+        repoGames.deleteLobby(lobbyId2)
         repoGames.deleteVariant(VariantName.FREESTYLE)
     }
 
-//    @Test
-//    fun `can make a move`() = runWithHandle { handle ->
-//
-//
-//        val repo = JdbiGameRepository(handle)
-////        repo.updatePoints(Id(1), Id(1))
-//        val game = repo.getGameById(Id(1))
-//            ?: fail("Game not found")
-//        val grid = mapOf(
-//            Move(Square(Column('c'), Row(9)), Piece(Player.w)),
-//            Move(Square(Column('d'), Row(8)), Piece(Player.b)),
-//            Move(Square(Column('c'), Row(8)), Piece(Player.w)),
-//            Move(Square(Column('d'), Row(7)), Piece(Player.b)),
-//            Move(Square(Column('c'), Row(7)), Piece(Player.w)),
-//            Move(Square(Column('d'), Row(6)), Piece(Player.b)),
-//            Move(Square(Column('c'), Row(6)), Piece(Player.w)),
-//            Move(Square(Column('d'), Row(5)), Piece(Player.b))
-//        )
-//        require(game.board is BoardRun)
-//        val newBoard = game.board.copy(grid = grid)
-//        repo.updateGame(game.id, newBoard)
-//    }
+    @Test
+    fun `creating game and updating it`() {
+        runWithHandle {
+            //given: a GamesRepository and a UsersRepository
+            val repoGames = JdbiGameRepository(it)
+            val repoUsers = JdbiUsersRepository(it)
+
+            //when: creating a host waiting for a game
+            val username1 = newTestUserName()
+            val email1 = newTestEmail()
+            val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
+            val host = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+
+            //and: creating a guest waiting for a game
+            val username2 = newTestUserName()
+            val email2 = newTestEmail()
+            val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
+            val guest = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
+
+            //and: choosing a variant and a board
+            val freestyle = FreestyleVariant()
+            val board = freestyle.initialBoard()
+
+            //and: adding that variant to the database
+            val insertVariants = repoGames.insertVariants(listOf(freestyle.config))
+            assertTrue(insertVariants)
+            assertEquals(1, repoGames.getVariants().size)
+
+            //and: getting the variant by id
+            val variantId = repoGames.getVariantByName(VariantName.FREESTYLE)
+
+            //then:
+            assertNotNull(variantId)
+            assertEquals(repoGames.getVariants()[0].id, variantId)
+
+            //and: creating two games so can be compared
+            val createdGameId = repoGames.createGame(variantId, host, guest, Id(5), board)
+            assertNotNull(createdGameId)
+            val createdGameId2 = repoGames.createGame(variantId, host, guest, Id(6), board)
+            assertNotNull(createdGameId2)
+
+            val game1 = repoGames.getGameById(createdGameId)
+            assertNotNull(game1)
+            assertEquals(createdGameId, game1.id)
+            val game2 = repoGames.getGameById(createdGameId2)
+            assertNotNull(game2)
+            assertEquals(createdGameId2, game2.id)
+
+            //then:
+            assertNotNull(createdGameId)
+
+            //and: updating the game with a new board
+            val newBoard =
+                board.play(Square(Column('b'), Row(1)), freestyle).play(Square(Column('c'), Row(1)), freestyle)
+            val updatedGame = repoGames.updateGame(game2.id, newBoard)
+
+            //then:
+            assertTrue(updatedGame)
+            assertNotEquals(game1.board, game2.board)
+
+
+            repoGames.deleteLobby(Id(5))
+            repoGames.deleteLobby(Id(6))
+            repoGames.deleteGame(game1.id, host)
+            repoGames.deleteGame(game2.id, host)
+            repoGames.deleteVariant(VariantName.FREESTYLE)
+
+
+        }
+    }
 }
