@@ -175,7 +175,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
-        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id")
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id FOR UPDATE")
             .bind("variant_id", variantId.value)
             .bind("host_id", userId.value)
             .mapTo<JdbiLobbyModel>()
