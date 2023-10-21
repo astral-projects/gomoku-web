@@ -2,7 +2,7 @@ package gomoku.domain.game
 
 import gomoku.domain.Id
 import gomoku.domain.game.board.Board
-import gomoku.domain.game.variants.GameVariant
+import gomoku.domain.game.variant.GameVariant
 import kotlinx.datetime.Instant
 
 data class Game(

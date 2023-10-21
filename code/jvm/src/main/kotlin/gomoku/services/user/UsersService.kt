@@ -17,8 +17,9 @@ import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
+@Service
 class UsersService(
     private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,

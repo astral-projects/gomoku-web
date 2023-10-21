@@ -1,6 +1,7 @@
 package gomoku.http
 
 import gomoku.http.model.Problem
+import gomoku.http.pipeline.errors.HttpServletRequestRequiredException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import java.net.URI
 
 @ControllerAdvice
 class CustomExceptionHandler : ResponseEntityExceptionHandler() {
@@ -24,7 +24,12 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest
     ): ResponseEntity<Any>? {
         log.info("Handling MethodArgumentNotValidException: {}", ex.message)
-        return Problem.response(400, Problem.invalidRequestContent)
+        return Problem(
+            type = Problem.invalidRequestContent,
+            title = "Method argument not valid",
+            status = 400,
+            detail = ex.message
+        ).toResponse()
     }
 
     override fun handleHttpMessageNotReadable(
@@ -34,22 +39,27 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest
     ): ResponseEntity<Any> {
         log.info("Handling HttpMessageNotReadableException: {}", ex.message)
-        return Problem.response(400, Problem.invalidRequestContent)
+        return Problem(
+            type = Problem.invalidRequestContent,
+            title = "Http message not readable",
+            status = 400,
+            detail = ex.message
+        ).toResponse()
     }
 
-    @ExceptionHandler(
-        IllegalArgumentException::class
-    )
-    fun handleArgumentResolutionException(): ResponseEntity<Problem> {
-        val problem = Problem(
-            URI("")
-        )
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem)
+    @ExceptionHandler(HttpServletRequestRequiredException::class)
+    fun handleHttpServletRequestRequired(): ResponseEntity<Any> {
+        log.info("Handling HttpServletRequestRequiredException")
+        return Problem(
+            type = Problem.invalidRequestContent,
+            title = "Http servlet request required",
+            status = 503,
+            // access exception message
+            detail = "A HttpServletRequest is required to resolve this request"
+        ).toResponse()
     }
 
-    @ExceptionHandler(
-        Exception::class
-    )
+    @ExceptionHandler(Exception::class)
     fun handleAll(): ResponseEntity<Unit> {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
     }

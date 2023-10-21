@@ -13,13 +13,11 @@ class JdbiBoardWinModel(
     @field: JsonDeserialize(using = MovesDeserializer::class)
     @field:JsonSerialize(using = MovesSerializer::class)
     val grid: Moves,
-    val winner: Player,
-    val size: Int
+    val winner: Player
 ) : JdbiBoardModel {
     override fun toDomainModel(): BoardWin {
         return BoardWin(
-            size = BoardSize.fromSize(size),
-            mvs = grid,
+            moves = grid,
             winner = winner
         )
     }

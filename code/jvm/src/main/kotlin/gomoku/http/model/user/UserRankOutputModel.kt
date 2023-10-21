@@ -17,11 +17,11 @@ class UserRankOutputModel private constructor(
             return UserRankOutputModel(
                 username = domainClass.username.value,
                 email = domainClass.email.value,
-                points = domainClass.points,
-                rank = domainClass.rank,
-                gamesPlayed = domainClass.gamesPlayed,
-                wins = domainClass.wins,
-                losses = domainClass.losses
+                points = domainClass.points.value,
+                rank = domainClass.rank.value,
+                gamesPlayed = domainClass.gamesPlayed.value,
+                wins = domainClass.wins.value,
+                losses = domainClass.losses.value
             )
         }
     }

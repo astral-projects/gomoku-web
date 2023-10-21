@@ -1,6 +1,7 @@
 package gomoku.http.pipeline.resolvers
 
 import gomoku.domain.user.AuthenticatedUser
+import gomoku.http.pipeline.errors.HttpServletRequestRequiredException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -21,10 +22,9 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
-        // TODO("handle exceptions properly")
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
-            ?: throw IllegalStateException("TODO")
-        return getUserFrom(request) ?: throw IllegalStateException("TODO")
+            ?: throw HttpServletRequestRequiredException()
+        return getUserFrom(request)
     }
 
     companion object {

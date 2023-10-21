@@ -28,8 +28,9 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
+    // implementation("org.springframework.hateoas:spring-hateoas:2.0.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
 
     // for JDBI
     implementation("org.jdbi:jdbi3-core:3.37.1")

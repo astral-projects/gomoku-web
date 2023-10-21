@@ -19,6 +19,7 @@ import gomoku.http.model.user.UserCreateTokenInputModel
 import gomoku.http.model.user.UserOutputModel
 import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
+import gomoku.services.user.TokenRevocationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
@@ -61,9 +62,29 @@ class UsersController(
                 .body(IdOutputModel.serializeFrom(res.value))
 
             is Failure -> when (res.value) {
-                UserCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
-                UserCreationError.UsernameAlreadyExists -> Problem.response(400, Problem.usernameAlreadyExists)
-                UserCreationError.EmailAlreadyExists -> Problem.response(400, Problem.emailAlreadyExists)
+                UserCreationError.InsecurePassword -> Problem(
+                    type = Problem.insecurePassword,
+                    title = "Received password is considered insecure",
+                    status = 400,
+                    detail = "The password must be between 8 and 40 characters",
+                    instance = Uris.Users.register()
+                ).toResponse()
+
+                UserCreationError.UsernameAlreadyExists -> Problem(
+                    type = Problem.usernameAlreadyExists,
+                    title = "Received username already exists",
+                    status = 400,
+                    detail = "The chosen username is already in use by another user",
+                    instance = Uris.Users.register()
+                ).toResponse()
+
+                UserCreationError.EmailAlreadyExists -> Problem(
+                    type = Problem.emailAlreadyExists,
+                    title = "Received email already exists",
+                    status = 400,
+                    detail = "The chosen email is already in use by another user",
+                    instance = Uris.Users.register()
+                ).toResponse()
             }
         }
     }
@@ -84,11 +105,21 @@ class UsersController(
                     .body(UserTokenCreateOutputModel(res.value.tokenValue))
 
             is Failure -> when (res.value) {
-                TokenCreationError.PasswordIsInvalid ->
-                    Problem.response(400, Problem.passwordIsInvalid)
+                TokenCreationError.PasswordIsInvalid -> Problem(
+                    type = Problem.passwordIsInvalid,
+                    title = "Received password is invalid",
+                    status = 400,
+                    detail = "The received password is invalid",
+                    instance = Uris.Users.login()
+                ).toResponse()
 
-                TokenCreationError.UsernameIsInvalid ->
-                    Problem.response(400, Problem.usernameIsInvalid)
+                TokenCreationError.UsernameIsInvalid -> Problem(
+                    type = Problem.usernameIsInvalid,
+                    title = "Received username is invalid",
+                    status = 400,
+                    detail = "The received username is invalid",
+                    instance = Uris.Users.login()
+                ).toResponse()
             }
         }
     }
@@ -96,10 +127,19 @@ class UsersController(
     @PostMapping(Uris.Users.LOGOUT)
     fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
         logger.info("POST ${Uris.Users.LOGOUT}")
-        val wasTokenRevoked = userService.revokeToken(authenticatedUser.token)
-        return when (wasTokenRevoked) {
-            is Success -> ResponseEntity.ok("Logout successful")
-            is Failure -> Problem.response(400, Problem.logoutError)
+        return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
+            is Success -> ResponseEntity.ok("Logout was successful")
+            is Failure -> {
+                when (tokenRevocationResult.value) {
+                    TokenRevocationError.TokenIsInvalid -> Problem(
+                        type = Problem.tokenIsInvalid,
+                        title = "Received token is invalid",
+                        status = 400,
+                        detail = "The received token is invalid",
+                        instance = Uris.Users.logout()
+                    ).toResponse()
+                }
+            }
         }
     }
 
@@ -121,7 +161,13 @@ class UsersController(
         return when (val res = userService.getUserById(Id(id))) {
             is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
             is Failure -> when (res.value) {
-                GettingUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
+                GettingUserError.UserNotFound -> Problem(
+                    type = Problem.userNotFound,
+                    title = "User not found",
+                    status = 404,
+                    detail = "The user with the given id was not found",
+                    instance = Uris.Users.byId(id)
+                ).toResponse()
             }
         }
     }
@@ -132,7 +178,8 @@ class UsersController(
         @RequestParam(name = "limit", defaultValue = "10") limit: Int
     ): ResponseEntity<PaginatedResult<UserRankInfo>> {
         logger.info("GET ${Uris.Users.RANKING}")
-        val paginatedResult = userService.getUsersRanking(NonNegativeValue(offset), PositiveValue(limit))
+        val paginatedResult =
+            userService.getUsersRanking(NonNegativeValue(offset), PositiveValue(limit))
         return ResponseEntity.ok(paginatedResult)
     }
 

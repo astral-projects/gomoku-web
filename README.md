@@ -18,7 +18,7 @@ The HTTP API should provide the functionality required for a front-end applicati
 
 ## Get the information of the application
 - Obtain information about the system, such as the system authors and the system version, by an unauthenticated user.
-- **URI:** `/api/info`
+- **URI:** `/api/system`
 - **Method:** `GET`
   ```json
   {

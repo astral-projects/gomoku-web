@@ -1,5 +1,6 @@
 package gomoku.repository.jdbi.model.user
 
+import gomoku.domain.NonNegativeValue
 import gomoku.domain.user.Email
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
@@ -20,10 +21,10 @@ class JdbiUserAndStatsModel(
         UserRankInfo(
             username = Username(username),
             email = Email(email),
-            points = points,
-            rank = rank,
-            gamesPlayed = gamesPlayed,
-            wins = wins,
-            losses = gamesPlayed - wins
+            points = NonNegativeValue(points),
+            rank = NonNegativeValue(rank),
+            gamesPlayed = NonNegativeValue(gamesPlayed),
+            wins = NonNegativeValue(wins),
+            losses = NonNegativeValue(gamesPlayed - wins)
         )
 }

@@ -20,25 +20,25 @@ object Uris {
         const val LOGOUT = "$PREFIX/logout"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
-        fun home(): URI = URI(HOME)
         fun login(): URI = URI(TOKEN)
         fun register(): URI = URI(REGISTER)
+        fun logout(): URI = URI(LOGOUT)
     }
 
     object Games {
         const val START_GAME = "$PREFIX/games"
         const val GET_BY_ID = "$PREFIX/games/{id}"
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
-        const val HOME = "$PREFIX/home"
-        const val GET_SYSTEM_INFO = "$PREFIX/info"
+        const val GET_SYSTEM_INFO = "$PREFIX/system"
         const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val GAME_STATUS = "$PREFIX/games/{id}/status"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
-        fun home(): URI = URI(HOME)
+        fun makeMove(id: Int) = UriTemplate(MAKE_MOVE).expand(id)
         fun create(): URI = URI(START_GAME)
-
         fun deleteById(id: Int) = UriTemplate(GET_BY_ID).expand(id)
+        fun exitGame(id: Int) = UriTemplate(EXIT_GAME).expand(id)
+        fun gameStatus(id: Int) = UriTemplate(GAME_STATUS).expand(id)
     }
 }

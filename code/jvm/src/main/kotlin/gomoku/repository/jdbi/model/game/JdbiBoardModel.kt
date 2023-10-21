@@ -17,10 +17,10 @@ import gomoku.repository.jdbi.model.JdbiModel
 )
 sealed interface JdbiBoardModel : JdbiModel<Board> {
     override fun toDomainModel(): Board {
-        when (this) {
-            is JdbiBoardRunModel -> return this.toDomainModel()
-            is JdbiBoardWinModel -> return this.toDomainModel()
-            is JdbiBoardDrawModel -> return this.toDomainModel()
+        return when (this) {
+            is JdbiBoardRunModel -> this.toDomainModel()
+            is JdbiBoardWinModel -> this.toDomainModel()
+            is JdbiBoardDrawModel -> this.toDomainModel()
         }
     }
 }

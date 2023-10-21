@@ -1,10 +1,9 @@
-insert into dbo.GameVariants (name, opening_rule, board_size)
-values ('FREESTYLE', 'PRO', 15),
-       ('RENJU', 'LONG_PRO', 19),
+/*insert into dbo.GameVariants (name, opening_rule, board_size)
+values ('RENJU', 'LONG_PRO', 19),
        ('CARO', 'SWAP', 15),
        ('OMOK', 'SWAP2', 15),
        ('NINUKI_RENJU', 'SWAP2', 19),
-       ('PENTE', 'PRO', 19);
+       ('PENTE', 'PRO', 19);*/
 
 insert into dbo.Users (username, email, password_validation)
 values ('user1', 'user1@example.com', 'password_hash_1'),
@@ -27,12 +26,12 @@ values (1, 1000, 10, 5),
        (4, 1531, 10, 5),
        (5, 6122, 10, 5);
 
-insert into dbo.Lobbies (host_id, variant_id)
+/*insert into dbo.Lobbies (host_id, variant_id)
 values (1, 1),
-       (2, 2),
-       (3, 3);
-
-insert into dbo.Games (state, variant_id, board, host_id, guest_id, lobby_id)
+       (2, 1),
+       (3, 1);
+*/
+/*insert into dbo.Games (state, variant_id, board, host_id, guest_id, lobby_id)
 values ('FINISHED', 1, '{
   "type": "run",
   "size": 15,
@@ -78,3 +77,4 @@ values ('FINISHED', 1, '{
            "timeLeftInSec": 57
          }
        }', 3, 5, 3);
+*/
