@@ -6,9 +6,7 @@ import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.move.Square
-import gomoku.domain.game.board.play
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.user.User

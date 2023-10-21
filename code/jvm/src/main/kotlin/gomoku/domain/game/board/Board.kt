@@ -10,12 +10,11 @@ sealed class Board(val grid: Moves, val turn: BoardTurn?) {
         is BoardWin -> BoardWin(grid, winner)
         is BoardDraw -> BoardDraw(grid)
     }
+    fun play(pos: Square, variant: Variant): Board = variant.isMoveValid(this, pos)
+
+    fun isFinished(variant: Variant): Boolean = variant.isFinished(this)
 }
 
 class BoardRun(moves: Moves, turn: BoardTurn) : Board(moves, turn)
 class BoardWin(moves: Moves, val winner: Player) : Board(moves, null)
 class BoardDraw(moves: Moves) : Board(moves, null)
-
-fun Board.play(pos: Square, variant: Variant): Board = variant.isMoveValid(this, pos)
-
-fun Board.isFinished(variant: Variant): Boolean = variant.isFinished(this)

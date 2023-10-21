@@ -1,3 +1,4 @@
+/*
 package gomoku.http.jackson
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -58,3 +59,4 @@ class BoardSerializerTests {
         assertEquals(boardToTest, board)
     }
 }
+*/

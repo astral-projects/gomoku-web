@@ -4,7 +4,7 @@ import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
-import gomoku.domain.game.SystemInfo
+import gomoku.domain.SystemInfo
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
@@ -12,7 +12,6 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
-import gomoku.domain.user.User
 import gomoku.repository.GamesRepository
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Failure
@@ -21,7 +20,6 @@ import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 @Service
@@ -59,24 +57,22 @@ class GamesService(
         }
     }
 
-    fun findGame(variantId: Id, user: User): GameCreationResult =
+    fun findGame(variantId: Id, userId: Id): GameCreationResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val checkVariantId = gamesRepository.getVariantById(variantId)
+            val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val variant = gameVariantMap[checkVariantId]
-                ?: return@run failure(GameCreationError.VariantNotFound)
-            val isAlreadyInGame = gamesRepository.findIfUserIsInGame(user.id)
+            val isAlreadyInGame = gamesRepository.findIfUserIsInGame(userId)
             if (isAlreadyInGame == null) {
-                val lobby = gamesRepository.isMatchmaking(checkVariantId, user.id)
+                val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
                         val res = gamesRepository.createGame(
-                            variantId = checkVariantId,
+                            variantId = variantId,
                             hostId = lobby.userId,
-                            guestId = user.id,
+                            guestId = userId,
                             lobbyId = lobby.lobbyId,
                             board = variant.initialBoard()
                         )
@@ -87,11 +83,11 @@ class GamesService(
 
                     }
                 } else {
-                    val check = gamesRepository.checkIfUserIsInLobby(user.id)
+                    val check = gamesRepository.checkIfUserIsInLobby(userId)
                     if (check != null) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
-                        val r = gamesRepository.addUserToLobby(checkVariantId, user.id)
+                        val r = gamesRepository.addUserToLobby(variantId, userId)
                         when (r) {
                             null -> failure(GameCreationError.VariantNotFound)
                             else -> success("Waiting in lobby")

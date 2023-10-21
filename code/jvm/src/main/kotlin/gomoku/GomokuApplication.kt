@@ -3,7 +3,6 @@ package gomoku
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.http.pipeline.resolvers.IdArgumentResolver
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
 import gomoku.repository.jdbi.configureWithAppRequirements
@@ -53,7 +52,6 @@ class GomokuApplication {
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
     val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
-    val idArgumentResolver: IdArgumentResolver
 ) : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -62,7 +60,6 @@ class PipelineConfigurer(
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
-        resolvers.add(idArgumentResolver)
     }
 }
 

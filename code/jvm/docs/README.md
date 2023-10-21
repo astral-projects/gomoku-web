@@ -20,7 +20,7 @@ It is written mainly in Kotlin in a JVM gradle project.
 
 The JVM application is a Spring Boot application, built with [Spring Initializr](https://start.spring.io/).
 
-Some used dependencies are:
+Some dependencies used in this project are:
 
 - **Spring Web** - for the REST API;
 - **JDBi** - for the database access, using PostgreSQL;

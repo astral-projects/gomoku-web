@@ -1,6 +1,5 @@
 package gomoku.services.game
 
-import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.utils.Either
@@ -9,7 +8,6 @@ sealed class GameCreationError {
     object UserAlreadyInLobby : GameCreationError()
     object UserAlreadyInGame : GameCreationError()
     object GameNotFound : GameCreationError()
-
     object VariantNotFound : GameCreationError()
 }
 
