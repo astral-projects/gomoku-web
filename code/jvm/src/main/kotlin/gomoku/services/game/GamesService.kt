@@ -9,9 +9,7 @@ import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
-import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
-import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
 import gomoku.repository.GamesRepository
@@ -54,9 +52,9 @@ class GamesService(
      * If the game does not exist, returns an error.
      */
     @NotTested
-    fun getGameById(id: Id): GettingGameResult {
+    fun getGameById(gameId: Id): GettingGameResult {
         return transactionManager.run {
-            when (val game = (it.gamesRepository.getGameById(id))) {
+            when (val game = (it.gamesRepository.getGameById(gameId))) {
                 null -> failure(GettingGameError.GameNotFound)
                 else -> success(game)
             }
@@ -124,10 +122,10 @@ class GamesService(
      * Returns the game state with the given id if the user is in the game
      * If the user is not in the game, returns an error.
      */
-    fun getGameStatus(userId: Id, gameId: Id): GettingGameResult {
+    fun getGameStatus(gameId: Id): GettingGameResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            when (val game = gamesRepository.getGameStatus(gameId, userId)) {
+            when (val game = gamesRepository.getGameById(gameId)) {
                 null -> failure(GettingGameError.GameNotFound)
                 else -> success(game)
             }

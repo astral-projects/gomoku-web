@@ -11,7 +11,7 @@ import gomoku.domain.lobby.Lobby
 import gomoku.utils.NotTested
 
 interface GamesRepository {
-    fun getGameById(gameid: Id): Game?
+    fun getGameById(gameId: Id): Game?
 
     @NotTested
     fun insertVariants(variants: List<VariantConfig>): Boolean
@@ -32,8 +32,6 @@ interface GamesRepository {
     fun updateGame(gameId: Id, board: Board, gameState: GameState): Boolean
     fun checkIfUserIsInLobby(userId: Id): Lobby?
     fun exitGame(gameId: Id, userId: Id): Id?
-    fun getGameStatus(gameId: Id, userId: Id): Game?
-
     @NotTested
     fun userIsTheHost(userId: Id, gameId: Id): Game?
 

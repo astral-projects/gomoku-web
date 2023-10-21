@@ -42,10 +42,10 @@ class GamesController(
      * @return the game with the given id
      * If the game with the given id does not exist, returns a 404 Not Found error.
      */
-    @GetMapping(Uris.Games.GET_BY_ID)
+    @GetMapping(Uris.Games.GAME_STATUS_BY_ID)
     @NotTested
-    fun getById(@PathVariable id: Int): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GET_BY_ID}")
+    fun getGameById(@PathVariable id: Int): ResponseEntity<*> {
+        logger.info("GET ${Uris.Games.GAME_STATUS_BY_ID}")
         return when (val res = gamesService.getGameById(Id(id))) {
             is Success ->
                 ResponseEntity
@@ -267,31 +267,6 @@ class GamesController(
         }
     }
 
-    /**
-     * Returns the status of the game with the given id.
-     * @param id the id of the game
-     * @param user the authenticated user
-     * @return the status of the game
-     * If the game with the given id does not exist, returns a 404 Not Found error.
-     */
-    @GetMapping(Uris.Games.GAME_STATUS)
-    @NotTested
-    fun gameStatus(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GAME_STATUS}")
-        val userId = user.user.id
-        return when (val gameStatus = gamesService.getGameStatus(userId, Id(id))) {
-            is Success -> ResponseEntity.status(200).body(gameStatus.value.state.toString())
-            is Failure -> when (gameStatus.value) {
-                GettingGameError.GameNotFound -> Problem(
-                    type = Problem.gameNotFound,
-                    title = "Game not found",
-                    status = 404,
-                    detail = "The game with id <$id> was not found",
-                    instance = Uris.Games.gameStatus(id)
-                ).toResponse()
-            }
-        }
-    }
 
     companion object {
         private val logger = LoggerFactory.getLogger(GamesController::class.java)
