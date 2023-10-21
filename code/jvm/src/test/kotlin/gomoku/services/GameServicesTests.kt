@@ -7,6 +7,7 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
+import gomoku.domain.game.variant.FreestyleVariant
 import gomoku.repository.jdbi.JdbiTestConfiguration
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.services.game.GamesService
@@ -29,7 +30,8 @@ class GameServicesTests {
             testClock: TestClock
         ) = GamesService(
             JdbiTransactionManager(JdbiTestConfiguration.jdbi),
-            GameLogic(testClock)
+            testClock,
+            listOf(FreestyleVariant()),
         )
     }
 }

@@ -66,7 +66,7 @@ class GamesService(
             if (isAlreadyInGame == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
-                    if (!gamesRepository.deleteLobby(lobby.lobbyId)) {
+                    if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
                         failure(GameCreationError.UserAlreadyInLobby)
                     } else {
                         val res = gamesRepository.createGame(
