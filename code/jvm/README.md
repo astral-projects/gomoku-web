@@ -5,3 +5,10 @@ With [Docker Compose](https://docs.docker.com/compose/) installed, run the follo
 ```bash
 docker-compose up
 ```
+
+### Run tests
+
+```bash
+./gradlew dbTestsDown
+./gradlew dbTestsWait
+```

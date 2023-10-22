@@ -58,8 +58,8 @@ The conceptual model has the following restrictions:
     - The `last_used` attribute should be greater than or equal to the `created_at` attribute;
 
 - `Statistics` entity:
-    - The `gamesPlayed`, `gamesWon` and `points` attributes should be greater than 0;
-    - The `gamesPlayed` attribute should be greater than or equal to the `gamesWon` attribute;
+    - The `games_played`, `games_won`, `games_drawn` and `points` attributes should be greater than 0;
+    - The `games_won` and `games_drawn` attributes should be less than or equal to the `games_played` attribute; 
 
 - `GameVariants` entity:
     - The `name` attribute should be unique;
@@ -91,10 +91,10 @@ We highlight the following aspects of this model:
   identify an entity have been marked as unique. This ensures that these attributes maintain their uniqueness throughout
   the data, contributing to data integrity.
 
-- **Selection of the Jsonb Data Type for the Board Attribute**: The choice to utilize the jsonb data type for the board
+- **Selection of the Jsonb data type for the Board attribute**: The choice to utilize the jsonb data type for the board
   attribute within the Game entity was a deliberate decision shaped by several key considerations:
 
-    - **Efficient Storage and Retrieval**: Given that the `board` attribute is an abstract entity that can be
+    - **Efficient storage and retrieval**: Given that the `board` attribute is an abstract entity that can be
       represented
       in different ways by other entites (specialization relation in this case),
       the jsonb data type was chosen to allow for flexibility in the representation of board subtypes.
@@ -103,7 +103,7 @@ We highlight the following aspects of this model:
       game
       state, the jsonb data type was chosen to allow for flexibility in the representation of the board.
 
-- **Lobby Entity and Game Configuration**: The decision to not make the `Game` entity weak of the `Lobby` entity and
+- **Lobby entity and game configuration**: The decision to not make the `Game` entity weak of the `Lobby` entity and
   instead repeat the `variant_id` attribute which points to the game configuration, was made for efficiency and
   practicality.
   The `Lobby` entity serves as a user intention to start ame with a specific game configuration. When another user
@@ -284,19 +284,21 @@ It consists of:
 
 ### Implementation Challenges
 
-- **Database Design**: Finding the best way to represent the data in the database was a challenge.
+- **Database design**: Finding the best way to represent the data in the database was a challenge.
   We had to consider the data integrity, the performance and the flexibility of the database, and was no easy
   task to find the best balance between these aspects.
-- **Abstracting Code**: We tried to abstract the code as much as possible, using interfaces, abstract classes and
+- **Abstracting code**: We tried to abstract the code as much as possible, using interfaces, abstract classes and
   generics, to make the code more reusable and easier to maintain. But sometimes we lacked the knowledge to abstract the
   code in a better way.
-- **The Concurrency Problem**: Since the application will run later in a distributed environment, which means that
+- **The concurrency problem**: Since the application will run later in a distributed environment, which means that
   multiple instances of the application will be running at the same time, we needed to ensure that the application was
   thread-safe. We had to make sure that the database transactions were atomic and isolated, but finding the most optimal
   solution for addressing this concurrency issue was demanding.
 
 ### Further Improvements
 
+- **Improve logging system**: We only implemented the basic logging for the application, but we could improve the logging by
+  adding more information to the logs, such as given each request a unique id, and then log the id in each log message.
 - **Siren media type**: The Siren media type is a hypermedia type that allows the client to navigate through the
   API and discover the available resources.
   We didn't have the time to implement this media type,
@@ -304,6 +306,8 @@ It consists of:
 - **More variants**: We only implemented the standard variant of the game.
   It would make the application more interesting if we implemented more variants of the game, and give more options
   to the users to choose from.
-- **Support operations**: We plan to add more service operations to further enhance the application functionality.
+- **Add more tests**: We only implemented the basic tests for the application, but we could add more tests to improve the code
+  coverage and ensure that the application is working as expected in all scenarios.
+- **Support more operations**: We plan to add more service operations to further enhance the application functionality.
   However, we will make sure that the new services are backward compatible with the existing ones, so we can add new
   features without breaking the existing ones.

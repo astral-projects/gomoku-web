@@ -171,14 +171,9 @@ class GameServicesTests {
     }
 
     private fun createRandomGame(gameService: GamesService, user: User, user2: User): Id? {
-        val gameId = Id(1)
-        val gameResult = gameService.getGameById(gameId)
-        if (gameResult is Success) {
-            gameService.deleteGame(gameId, gameResult.value.hostId)
-        }
-        val gameCreationResult = gameService.findGame(gameId, user.id)
-        val gameCreationResult2 = gameService.findGame(gameId, user2.id)
-
+        // TODO("use variant from test check repository tests example")
+        val gameCreationResult = gameService.findGame(Id(1), user.id)
+        val gameCreationResult2 = gameService.findGame(Id(1), user2.id)
         if (gameCreationResult is Success && gameCreationResult2 is Success) return gameCreationResult2.value.id
 
         return null

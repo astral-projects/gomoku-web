@@ -150,7 +150,7 @@ class UserTests {
 
         // when: getting the user home with a valid token
         // then: the response is a 200 with the proper representation
-        client.get().uri("/home")
+        client.get().uri("/users/home")
             .header("Authorization", "Bearer ${result.token}")
             .exchange()
             .expectStatus().isOk
@@ -159,7 +159,7 @@ class UserTests {
 
         // when: getting the user home with an invalid token
         // then: the response is a 401 with the proper problem
-        client.get().uri("/home")
+        client.get().uri("/users/home")
             .header("Authorization", "Bearer ${result.token}-invalid")
             .exchange()
             .expectStatus().isUnauthorized
@@ -167,14 +167,14 @@ class UserTests {
 
         // when: revoking the token
         // then: response is a 200
-        client.post().uri("/logout")
+        client.post().uri("/users/logout")
             .header("Authorization", "Bearer ${result.token}")
             .exchange()
             .expectStatus().isOk
 
         // when: getting the user home with the revoked token
         // then: response is a 401
-        client.get().uri("/home")
+        client.get().uri("/users/home")
             .header("Authorization", "Bearer ${result.token}")
             .exchange()
             .expectStatus().isUnauthorized
@@ -182,7 +182,7 @@ class UserTests {
     }
 
     @Test
-    fun `can retrieve user ranking information`() {
+    fun `can retrieve user statistic information`() {
         // given: an HTTP client
         val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
 
@@ -207,9 +207,9 @@ class UserTests {
                 }
         }
 
-        // when: getting the user ranking information with no offset or limit
+        // when: getting the user statistic information with no offset or limit
         // then: the response is a 200 with the proper representation
-        val result = client.get().uri("/users/ranking")
+        val result = client.get().uri("/users/stats")
             .exchange()
             .expectStatus().isOk
             .expectBody(PaginatedResult::class.java)
@@ -220,12 +220,12 @@ class UserTests {
         assertEquals(1, result.currentPage)
         assertEquals(10, result.itemsPerPage)
 
-        // when: getting the user ranking information with a offset and limit combination that do not exceed the total
+        // when: getting the user statistic information with an offset and limit combination that do not exceed the total
         // number of users
         val offset = 2
         val limit = 5
         // then: the response is a 200 with the proper representation
-        val resultB = client.get().uri("/users/ranking?offset=$offset&limit=$limit")
+        val resultB = client.get().uri("/users/stats?offset=$offset&limit=$limit")
             .exchange()
             .expectStatus().isOk
             .expectBody(PaginatedResult::class.java)
@@ -236,16 +236,16 @@ class UserTests {
         assertEquals(offset / limit + 1, resultB.currentPage)
         assertEquals(limit, resultB.itemsPerPage)
 
-        // when: getting the user ranking information with an invalid offset
+        // when: getting the user statistic information with an invalid offset
         // then: the response is a 400
-        client.get().uri("/users/ranking?offset=-1")
+        client.get().uri("/users/stats?offset=-1")
             .exchange()
             .expectStatus().isBadRequest
             .expectBody()
 
-        // when: getting the user ranking information with an invalid limit
+        // when: getting the user statistic information with an invalid limit
         // then: the response is a 400
-        client.get().uri("/users/ranking?limit=0")
+        client.get().uri("/users/stats?limit=0")
             .exchange()
             .expectStatus().isBadRequest
             .expectBody()

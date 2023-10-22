@@ -16,7 +16,6 @@ import gomoku.utils.NotTested
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 @Service
@@ -30,7 +29,7 @@ class UsersService(
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password.value)
         return transactionManager.run { transaction ->
             val usersRepository = transaction.usersRepository
-            if (usersRepository.isUserStoredByUsername(username)) {
+            if (usersRepository.getUserByUsername(username) != null) {
                 failure(UserCreationError.UsernameAlreadyExists)
             } else if (usersRepository.isUserStoredByEmail(email)) {
                 failure(UserCreationError.EmailAlreadyExists)
@@ -101,10 +100,9 @@ class UsersService(
         }
     }
 
-    @NotTested
-    fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> =
+    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> =
         transactionManager.run {
-            it.usersRepository.getUsersRanking(offset, limit)
+            it.usersRepository.getUsersStats(offset, limit)
         }
 
     @NotTested

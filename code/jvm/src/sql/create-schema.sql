@@ -28,11 +28,14 @@ create table dbo.Statistics
     points       int not null default 0,
     games_played int not null default 0,
     games_won    int not null default 0,
+    games_drawn   int not null default 0,
     foreign key (user_id) references dbo.Users (id) on delete cascade on update cascade,
     constraint points_are_valid check ( points >= 0 ),
     constraint games_played_are_valid check ( games_played >= 0 ),
     constraint games_won_are_valid check ( games_won >= 0 ),
-    constraint games_won_is_less_than_games_played check ( games_won <= games_played )
+    constraint games_won_is_less_than_games_played check ( games_won <= games_played ),
+    constraint games_drawn_are_valid check ( games_drawn >= 0 ),
+    constraint games_drawn_is_less_than_games_played check ( games_drawn <= games_played )
 );
 
 create table dbo.GameVariants
@@ -46,6 +49,8 @@ create table dbo.GameVariants
 create table dbo.Lobbies
 (
     id         int generated always as identity,
+    -- variant_id and host_id could be unique individually, but then
+    -- we would need to catch the exception in the code
     host_id    int references dbo.Users (id) on delete cascade on update cascade,
     variant_id int references dbo.GameVariants (id) on delete cascade on update cascade,
     primary key (id, host_id)

@@ -326,14 +326,14 @@ class UserServiceTests {
             }
         }
 
-        // when: retrieving the ranking
+        // when: retrieving the users statistic information
         val limit = nrOfUsers
-        val ranking = userService.getUsersRanking(
+        val ranking = userService.getUsersStats(
             offset = NonNegativeValue(0),
             limit = PositiveValue(limit)
         )
 
-        // then: the ranking is successful
+        // then: the statistics is paginated
         assertEquals(nrOfUsers, ranking.items.size)
         assertEquals(limit, ranking.itemsPerPage)
     }

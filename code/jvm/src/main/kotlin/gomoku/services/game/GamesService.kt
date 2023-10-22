@@ -114,8 +114,10 @@ class GamesService(
     fun deleteGame(gameId: Id, userId: Id): GamePutResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.getGameById(gameId) ?: return@run failure(GamePutError.GameNotFound)
-            gamesRepository.userIsTheHost(gameId, userId) ?: return@run failure(GamePutError.UserIsNotTheHost)
+            gamesRepository.getGameById(gameId)
+                ?: return@run failure(GamePutError.GameNotFound)
+            gamesRepository.userIsTheHost(gameId, userId)
+                ?: return@run failure(GamePutError.UserIsNotTheHost)
             when (val wasGameDeleted = gamesRepository.deleteGame(gameId, userId)) {
                 false -> failure(GamePutError.GameIsInprogress)
                 true -> success(wasGameDeleted)
@@ -150,11 +152,9 @@ class GamesService(
                 is Failure -> failure(GameMakeMoveError.MoveNotValid(playLogic.value))
                 is Success -> {
                     val updatedGame = playLogic.value
-                    val gameState =
-                        if (updatedGame.board is BoardWin || updatedGame.board is BoardDraw) GameState.FINISHED else GameState.IN_PROGRESS
                     updatedPointsBasedOnBoardType(gamesRepository, variant.points, user, updatedGame)
                     when (val makeMove =
-                        gamesRepository.updateGame(gameId, updatedGame.board, gameState)) {
+                        gamesRepository.updateGame(gameId, updatedGame.board)) {
                         false -> failure(GameMakeMoveError.GameNotFound)
                         true -> success(makeMove)
                     }
@@ -183,7 +183,6 @@ class GamesService(
                     ?: return@run failure(GameDeleteError.VariantNotFound)
                 success(
                     gamesRepository.updatePoints(
-                        gameId = gameId,
                         winnerId = winner,
                         loserId = if (userId != game.hostId) game.guestId else game.hostId,
                         winnerPoints = variant.points.onForfeitOrTimer.winner,
@@ -208,7 +207,6 @@ class GamesService(
     ): Boolean = when (game.board) {
         is BoardWin -> {
             gamesRepository.updatePoints(
-                gameId = game.id,
                 winnerId = userId,
                 loserId = if (userId == game.hostId) game.guestId else game.hostId,
                 winnerPoints = gamePoints.onFinish.winner,
@@ -219,7 +217,6 @@ class GamesService(
 
         is BoardDraw -> {
             gamesRepository.updatePoints(
-                gameId = game.id,
                 winnerId = userId,
                 loserId = if (userId == game.hostId) game.guestId else game.hostId,
                 winnerPoints = gamePoints.onDraw.shared,

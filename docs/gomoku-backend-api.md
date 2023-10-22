@@ -15,8 +15,8 @@
 - [User Login](#user-login)
 - [User Logout](#user-logout)
 - [Requests](#requests)
-  - [User](#user)
-  - [Game](#game)
+    - [User](#user)
+    - [Game](#game)
 
 ---
 
@@ -31,7 +31,7 @@ The API provides the following functionality:
 - Creating games, leaving games and matchmaking;
 - In-game actions, such as placing pieces on a board.
 - User authentication;
-- Consult user rankings;
+- Consult user statistical information.
 
 ## Open-API Specification
 
@@ -49,9 +49,45 @@ In our specification, we highlight the following aspects:
 
 The API uses the following media types:
 
-- `application/json` - JSON for the API request bodies.
+- `application/json` and `text/plain` - for the API response bodies;
 - `application/problem+json` - [RFC7807](https://tools.ietf.org/html/rfc7807) problem details for the API responses in
   case of errors;
+
+### Requests
+
+Information about the requests:
+
+- For endpoints marked with 🔒 (indicating authentication is required):
+    - Include an `Authorization` header using the `Bearer` scheme, with the user's `token`.
+- For endpoints marked with 📦 (indicating a request body is required):
+    - Include a request body with the required information.
+    - Ensure the `Content-Type` header is set to `application/json`.
+- All endpoints should be prefixed with `/api`.
+
+#### User
+
+The API provides the following operations/resources related to the `User` entity:
+
+- `POST /users 📦` - creates a new user; See [User Creation](#user-creation) for more information;
+- `POST /users/token 📦` - authenticates a user; See [User Login](#user-login) for more information;
+- `POST /users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
+- `GET /users/home 🔒` - returns logged-in user's information;
+- `GET /users/{id}` - returns the user with the given id;
+- `GET /users/stats` - returns the users statistic information. This route is paginated and accepts the following
+  optional query parameters:
+    - `offset` - the page offset (defaults to `0`);
+    - `limit` - the page limit (defaults to `10`);
+
+#### Game
+
+The API provides the following operations/resources related to the `Game` entity:
+
+- `POST /games 🔒📦` - joins a lobby or creates a new game with the given variant id;
+- `GET /games/{id}` - returns the game with the given id;
+- `DELETE /games/{id}` 🔒 - deletes the game with the given id;
+- `GET /system` - returns the system information;
+- `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id;
+- `POST /games/{id}/exit 🔒` - exits the game with the given id;
 
 ### User Creation
 
@@ -80,39 +116,3 @@ The API uses the following media types:
 - The client application makes a `POST` request to the `logout` request, with the user token in the `Authorization`
   header with the `Bearer` scheme;
 - The API invalidates the user's token and returns a `200 OK` response with a message in the response body.
-
-### Requests
-
-Information about the requests:
-
-- For endpoints marked with 🔒 (indicating authentication is required):
-  - Include an `Authorization` header using the `Bearer` scheme, with the user's `token`.
-- For endpoints marked with 📦 (indicating a request body is required):
-  - Include a request body with the required information.
-  - Ensure the `Content-Type` header is set to `application/json`.
-- All endpoints should be prefixed with `/api`.
-
-#### User
-
-The API provides the following operations/resources related to the `User` entity:
-
-- `POST /users 📦` - creates a new user; See [User Creation](#user-creation) for more information;
-- `POST /users/token 📦` - authenticates a user; See [User Login](#user-login) for more information;
-- `POST /users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
-- `GET /users/home 🔒` - returns logged-in user's information;
-- `GET /users/{id}` - returns the user with the given id;
-- `GET /users/ranking` - returns the users ranking. This route is paginated and accepts the following optional query
-  parameters:
-    - `offset` - the page offset (defaults to `0`);
-    - `limit` - the page limit (defaults to `10`);
-
-#### Game
-
-The API provides the following operations/resources related to the `Game` entity:
-
-- `POST /games 🔒📦` - joins a lobby or creates a new game with the given variant id;
-- `GET /games/{id}` - returns the game with the given id;
-- `DELETE /games/{id}` 🔒 - deletes the game with the given id;
-- `GET /system` - returns the system information;
-- `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id;
-- `POST /games/{id}/exit 🔒` - exits the game with the given id;

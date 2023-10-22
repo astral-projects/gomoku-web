@@ -172,20 +172,20 @@ class UsersController(
         }
     }
 
-    @GetMapping(Uris.Users.RANKING)
-    fun getUsersRanking(
-        @RequestParam(name = "offset", defaultValue = "0") offset: Int,
-        @RequestParam(name = "limit", defaultValue = "10") limit: Int
+    @GetMapping(Uris.Users.STATS)
+    fun getUsersStats(
+        @Valid @Range(min = 0) @RequestParam(name = "offset", defaultValue = "0") offset: Int,
+        @Valid @Range(min = 1) @RequestParam(name = "limit", defaultValue = "10") limit: Int
     ): ResponseEntity<PaginatedResult<UserRankInfo>> {
-        logger.info("GET ${Uris.Users.RANKING}")
+        logger.info("GET ${Uris.Users.STATS}")
         val paginatedResult =
-            userService.getUsersRanking(NonNegativeValue(offset), PositiveValue(limit))
+            userService.getUsersStats(NonNegativeValue(offset), PositiveValue(limit))
         return ResponseEntity.ok(paginatedResult)
     }
 
     @GetMapping(Uris.Users.STATS_BY_ID)
     @NotTested
-    fun getUserStats(user: AuthenticatedUser): ResponseEntity<UserRankInfo> {
+    fun getUserStats(): ResponseEntity<UserRankInfo> {
         logger.info("GET ${Uris.Users.STATS_BY_ID}")
         TODO("Not yet implemented")
     }
