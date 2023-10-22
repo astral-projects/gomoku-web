@@ -19,6 +19,7 @@ import gomoku.domain.user.UsersDomainConfig
 import gomoku.repository.jdbi.JdbiTestConfiguration
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.repository.transaction.TransactionManager
+import gomoku.services.game.GameCreationError
 import gomoku.services.game.GameCreationResult
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GamesService
@@ -44,6 +45,7 @@ class GameServicesTests {
 
     @Test
     fun `create a game`() {
+        // given: a user service
         val user = createRandomUser()
         val user2 = createRandomUser()
 
@@ -51,18 +53,19 @@ class GameServicesTests {
         val testClock = TestClock()
         val gameService = createGamesService(testClock)
 
-        // when: creating a game
+        // when: joining a game
         val gameCreationResult = gameService.findGame(Id(1), user.id)
 
-        // then: the creation is successful
+        // then: the  join is successful
         when (gameCreationResult) {
             is Failure -> fail("Unexpected $gameCreationResult")
             is Success -> assertEquals("Waiting in lobby", gameCreationResult.value.message)
         }
 
+        // then: other player wants to play the same variant so its a match between the two
         val gameCreationResult2 = gameService.findGame(Id(1), user2.id)
 
-        // then: the creation is successful
+        // then: the match is successful
         when (gameCreationResult2) {
             is Failure -> fail("Unexpected $gameCreationResult2")
             is Success -> assertEquals("Joining game", gameCreationResult2.value.message)
@@ -70,25 +73,32 @@ class GameServicesTests {
 
         assertNotEquals(gameCreationResult.value.message, gameCreationResult2.value.message)
 
+        // then: the game is created
         val gameResult = gameService.findGame(Id(1), user.id)
         assertTrue(gameResult is Failure)
-
-
+        when(gameResult) {
+            is Success -> fail("User needs to be already in a Game $gameResult")
+            is Failure -> {
+                assertTrue(gameResult.value is GameCreationError.UserAlreadyInGame)
+            }
+        }
     }
 
 
     @Test
     fun `get game by id`() {
+        // given: a user service
         val user = createRandomUser()
         val user2 = createRandomUser()
-
 
         // given: a game service
         val testClock = TestClock()
         val gameService = createGamesService(testClock)
+
+        // when: creating a game with two users
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
 
-        // after the correct creation of the game, we can get the game by id
+        // then: after the correct creation of the game, we can get the game by id
         when (val gameResult = gameService.getGameById(gameId)) {
             is Failure -> fail("Unexpected $gameResult")
             is Success -> assertEquals(gameId, gameResult.value.id)
@@ -98,17 +108,34 @@ class GameServicesTests {
 
     @Test
     fun `exit a game`() {
+        // given: a user service
         val user = createRandomUser()
         val user2 = createRandomUser()
+
+        // given: a game service
         val gameService = createGamesService(TestClock())
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
+
+        // then: after the correct creation of the game, we can get the game by id
         val game = gameService.getGameById(gameId)
+        assertTrue(game is Success)
+        when (game) {
+            is Failure -> fail("Unexpected $game")
+            is Success -> {
+                assertEquals(gameId, game.value.id)
+                assertEquals(GameState.IN_PROGRESS, game.value.state)
+            }
+        }
+
+        // then: try to exit the game
         val res = gameService.exitGame(gameId, user2.id)
         assertTrue(res is Success)
         when (res) {
             is Failure -> fail("Unexpected $res")
             is Success -> assertTrue(res.value)
         }
+
+        // then: check if the game is finished
         val checkExit = gameService.getGameById(gameId)
         assertTrue(checkExit is Success)
         when (checkExit) {
@@ -123,31 +150,45 @@ class GameServicesTests {
 
     @Test
     fun `delete a game`() {
+        // given: a user service
         val user = createRandomUser()
         val user2 = createRandomUser()
+
+        // given: a game service
         val gameService = createGamesService(TestClock())
+
+        // then: create a game WITH user2
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
         val game = gameService.getGameById(gameId)
-        gameService.exitGame(gameId, user2.id)
+
+        // then: forcing the game to be FINISHED to be able to delete it
+        val exitGame= gameService.exitGame(gameId, user2.id)
+        assertTrue(exitGame is Success)
+
+        //then: Delete game can only be deleted by the host and if the game is not in progress
         if (game is Success) {
             assertEquals(gameId, game.value.id)
             val res = gameService.deleteGame(gameId, user.id)
             when (res) {
-                is Failure -> fail("Unexpected $res")
+                is Failure -> fail("Deleted Game was not possible ${res.value}")
                 is Success -> assertTrue(res.value)
             }
-            // assertTrue(gameService.getGameById(gameId) is Failure)
         } else {
-            fail("Unexpected $game")
+            fail("The game wasn't create with success $game")
         }
     }
 
     @Test
     fun `make a move`() {
+        // given: a user service
         val user = createRandomUser()
         val user2 = createRandomUser()
+
+        // given: a game service and create a game
         val gameService = createGamesService(TestClock())
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
+
+        // then: make a move
         val g = gameService.makeMove(gameId, user.id, Move(Square(Column('a'), Row(1)), Piece(Player.w)))
         assertTrue(g is Success)
         when (g) {
@@ -156,6 +197,8 @@ class GameServicesTests {
                 assertTrue(g.value)
             }
         }
+
+        // then: make a move with the same user
         val g2 = gameService.makeMove(gameId, user.id, Move(Square(Column('b'), Row(1)), Piece(Player.w)))
         assertTrue(g2 is Failure)
         when (g2) {
@@ -164,31 +207,22 @@ class GameServicesTests {
             }
 
             is Success -> {
-                fail("Unexpected $g2")
+                fail("It isn't correct the same user play 2 times in a row $g2")
             }
         }
 
     }
 
     private fun createRandomGame(gameService: GamesService, user: User, user2: User): Id? {
-        val gameId = Id(1)
-        val gameResult = gameService.getGameById(gameId)
-        if (gameResult is Success) {
-            gameService.deleteGame(gameId, gameResult.value.hostId)
-        }
-        val gameCreationResult = gameService.findGame(gameId, user.id)
-        val gameCreationResult2 = gameService.findGame(gameId, user2.id)
-
+        val variantId = Id(1)
+        val gameCreationResult = gameService.findGame(variantId, user.id)
+        val gameCreationResult2 = gameService.findGame(variantId, user2.id)
         if (gameCreationResult is Success && gameCreationResult2 is Success) return gameCreationResult2.value.id
-
         return null
     }
 
     private fun createRandomUser(): User {
-        // given: a user service
         val userService = createUsersService(TestClock())
-
-        // when: creating a user
         val username = TestDataGenerator.newTestUserName()
         val email = TestDataGenerator.newTestEmail()
         val password = TestDataGenerator.newTestPassword()
@@ -197,15 +231,12 @@ class GameServicesTests {
             is Failure -> fail(createTokenResult.toString())
             is Success -> createTokenResult.value.tokenValue
         }
-
         return userService.getUserByToken(token) ?: fail("User not found")
-
     }
 
     companion object {
         private val transactionManager: TransactionManager = JdbiTransactionManager(JdbiTestConfiguration.jdbi)
         private val variants: List<Variant> = listOf(FreestyleVariant())
-
         private val gameVariantMap: Map<Id, Variant> by lazy {
             transactionManager.run { transaction ->
                 val variantsConfig: List<VariantConfig> = variants.map { it.config }
