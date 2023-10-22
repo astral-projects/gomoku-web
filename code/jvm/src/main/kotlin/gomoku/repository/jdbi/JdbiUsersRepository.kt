@@ -58,12 +58,6 @@ class JdbiUsersRepository(
         return userId
     }
 
-    override fun isUserStoredByUsername(username: Username): Boolean =
-        handle.createQuery("select count(*) from dbo.Users where username = :username")
-            .bind("username", username.value)
-            .mapTo<Int>()
-            .single() == 1
-
     override fun isUserStoredByEmail(email: Email): Boolean =
         handle.createQuery("select count(*) from dbo.Users where email = :email")
             .bind("email", email.value)
@@ -138,13 +132,13 @@ class JdbiUsersRepository(
             .execute()
             .let { it == 1 }
 
-    override fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> {
+    override fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> {
         val totalItems = handle.createQuery("select count(*) from dbo.Statistics")
             .mapTo<Int>()
             .single()
         val result = handle.createQuery(
             """
-                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won
+                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won, games_drawn
                 from dbo.Users as users 
                 inner join dbo.Statistics as stats 
                 on users.id = stats.user_id
@@ -159,11 +153,21 @@ class JdbiUsersRepository(
         return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
     }
 
-    override fun getUserStats(userId: Id): UserRankInfo? {
-        TODO("Not yet implemented")
-    }
+    override fun getUserStats(userId: Id): UserRankInfo? =
+        handle.createQuery(
+            """
+                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won, games_drawn
+                from dbo.Users as users 
+                inner join dbo.Statistics as stats 
+                on users.id = stats.user_id
+                where users.id = :user_id
+            """.trimIndent()
+        )
+            .bind("user_id", userId.value)
+            .mapTo<JdbiUserAndStatsModel>()
+            .singleOrNull()?.toDomainModel()
 
-    override fun editUser(userId: Id): User {
+    override fun editUser(userId: Id): User? {
         TODO("Not yet implemented")
     }
 

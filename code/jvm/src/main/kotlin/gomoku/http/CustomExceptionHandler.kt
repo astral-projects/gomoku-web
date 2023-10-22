@@ -47,6 +47,18 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         ).toResponse()
     }
 
+    // TODO("remove this method once all componets use Either in there constructors")
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<Any> {
+        log.info("Handling IllegalArgumentException: {}", ex.message)
+        return Problem(
+            type = Problem.invalidRequestContent,
+            title = "Illegal argument",
+            status = 400,
+            detail = ex.message
+        ).toResponse()
+    }
+
     @ExceptionHandler(HttpServletRequestRequiredException::class)
     fun handleHttpServletRequestRequired(): ResponseEntity<Any> {
         log.info("Handling HttpServletRequestRequiredException")

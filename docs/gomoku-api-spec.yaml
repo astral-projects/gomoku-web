@@ -153,11 +153,11 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  /api/users/ranking:
+  /api/users/stats:
     get:
       tags:
         - Users
-      summary: Get Users Ranking
+      summary: Get Users statistic information
       parameters:
         - name: offset
           in: query
@@ -173,7 +173,7 @@ paths:
             default: 10
       responses:
         '200':
-          description: Retrieved users ranking successfully
+          description: Retrieved users statistic information successfully
           content:
             application/json:
               schema:

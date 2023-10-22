@@ -5,7 +5,7 @@ import gomoku.domain.game.GamePoints
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.moves.move.Square
 
-sealed interface Variant {
+interface Variant {
     val config: VariantConfig
     val points: GamePoints
     val turnTimer: NonNegativeValue

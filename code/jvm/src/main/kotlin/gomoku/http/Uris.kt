@@ -12,7 +12,7 @@ object Uris {
     object Users {
         const val REGISTER = "$PREFIX/users"
         const val TOKEN = "$PREFIX/users/token"
-        const val RANKING = "$PREFIX/users/ranking"
+        const val STATS = "$PREFIX/users/stats"
         const val STATS_BY_ID = "$PREFIX/users/{id}/stats"
         const val GET_BY_ID = "$PREFIX/users/{id}"
         const val EDIT_BY_ID = "$PREFIX/users/{id}"
@@ -27,10 +27,10 @@ object Uris {
 
     object Games {
         const val FIND_GAME = "$PREFIX/games"
+        const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val GET_BY_ID = "$PREFIX/games/{id}"
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
         const val GET_SYSTEM_INFO = "$PREFIX/system"
-        const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)

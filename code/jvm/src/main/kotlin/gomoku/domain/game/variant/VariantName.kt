@@ -6,5 +6,6 @@ enum class VariantName {
     CARO,
     OMOK,
     NINUKI_RENJU,
-    PENTE
+    PENTE,
+    TEST
 }

@@ -15,21 +15,90 @@ import gomoku.domain.user.Username
 import gomoku.utils.NotTested
 import kotlinx.datetime.Instant
 
+/**
+ * Repository for managing user-related data.
+ */
 interface UsersRepository {
-    fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id
-    fun getUserByUsername(username: Username): User?
-    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): UserAndToken?
-    fun isUserStoredByUsername(username: Username): Boolean
-    fun isUserStoredByEmail(email: Email): Boolean
-    fun createToken(token: Token, maxTokens: PositiveValue)
-    fun updateTokenLastUsed(token: Token, now: Instant)
-    fun getUserById(userId: Id): User?
-    fun revokeToken(tokenValidationInfo: TokenValidationInfo): Boolean
-    fun getUsersRanking(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo>
 
-    @NotTested
+    /**
+     * Stores a user in the database.
+     * @param username the username of the user to store.
+     * @param email the email of the user to store.
+     * @param passwordValidation the object that can be used to validate the user in the future.
+     * @return the id of the created user.
+     */
+    fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id
+
+    /**
+     * Retrieves a user by their username.
+     * @param username the username of the user to retrieve.
+     * @return the user or null if no such user exists.
+     */
+    fun getUserByUsername(username: Username): User?
+
+    /**
+     * Retrieves a user by username and associated token.
+     * @param tokenValidationInfo the object that can validate a token.
+     * @return the user and token or null if no such user exists.
+     */
+    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): UserAndToken?
+
+    /**
+     * Checks if a user with the given email exists.
+     * @param email the email of the user to retrieve.
+     * @return true if such a user exists, false otherwise.
+     */
+    fun isUserStoredByEmail(email: Email): Boolean
+
+    /**
+     * Creates a token for the given user.
+     * @param token the token to create.
+     * @param maxTokens the maximum number of tokens the user can have available.
+     */
+    fun createToken(token: Token, maxTokens: PositiveValue)
+
+    /**
+     * Updates the last used time of the given token.
+     * @param token the token to retrieve.
+     * @param now the time to set as the last used time.
+     */
+    fun updateTokenLastUsed(token: Token, now: Instant)
+
+    /**
+     * Retrieves a user by their id.
+     * @param userId the id of the user to retrieve.
+     * @return the user or null if no such user exists.
+     */
+    fun getUserById(userId: Id): User?
+
+    /**
+     * Revokes a token, making it invalid.
+     * @param tokenValidationInfo the object that can validate a token.
+     * @return true if the token was revoked successfully, false otherwise.
+     */
+    fun revokeToken(tokenValidationInfo: TokenValidationInfo): Boolean
+
+    /**
+     * Retrieves user's statistics information.
+     * @param offset the offset to start the result from.
+     * @param limit the maximum number of results to return.
+     * @return the user's statistic information in a paginated result.
+     * The results are ordered by the user's rank.
+     */
+    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo>
+
+    /**
+     * Retrieves single user statistic information.
+     * @param userId the id of the user to retrieve.
+     * @return the user or null if no such user exists.
+     */
     fun getUserStats(userId: Id): UserRankInfo?
 
+    /**
+     * Edits information in a user.
+     * @param userId the id of the user to edit.
+     * @return the edited user or null if no such user exists.
+     */
     @NotTested
-    fun editUser(userId: Id): User
+    fun editUser(userId: Id): User?
 }

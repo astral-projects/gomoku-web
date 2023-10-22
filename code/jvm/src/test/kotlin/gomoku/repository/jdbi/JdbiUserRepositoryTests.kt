@@ -19,7 +19,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-// Don't forget to ensure DBMS is up (e.g. by running ./gradlew dbTestsWait)
 class JdbiUserRepositoryTests {
 
     @Test
@@ -49,29 +48,19 @@ class JdbiUserRepositoryTests {
         assertEquals(passwordValidationInfo, retrievedUserByUsername.passwordValidation)
         assertTrue(retrievedUserByUsername.id.value >= 0)
 
-        // when: asking if the user exists by username
-        val isUserIsStored = repo.isUserStoredByUsername(userName)
-
-        // then: response is true
-        assertTrue(isUserIsStored)
-
         // when: asking if the user exists by email
         val isUserIsStoredByEmail = repo.isUserStoredByEmail(email)
 
         // then: response is true
         assertTrue(isUserIsStoredByEmail)
 
-        // when: asking if a user exists by username that does not exist
-        val anotherUserIsStoredByUsername = repo.isUserStoredByUsername(newTestUserName())
-
-        // then: response is false
-        assertFalse(anotherUserIsStoredByUsername)
-
         // when: asking if a user exists by email that does not exist
         val anotherUserIsStoredByEmail = repo.isUserStoredByEmail(newTestEmail())
 
         // then: response is false
         assertFalse(anotherUserIsStoredByEmail)
+
+        handle.rollback()
     }
 
     @Test
@@ -122,6 +111,8 @@ class JdbiUserRepositoryTests {
         val userAndTokenAfterUpdate = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         val (_, retrievedTokenAfterUpdate) = userAndTokenAfterUpdate ?: fail("token and associated user must exist")
         assertEquals(tokenLastUsedInstant, retrievedTokenAfterUpdate.lastUsedAt)
+
+        handle.rollback()
     }
 
     @Test
@@ -162,10 +153,38 @@ class JdbiUserRepositoryTests {
         // then: token is not found
         val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         assertNull(userAndTokenAfterRevoke)
+
+        handle.rollback()
     }
 
     @Test
-    fun `retrieves all users ranking information that is paginated`() = runWithHandle { handle ->
+    fun `can retrieve user statistic information`() = runWithHandle { handle ->
+        // given: a UsersRepository
+        val repo = JdbiUsersRepository(handle)
+
+        // when: storing a user
+        val userName = newTestUserName()
+        val email = newTestEmail()
+        val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
+        val userId = repo.storeUser(userName, email, passwordValidationInfo)
+
+        // and: retrieving the user statistic information
+        val userRankingInfo = repo.getUserStats(userId)
+
+        // then: the user statistic information is correct
+        assertNotNull(userRankingInfo)
+        assertEquals(userName, userRankingInfo.username)
+        assertEquals(email, userRankingInfo.email)
+        assertEquals(0, userRankingInfo.gamesPlayed.value)
+        assertEquals(0, userRankingInfo.wins.value)
+        assertEquals(0, userRankingInfo.losses.value)
+        assertEquals(0, userRankingInfo.points.value)
+
+        handle.rollback()
+    }
+
+    @Test
+    fun `retrieves all users paginated statistic information`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -178,19 +197,19 @@ class JdbiUserRepositoryTests {
             repo.storeUser(userName, email, passwordValidationInfo)
         }
 
-        // and: retrieving the first 3 users ranking information
+        // and: retrieving the first 3 users statistic information
         val limitValue = 3
-        val usersRanking = repo.getUsersRanking(
+        val usersRanking = repo.getUsersStats(
             offset = NonNegativeValue(0),
             limit = PositiveValue(limitValue)
         )
 
-        // then: the users ranking is paginated
+        // then: the users statistic information is paginated
         assertEquals(1, usersRanking.currentPage)
         assertEquals(limitValue, usersRanking.itemsPerPage)
 
         // when: comparing with user information
-        // then: the users ranking information is correct
+        // then: the users statistic information is correct
         repeat(3) {
             val retrievedUserByUsername: User? = repo.getUserByUsername(usersRanking.items[it].username)
             assertNotNull(retrievedUserByUsername)
@@ -198,19 +217,19 @@ class JdbiUserRepositoryTests {
             assertEquals(usersRanking.items[it].email, retrievedUserByUsername.email)
         }
 
-        // when: retrieving all users ranking information
+        // when: retrieving all users statistic information
         val secondLimitValue = nrOfUsers
-        val allUsersRanking = repo.getUsersRanking(
+        val allUsersRanking = repo.getUsersStats(
             offset = NonNegativeValue(0),
             limit = PositiveValue(secondLimitValue)
         )
 
-        // then: the users ranking is paginated
+        // then: the users statistic is paginated
         assertEquals(1, allUsersRanking.currentPage)
         assertEquals(secondLimitValue, allUsersRanking.itemsPerPage)
 
-        // when: when retrieving the second page of users ranking information
-        val secondPageUsersRanking = repo.getUsersRanking(
+        // when: when retrieving the second page of users statistic information
+        val secondPageUsersRanking = repo.getUsersStats(
             offset = NonNegativeValue(limitValue),
             limit = PositiveValue(limitValue)
         )
@@ -218,5 +237,8 @@ class JdbiUserRepositoryTests {
         // then:
         assertEquals(2, secondPageUsersRanking.currentPage)
         assertEquals(limitValue, secondPageUsersRanking.itemsPerPage)
+
+        handle.rollback()
     }
+
 }
