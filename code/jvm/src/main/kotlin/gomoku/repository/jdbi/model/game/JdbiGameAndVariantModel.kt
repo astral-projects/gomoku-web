@@ -3,10 +3,10 @@ package gomoku.repository.jdbi.model.game
 import gomoku.domain.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
-import gomoku.domain.game.board.BoardSize
-import gomoku.domain.game.variant.VariantName
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.OpeningRule
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.repository.jdbi.model.JdbiModel
 import gomoku.utils.get
 import kotlinx.datetime.Instant

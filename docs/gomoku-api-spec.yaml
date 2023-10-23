@@ -13,8 +13,6 @@ tags:
   - name: Games
     description: Operations about games
 
-  - name: System
-    description: Operations about system
 paths:
   /api/users:
     post:
@@ -33,18 +31,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IdOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/users/token:
     post:
       tags:
@@ -62,18 +69,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserTokenCreateOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/users/logout:
     post:
       tags:
@@ -86,18 +102,27 @@ paths:
             text/plain:
               schema:
                 type: string
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/users/home:
     get:
       tags:
@@ -110,12 +135,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/users/{id}:
     get:
       tags:
@@ -135,24 +166,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '404':
           description: Not Found
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/users/stats:
     get:
       tags:
@@ -178,18 +221,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedResult'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/games:
     post:
       tags:
@@ -207,24 +259,36 @@ paths:
             text/plain:
               schema:
                 type: string
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '404':
           description: Not Found
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/games/{id}:
     get:
       tags:
@@ -244,28 +308,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GameOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '404':
           description: Not Found
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/system:
     get:
       tags:
-        - System
+        - Games
       summary: Get System Info
       responses:
         '200':
@@ -274,12 +350,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SystemInfoOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/games/{id}/move:
     put:
       tags:
@@ -304,24 +386,36 @@ paths:
             text/plain:
               schema:
                 type: string
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '404':
           description: Not Found
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '500':
           description: Internal Server Error
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/games/{id}/exit:
     post:
       tags:
@@ -341,18 +435,27 @@ paths:
             text/plain:
               schema:
                 type: string
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
         '404':
           description: Not Found
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
 components:
   schemas:
     # Input Models
@@ -551,3 +654,9 @@ components:
         instance:
           type: string
           example: 'https://losthost:8080/api/users'
+  headers:
+    RequestId:
+      description: The unique request identifier.
+      schema:
+        type: string
+      example: 'f1d4ee7e-7e5a-4d4b-8b9f-2f5c1b1b1a1a'

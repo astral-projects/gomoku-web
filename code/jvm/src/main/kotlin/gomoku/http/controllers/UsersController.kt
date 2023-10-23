@@ -12,8 +12,8 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
-import gomoku.http.model.IdOutputModel
 import gomoku.http.media.Problem
+import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
@@ -180,7 +180,6 @@ class UsersController(
 
     @PostMapping(Uris.Users.LOGOUT)
     fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.LOGOUT}")
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
             is Success -> ResponseEntity.ok("Logout was successful")
             is Failure -> {
@@ -199,7 +198,6 @@ class UsersController(
 
     @GetMapping(Uris.Users.HOME)
     fun getUserHome(authenticatedUser: AuthenticatedUser): ResponseEntity<UserOutputModel> {
-        logger.info("GET ${Uris.Users.HOME}")
         val userOutputmodel = UserOutputModel.serializeFrom(authenticatedUser.user)
         return ResponseEntity.ok(userOutputmodel)
     }
@@ -275,18 +273,13 @@ class UsersController(
     @GetMapping(Uris.Users.STATS_BY_ID)
     @NotTested
     fun getUserStats(): ResponseEntity<UserRankInfo> {
-        logger.info("GET ${Uris.Users.STATS_BY_ID}")
         TODO("Not yet implemented")
     }
 
     @PutMapping(Uris.Users.EDIT_BY_ID)
     @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
-        logger.info("PUT ${Uris.Users.EDIT_BY_ID}")
         TODO("Not yet implemented")
     }
 
-    companion object {
-        private val logger = LoggerFactory.getLogger(UsersController::class.java)
-    }
 }

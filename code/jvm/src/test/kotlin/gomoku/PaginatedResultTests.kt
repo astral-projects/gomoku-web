@@ -1,7 +1,7 @@
 package gomoku
 
-import gomoku.utils.TestDataGenerator.randomTo
 import gomoku.domain.PaginatedResult
+import gomoku.utils.TestDataGenerator.randomTo
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import kotlin.math.ceil

@@ -16,6 +16,9 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.utils.get
 import org.springframework.stereotype.Component
 
