@@ -36,15 +36,13 @@ class GamesController(
     private val gamesService: GamesService
 ) {
     /**
-     * Returns the game with the given id.
-     * @param id the id of the game
-     * @return the game with the given id
-     * If the game with the given id does not exist, returns a 404 Not Found error.
+     * Retrieves the game with the given id.
+     * @param id the id of the game.
+     * @return the game with the given id.
      */
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GET_BY_ID}")
         return when (val res = gamesService.getGameById(Id(id))) {
             is Success ->
                 ResponseEntity
@@ -75,7 +73,6 @@ class GamesController(
     @PostMapping(Uris.Games.FIND_GAME)
     @NotTested
     fun findGame(@Valid @RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Games.FIND_GAME}")
         val userId = user.user.id
         val variantId = variantInputModel.id
         return when (val result = gamesService.findGame(Id(variantId), userId)) {
@@ -121,7 +118,6 @@ class GamesController(
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
     @NotTested
     fun deleteById(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
         val userId = user.user.id
         return when (val game = gamesService.deleteGame(Id(id), userId)) {
             is Success -> ResponseEntity.status(200).body("Game deleted")
@@ -159,7 +155,6 @@ class GamesController(
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
     @NotTested
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
-        logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
         val systemInfo: SystemInfo = gamesService.getSystemInfo()
         return ResponseEntity.ok(SystemInfoOutputModel.serializeFrom(systemInfo))
     }
@@ -183,7 +178,6 @@ class GamesController(
         @Valid @RequestBody play: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
-        logger.info("PUT ${Uris.Games.MAKE_MOVE}")
         val userId = user.user.id
         val responseEntity = gamesService.makeMove(Id(id), userId, Square.toSquare(play.col, play.row))
         return when (responseEntity) {
@@ -236,7 +230,6 @@ class GamesController(
     @PostMapping(Uris.Games.EXIT_GAME)
     @NotTested
     fun exitGame(@Valid @Range(min = 1) @PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Games.EXIT_GAME}")
         val userId = user.user.id
         return when (val game = gamesService.exitGame(Id(id), userId)) {
             is Success -> ResponseEntity.status(200).body("Game exited")
@@ -274,8 +267,4 @@ class GamesController(
         }
     }
 
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(GamesController::class.java)
-    }
 }

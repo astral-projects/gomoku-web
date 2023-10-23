@@ -2,7 +2,6 @@ package gomoku.repository.jdbi.model.game
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Moves

@@ -1,7 +1,6 @@
 package gomoku.domain.game.variant
 
 import gomoku.domain.NonNegativeValue
-import gomoku.domain.PositiveValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GamePointsOnDraw
 import gomoku.domain.game.GamePointsOnForfeitOrTimer
@@ -9,13 +8,15 @@ import gomoku.domain.game.GamePointsOnWin
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
 import org.springframework.stereotype.Component
 
 private const val WINNING_PIECES = 5

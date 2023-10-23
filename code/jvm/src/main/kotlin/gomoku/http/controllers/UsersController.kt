@@ -11,8 +11,8 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.http.Uris
-import gomoku.http.model.IdOutputModel
 import gomoku.http.media.Problem
+import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
@@ -47,7 +47,6 @@ class UsersController(
         @Valid @RequestBody
         input: UserCreateInputModel
     ): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.REGISTER}")
         val res = userService.createUser(
             username = Username(input.username),
             email = Email(input.email),
@@ -94,7 +93,6 @@ class UsersController(
         @Valid @RequestBody
         input: UserCreateTokenInputModel
     ): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.TOKEN}")
         val res = userService.createToken(
             username = Username(input.username),
             password = Password(input.password)
@@ -126,7 +124,6 @@ class UsersController(
 
     @PostMapping(Uris.Users.LOGOUT)
     fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.LOGOUT}")
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
             is Success -> ResponseEntity.ok("Logout was successful")
             is Failure -> {
@@ -145,7 +142,6 @@ class UsersController(
 
     @GetMapping(Uris.Users.HOME)
     fun getUserHome(authenticatedUser: AuthenticatedUser): ResponseEntity<UserOutputModel> {
-        logger.info("GET ${Uris.Users.HOME}")
         val userOutputmodel = UserOutputModel.serializeFrom(authenticatedUser.user)
         return ResponseEntity.ok(userOutputmodel)
     }
@@ -157,7 +153,6 @@ class UsersController(
         @PathVariable
         id: Int
     ): ResponseEntity<*> {
-        logger.info("GET ${Uris.Users.GET_BY_ID}")
         return when (val res = userService.getUserById(Id(id))) {
             is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
             is Failure -> when (res.value) {
@@ -177,7 +172,6 @@ class UsersController(
         @Valid @Range(min = 0) @RequestParam(name = "offset", defaultValue = "0") offset: Int,
         @Valid @Range(min = 1) @RequestParam(name = "limit", defaultValue = "10") limit: Int
     ): ResponseEntity<PaginatedResult<UserRankInfo>> {
-        logger.info("GET ${Uris.Users.STATS}")
         val paginatedResult =
             userService.getUsersStats(NonNegativeValue(offset), PositiveValue(limit))
         return ResponseEntity.ok(paginatedResult)
@@ -186,18 +180,13 @@ class UsersController(
     @GetMapping(Uris.Users.STATS_BY_ID)
     @NotTested
     fun getUserStats(): ResponseEntity<UserRankInfo> {
-        logger.info("GET ${Uris.Users.STATS_BY_ID}")
         TODO("Not yet implemented")
     }
 
     @PutMapping(Uris.Users.EDIT_BY_ID)
     @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
-        logger.info("PUT ${Uris.Users.EDIT_BY_ID}")
         TODO("Not yet implemented")
     }
 
-    companion object {
-        private val logger = LoggerFactory.getLogger(UsersController::class.java)
-    }
 }

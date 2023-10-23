@@ -9,7 +9,7 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
-import gomoku.domain.game.variant.VariantName
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.repository.TestVariant
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
@@ -305,7 +305,7 @@ class JdbiGameRepositoryTests {
         assertSame(game2.state, GameState.IN_PROGRESS)
 
         // when: updating game 1 with a new board
-        val move: Square = Square(Column('a'), Row(1))
+        val move = Square(Column('a'), Row(1))
         val newBoard = board.play(move, variant)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 

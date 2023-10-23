@@ -1,12 +1,12 @@
 package gomoku.http
 
-import gomoku.utils.TestDataGenerator.newTestEmail
-import gomoku.utils.TestDataGenerator.newTestPassword
-import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.domain.PaginatedResult
 import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserOutputModel
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestUserName
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort

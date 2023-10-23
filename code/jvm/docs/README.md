@@ -1,4 +1,4 @@
-# Gomoku - Backend Documentation
+# Gomoku - Backend Documentation 🉐
 
 > This is the backend documentation for the Gomoku Royale game.
 
@@ -15,6 +15,7 @@
 - [Data Access Layer](#data-access-layer)
 - [Data Representation](#data-representation)
 - [Validation](#validation)
+- [Concurrency](#concurrency)
 - [Error Handling](#error-handling)
 - [Implementation Challenges](#implementation-challenges)
 - [Further Improvements](#further-improvements)
@@ -23,14 +24,15 @@
 
 ## Introduction
 
-The backend server is a RESTful API that provides the functionality for the [Gomoku](https://en.wikipedia.org/wiki/Gomoku) Royale board game.
+The backend server is a RESTful API that provides the functionality for
+the [Gomoku](https://en.wikipedia.org/wiki/Gomoku) Royale board game.
 It is written mainly in Kotlin in a JVM gradle project.
 
 The JVM application is a Spring Boot application, built with [Spring Initializr](https://start.spring.io/).
 
 Some dependencies used in this project are:
 
-- **[Spring Web](https://spring.io/projects/spring-framework)** - for the REST API; 
+- **[Spring Web](https://spring.io/projects/spring-framework)** - for the REST API;
 - **[Jdbi](https://jdbi.org/)** - for the database access, using PostgreSQL;
 - **[Jackson](https://github.com/FasterXML/jackson)** - for JSON serialization and deserialization;
 
@@ -145,6 +147,9 @@ request in order for the `AuthenticatedUserArgumentResolver` to retrieve it and 
 parameter. If the token is invalid, the `AuthenticationInterceptor` short-circuits the pipeline and returns an error
 response to the client.
 
+The `LoggingFilter` and `RequestIdFilter` are responsible for logging and generating a unique id for each request,
+respectively.
+
 For implementation details, please refer to the [/http/pipeline](../src/main/kotlin/gomoku/http/pipeline) folder.
 
 ### Application Architecture
@@ -192,7 +197,8 @@ The presentation layer is organized as follows:
   and deserializers used by the application;
 - [/media](../src/main/kotlin/gomoku/http/media) - contains the classes that represent the media types used in the
   application such as `application/problem+json`;
-- [/pipeline](../src/main/kotlin/gomoku/http/jackson) - contains all interceptors, argument resolvers and request
+- [/pipeline](../src/main/kotlin/gomoku/http/jackson) - contains all filters, interceptors, argument resolvers and
+  request
   processors used by the application before and after the request is handled by the controllers;
 - [CustomExceptionHandler](../src/main/kotlin/gomoku/http/CustomExceptionHandler.kt) - contains exception handlers
   that generate the responses for the exceptions thrown by the application;
@@ -212,7 +218,9 @@ to generate the appropriate response based on the result of the service operatio
 
 Each service provided by the application does not have an interface because it is not expected to have multiple
 implementations of the same service.
-In a service, a [TransactionManager](../src/main/kotlin/gomoku/repository/transaction/TransactionManager.kt) is received as a constructor dependency, which then allows the service to manage the transaction scope of the service operation and the underlying data access.
+In a service, a [TransactionManager](../src/main/kotlin/gomoku/repository/transaction/TransactionManager.kt) is received
+as a constructor dependency, which then allows the service to manage the transaction scope of the service operation and
+the underlying data access.
 
 The service layer is organized as follows:
 
@@ -266,10 +274,11 @@ to validate the data in the requests.
 ### Validation
 
 In the backend infrastructure, the validation of the data is done in three different layers:
+
 - **Spring validation**: The Spring validation is responsible for validating the data in the requests, such as the
   request body, path variables, query parameters, etc.
-  
-  Example: 
+
+  Example:
   ```kotlin
   data class UserCreationRequest(
       @field:Size(min = 5, max = 30)
@@ -288,7 +297,8 @@ In the backend infrastructure, the validation of the data is done in three diffe
   }
   ```
 
-- **Domain Components**: The domain components are responsible for validating the data in the domain classes and ensure data integrity throughout the application.
+- **Domain Components**: The domain components are responsible for validating the data in the domain classes and ensure
+  data integrity throughout the application.
 
   Example:
   ```kotlin
@@ -314,10 +324,30 @@ In the backend infrastructure, the validation of the data is done in three diffe
       }
   }
   ```
-  
+
 - **Database**: The database is responsible for validating the data integrity of the data stored in the database.
   This is done by defining constraints on the database schema, such as primary keys, foreign keys, unique constraints,
   check constraints, etc.
+
+### Concurrency
+
+To ensure the application's thread safety and data consistency, several measures have been implemented:
+
+- **Database Transactions**: Database transactions are employed to maintain data consistency and ensure that operations
+  are atomic. This means that a series of database operations either all succeed or all fail, preventing data corruption
+  or inconsistencies.
+
+- **Immutable Objects**: The domain classes are designed as immutable objects. Once these objects are created, they
+  cannot be modified. This immutability guarantees data consistency and helps maintain atomic operations.
+
+- **Row Locking**: Row-level locks are used in certain database operations. For example, the `isMatchmaking` operation,
+  which checks if a user is in a lobby waiting for a match, utilizes the `FOR UPDATE` clause. This specific row lock
+  ensures that the selected row is locked until the transaction is committed. As a result, it guarantees that the user
+  is not matched with another user concurrently. Importantly, this row-level locking does not block other users from
+  being matched with different users simultaneously.
+
+These measures collectively contribute to the application's thread safety and data integrity, ensuring that operations
+are executed consistently and in a reliable way.
 
 ### Error Handling
 
@@ -383,9 +413,6 @@ It consists of:
 
 ### Further Improvements
 
-- **Improve logging system**: We only implemented the basic logging for the application, but we could improve the
-  logging by
-  adding more information to the logs, such as given each request a unique id, and then log the id in each log message.
 - **Siren media type**: The Siren media type is a hypermedia type that allows the client to navigate through the
   API and discover the available resources.
   We didn't have the time to implement this media type,

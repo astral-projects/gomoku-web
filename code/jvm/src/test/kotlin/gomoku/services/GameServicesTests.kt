@@ -20,7 +20,6 @@ import gomoku.repository.jdbi.JdbiTestConfiguration
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.repository.transaction.TransactionManager
 import gomoku.services.game.GameCreationError
-import gomoku.services.game.GameCreationResult
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GamesService
 import gomoku.services.user.UsersService
@@ -189,7 +188,7 @@ class GameServicesTests {
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
 
         // then: make a move
-        val g = gameService.makeMove(gameId, user.id, Move(Square(Column('a'), Row(1)), Piece(Player.w)))
+        val g = gameService.makeMove(gameId, user.id, Square(Column('a'), Row(1)))
         assertTrue(g is Success)
         when (g) {
             is Failure -> fail("Unexpected $g")
@@ -199,7 +198,7 @@ class GameServicesTests {
         }
 
         // then: make a move with the same user
-        val g2 = gameService.makeMove(gameId, user.id, Move(Square(Column('b'), Row(1)), Piece(Player.w)))
+        val g2 = gameService.makeMove(gameId, user.id, Square(Column('b'), Row(1)))
         assertTrue(g2 is Failure)
         when (g2) {
             is Failure -> {

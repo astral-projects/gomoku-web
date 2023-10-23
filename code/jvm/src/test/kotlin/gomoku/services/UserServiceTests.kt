@@ -1,9 +1,5 @@
 package gomoku.services
 
-import gomoku.utils.TestClock
-import gomoku.utils.TestDataGenerator.newTestEmail
-import gomoku.utils.TestDataGenerator.newTestPassword
-import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
@@ -14,6 +10,10 @@ import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
+import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestUserName
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*

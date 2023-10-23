@@ -10,6 +10,9 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
+/**
+ * Retrieves the [AuthenticatedUser] from the request attributes.
+ */
 @Component
 class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
 
