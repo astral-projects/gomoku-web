@@ -1,3 +1,11 @@
 package gomoku.http.model.game
 
-class MoveInputModel(val move: String)
+import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.Range
+
+class MoveInputModel(
+    @field:Size(min = 1, max = 1)
+    val col: String,
+    @field:Range(min = 1, max = 1)
+    val row: Int
+)
