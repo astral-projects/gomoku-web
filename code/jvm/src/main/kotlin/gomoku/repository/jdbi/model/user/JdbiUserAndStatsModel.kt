@@ -6,6 +6,7 @@ import gomoku.domain.user.Email
 import gomoku.domain.user.UserRankInfo
 import gomoku.domain.user.Username
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 
 class JdbiUserAndStatsModel(
@@ -23,14 +24,14 @@ class JdbiUserAndStatsModel(
 ) : JdbiModel<UserRankInfo> {
     override fun toDomainModel(): UserRankInfo =
         UserRankInfo(
-            id = Id(id),
-            username = Username(username),
-            email = Email(email),
-            points = NonNegativeValue(points),
-            rank = NonNegativeValue(rank),
-            gamesPlayed = NonNegativeValue(gamesPlayed),
-            wins = NonNegativeValue(wins),
-            draws = NonNegativeValue(draws),
-            losses = NonNegativeValue(gamesPlayed - wins - draws)
+            id = Id(id).get(),
+            username = Username(username).get(),
+            email = Email(email).get(),
+            points = NonNegativeValue(points).get(),
+            rank = NonNegativeValue(rank).get(),
+            gamesPlayed = NonNegativeValue(gamesPlayed).get(),
+            wins = NonNegativeValue(wins).get(),
+            draws = NonNegativeValue(draws).get(),
+            losses = NonNegativeValue(gamesPlayed - wins - draws).get()
         )
 }

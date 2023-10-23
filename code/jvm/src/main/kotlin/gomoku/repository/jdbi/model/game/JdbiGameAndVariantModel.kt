@@ -8,6 +8,7 @@ import gomoku.domain.game.variant.VariantName
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.OpeningRule
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.util.*
@@ -35,10 +36,10 @@ class JdbiGameAndVariantModel(
 ) : JdbiModel<Game> {
     override fun toDomainModel(): Game {
         return Game(
-            id = Id(id),
+            id = Id(id).get(),
             state = GameState.valueOf(state.uppercase(Locale.getDefault())),
             variant = GameVariant(
-                id = Id(variantId),
+                id = Id(variantId).get(),
                 name = VariantName.valueOf(variantName.uppercase(Locale.getDefault())),
                 openingRule = OpeningRule.valueOf(openingRule.uppercase(Locale.getDefault())),
                 boardSize = BoardSize.fromSize(boardSize)
@@ -46,8 +47,8 @@ class JdbiGameAndVariantModel(
             board = board.toDomainModel(),
             createdAt = createdAt,
             updatedAt = updatedAt,
-            hostId = Id(hostId),
-            guestId = Id(guestId)
+            hostId = Id(hostId).get(),
+            guestId = Id(guestId).get()
         )
     }
 }

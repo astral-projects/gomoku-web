@@ -36,5 +36,11 @@ data class Problem (
         val tokenIsInvalid = URI("${baseUrl}token-is-invalid")
         val gameAlreadyFinished = URI("${baseUrl}game-already-finished")
         val gameIsInProgress = URI("${baseUrl}game-is-in-progress")
+        val invalidId = URI("${baseUrl}invalid-id")
+        val invalidOffset = URI("${baseUrl}invalid-offset")
+        val invalidLimit = URI("${baseUrl}invalid-limit")
+        val invalidEmail = URI("${baseUrl}invalid-email")
+        val blankUsername = URI("${baseUrl}blank-username")
+        val invalidUsernameLength = URI("${baseUrl}invalid-username-length")
     }
 }

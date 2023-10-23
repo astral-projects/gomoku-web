@@ -3,6 +3,7 @@ package gomoku.repository.jdbi.model.lobby
 import gomoku.domain.Id
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 
 class JdbiLobbyModel(
@@ -14,9 +15,9 @@ class JdbiLobbyModel(
 ) : JdbiModel<Lobby> {
     override fun toDomainModel(): Lobby {
         return Lobby(
-            lobbyId = Id(id),
-            userId = Id(hostId),
-            variantId = Id(variantId)
+            lobbyId = Id(id).get(),
+            userId = Id(hostId).get(),
+            variantId = Id(variantId).get()
         )
     }
 }

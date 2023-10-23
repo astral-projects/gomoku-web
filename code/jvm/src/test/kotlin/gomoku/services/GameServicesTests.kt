@@ -28,6 +28,7 @@ import gomoku.utils.Failure
 import gomoku.utils.Success
 import gomoku.utils.TestClock
 import gomoku.utils.TestDataGenerator
+import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -54,7 +55,7 @@ class GameServicesTests {
         val gameService = createGamesService(testClock)
 
         // when: joining a game
-        val gameCreationResult = gameService.findGame(Id(1), user.id)
+        val gameCreationResult = gameService.findGame(Id(1).get(), user.id)
 
         // then: the  join is successful
         when (gameCreationResult) {
@@ -63,7 +64,7 @@ class GameServicesTests {
         }
 
         // then: other player wants to play the same variant so its a match between the two
-        val gameCreationResult2 = gameService.findGame(Id(1), user2.id)
+        val gameCreationResult2 = gameService.findGame(Id(1).get(), user2.id)
 
         // then: the match is successful
         when (gameCreationResult2) {
@@ -74,7 +75,7 @@ class GameServicesTests {
         assertNotEquals(gameCreationResult.value.message, gameCreationResult2.value.message)
 
         // then: the game is created
-        val gameResult = gameService.findGame(Id(1), user.id)
+        val gameResult = gameService.findGame(Id(1).get(), user.id)
         assertTrue(gameResult is Failure)
         when(gameResult) {
             is Success -> fail("User needs to be already in a Game $gameResult")
@@ -189,7 +190,7 @@ class GameServicesTests {
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
 
         // then: make a move
-        val g = gameService.makeMove(gameId, user.id, Move(Square(Column('a'), Row(1)), Piece(Player.w)))
+        val g = gameService.makeMove(gameId, user.id, Square(Column('a'), Row(1)))
         assertTrue(g is Success)
         when (g) {
             is Failure -> fail("Unexpected $g")
@@ -199,7 +200,7 @@ class GameServicesTests {
         }
 
         // then: make a move with the same user
-        val g2 = gameService.makeMove(gameId, user.id, Move(Square(Column('b'), Row(1)), Piece(Player.w)))
+        val g2 = gameService.makeMove(gameId, user.id, Square(Column('b'), Row(1)))
         assertTrue(g2 is Failure)
         when (g2) {
             is Failure -> {
@@ -215,8 +216,8 @@ class GameServicesTests {
 
     private fun createRandomGame(gameService: GamesService, user: User, user2: User): Id? {
         val variantId = Id(1)
-        val gameCreationResult = gameService.findGame(variantId, user.id)
-        val gameCreationResult2 = gameService.findGame(variantId, user2.id)
+        val gameCreationResult = gameService.findGame(variantId.get(), user.id)
+        val gameCreationResult2 = gameService.findGame(variantId.get(), user2.id)
         if (gameCreationResult is Success && gameCreationResult2 is Success) return gameCreationResult2.value.id
         return null
     }
@@ -258,10 +259,10 @@ class GameServicesTests {
                 BCryptPasswordEncoder(),
                 Sha256TokenEncoder(),
                 UsersDomainConfig(
-                    tokenSizeInBytes = PositiveValue(256 / 8),
+                    tokenSizeInBytes = PositiveValue(256 / 8).get(),
                     tokenTtl = tokenTtl,
                     tokenRollingTtl = tokenRollingTtl,
-                    maxTokensPerUser = PositiveValue(maxTokensPerUser)
+                    maxTokensPerUser = PositiveValue(maxTokensPerUser).get()
                 )
             ),
             testClock

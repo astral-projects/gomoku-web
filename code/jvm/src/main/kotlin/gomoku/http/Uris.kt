@@ -21,6 +21,7 @@ object Uris {
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
+        fun stats(): URI = URI(STATS)
         fun register(): URI = URI(REGISTER)
         fun logout(): URI = URI(LOGOUT)
     }
@@ -34,9 +35,9 @@ object Uris {
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
-        fun makeMove(id: Int) = UriTemplate(MAKE_MOVE).expand(id)
-        fun deleteById(id: Int) = UriTemplate(GET_BY_ID).expand(id)
-        fun exitGame(id: Int) = UriTemplate(EXIT_GAME).expand(id)
+        fun makeMove(id: Any) = UriTemplate(MAKE_MOVE).expand(id)
+        fun deleteById(id: Any) = UriTemplate(GET_BY_ID).expand(id)
+        fun exitGame(id: Any) = UriTemplate(EXIT_GAME).expand(id)
         fun findGame() = URI(FIND_GAME)
     }
 }

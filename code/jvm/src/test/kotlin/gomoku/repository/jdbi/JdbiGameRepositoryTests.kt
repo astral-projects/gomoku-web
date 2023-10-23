@@ -16,6 +16,7 @@ import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.newTokenValidationData
+import gomoku.utils.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -68,7 +69,7 @@ class JdbiGameRepositoryTests {
             variantId = variantId,
             hostId = hostId,
             guestId = guestId,
-            lobbyId = lobbyId,
+            lobbyId = lobbyId.get(),
             board = board
         )
 
@@ -88,7 +89,7 @@ class JdbiGameRepositoryTests {
         // when: seeing if the guest and host belong to the game
         val guestBelongsToGame = repoGames.userBelongsToTheGame(guestId, createdGameId)
         val hostBelongsToGame = repoGames.userBelongsToTheGame(hostId, createdGameId)
-        val randomUserBelongsToGame = repoGames.userBelongsToTheGame(Id(Int.MAX_VALUE), createdGameId)
+        val randomUserBelongsToGame = repoGames.userBelongsToTheGame(Id(Int.MAX_VALUE).get(), createdGameId)
 
         // then:
         assertNotNull(guestBelongsToGame)
@@ -283,8 +284,8 @@ class JdbiGameRepositoryTests {
         assertEquals(variantId, repoGames.getVariants().find { v -> v.name == VariantName.TEST }?.id)
 
         // when: creating a game
-        val createdGameId = repoGames.createGame(variantId, hostId, guestId, lobbyId, board)
-        val createdGameId2 = repoGames.createGame(variantId, hostId, guestId, Id(lobbyId.value - 1), board)
+        val createdGameId = repoGames.createGame(variantId, hostId, guestId, lobbyId.get(), board)
+        val createdGameId2 = repoGames.createGame(variantId, hostId, guestId, Id(lobbyId.get().value - 1).get(), board)
 
         // then: creation is successful
         assertNotNull(createdGameId)
@@ -375,8 +376,8 @@ class JdbiGameRepositoryTests {
         assertNotNull(guestStats)
 
         // when: updating the stats
-        val winnerPoints = NonNegativeValue(10)
-        val loserPoints = NonNegativeValue(5)
+        val winnerPoints = NonNegativeValue(10).get()
+        val loserPoints = NonNegativeValue(5).get()
         val updatedGame = repoGames.updatePoints(
             winnerId = hostId,
             loserId = guestId,
@@ -394,19 +395,19 @@ class JdbiGameRepositoryTests {
 
         // then: the host stats are updated
         assertNotNull(hostStatsAfterUpdate)
-        assertEquals(hostStatsAfterUpdate.points, NonNegativeValue(hostStats.points.value + winnerPoints.value))
-        assertEquals(hostStatsAfterUpdate.gamesPlayed, NonNegativeValue(hostStats.gamesPlayed.value + 1))
-        assertEquals(hostStatsAfterUpdate.wins, NonNegativeValue(hostStats.wins.value + 1))
-        assertEquals(hostStatsAfterUpdate.draws, NonNegativeValue(hostStats.draws.value))
-        assertEquals(hostStatsAfterUpdate.losses, NonNegativeValue(hostStats.losses.value))
+        assertEquals(hostStatsAfterUpdate.points, NonNegativeValue(hostStats.points.value + winnerPoints.value).get())
+        assertEquals(hostStatsAfterUpdate.gamesPlayed, NonNegativeValue(hostStats.gamesPlayed.value + 1).get())
+        assertEquals(hostStatsAfterUpdate.wins, NonNegativeValue(hostStats.wins.value + 1).get())
+        assertEquals(hostStatsAfterUpdate.draws, NonNegativeValue(hostStats.draws.value).get())
+        assertEquals(hostStatsAfterUpdate.losses, NonNegativeValue(hostStats.losses.value).get())
 
         // and: the guest stats are updated
         assertNotNull(guestStatsAfterUpdate)
-        assertEquals(guestStatsAfterUpdate.points, NonNegativeValue(guestStats.points.value + loserPoints.value))
-        assertEquals(guestStatsAfterUpdate.gamesPlayed, NonNegativeValue(guestStats.gamesPlayed.value + 1))
-        assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value))
-        assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value))
-        assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value + 1))
+        assertEquals(guestStatsAfterUpdate.points, NonNegativeValue(guestStats.points.value + loserPoints.value).get())
+        assertEquals(guestStatsAfterUpdate.gamesPlayed, NonNegativeValue(guestStats.gamesPlayed.value + 1).get())
+        assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value).get())
+        assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value).get())
+        assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value + 1).get())
 
         handle.rollback()
 
@@ -439,8 +440,8 @@ class JdbiGameRepositoryTests {
         assertNotNull(guestStats)
 
         // when: updating the stats
-        val winnerPoints = NonNegativeValue(10)
-        val loserPoints = NonNegativeValue(5)
+        val winnerPoints = NonNegativeValue(10).get()
+        val loserPoints = NonNegativeValue(5).get()
         val updatedGame = repoGames.updatePoints(
             winnerId = hostId,
             loserId = guestId,
@@ -458,19 +459,19 @@ class JdbiGameRepositoryTests {
 
         // then: the host stats are updated
         assertNotNull(hostStatsAfterUpdate)
-        assertEquals(hostStatsAfterUpdate.points, NonNegativeValue(hostStats.points.value + winnerPoints.value))
-        assertEquals(hostStatsAfterUpdate.gamesPlayed, NonNegativeValue(hostStats.gamesPlayed.value + 1))
-        assertEquals(hostStatsAfterUpdate.wins, NonNegativeValue(hostStats.wins.value))
-        assertEquals(hostStatsAfterUpdate.draws, NonNegativeValue(hostStats.draws.value + 1))
-        assertEquals(hostStatsAfterUpdate.losses, NonNegativeValue(hostStats.losses.value))
+        assertEquals(hostStatsAfterUpdate.points, NonNegativeValue(hostStats.points.value + winnerPoints.value).get())
+        assertEquals(hostStatsAfterUpdate.gamesPlayed, NonNegativeValue(hostStats.gamesPlayed.value + 1).get())
+        assertEquals(hostStatsAfterUpdate.wins, NonNegativeValue(hostStats.wins.value).get())
+        assertEquals(hostStatsAfterUpdate.draws, NonNegativeValue(hostStats.draws.value + 1).get())
+        assertEquals(hostStatsAfterUpdate.losses, NonNegativeValue(hostStats.losses.value).get())
 
         // and: the guest stats are updated
         assertNotNull(guestStatsAfterUpdate)
-        assertEquals(guestStatsAfterUpdate.points, NonNegativeValue(guestStats.points.value + loserPoints.value))
-        assertEquals(guestStatsAfterUpdate.gamesPlayed, NonNegativeValue(guestStats.gamesPlayed.value + 1))
-        assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value))
-        assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value + 1))
-        assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value))
+        assertEquals(guestStatsAfterUpdate.points, NonNegativeValue(guestStats.points.value + loserPoints.value).get())
+        assertEquals(guestStatsAfterUpdate.gamesPlayed, NonNegativeValue(guestStats.gamesPlayed.value + 1).get())
+        assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value).get())
+        assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value + 1).get())
+        assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value).get())
 
         handle.rollback()
 

@@ -5,7 +5,7 @@ import gomoku.domain.errors.InvalidEmailError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
-class Email (
+class Email private constructor(
     val value: String
 ) {
 
