@@ -187,11 +187,11 @@ class GamesController(
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")
-        val player = requireNotNull(findPlayer(play.move)) {
-            return ResponseEntity.status(400).body("Your movement is not correct")
-        }
+        //val player = requireNotNull(findPlayer(play.move)) {
+         //   return ResponseEntity.status(400).body("Your movement is not correct")
+        //}
         val userId = user.user.id
-        val responseEntity = gamesService.makeMove(Id(id), userId, Move(Square.toSquare(play.move), Piece(player)))
+        val responseEntity = gamesService.makeMove(Id(id), userId, Square.toSquare(play.move))
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("The move was performed successfully")
             is Failure -> when (responseEntity.value) {

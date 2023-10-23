@@ -5,11 +5,10 @@ import gomoku.domain.SystemInfo
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
-import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
-import gomoku.domain.game.board.moves.Move
+import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
 import gomoku.repository.GamesRepository
@@ -138,7 +137,7 @@ class GamesService(
      * Finally, returns the updated game.Or returns an error
      */
     @NotTested
-    fun makeMove(gameId: Id, user: Id, move: Move): GameMakeMoveResult =
+    fun makeMove(gameId: Id, user: Id, square: Square): GameMakeMoveResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
@@ -148,7 +147,7 @@ class GamesService(
             val variant = gameVariantMap[game.variant.id]
                 ?: return@run failure(GameMakeMoveError.VariantNotFound)
             val gameLogic = GameLogic(variant, clock)
-            when (val playLogic = gameLogic.play(move.first, game, user)) {
+            when (val playLogic = gameLogic.play(square, game, user)) {
                 is Failure -> failure(GameMakeMoveError.MoveNotValid(playLogic.value))
                 is Success -> {
                     val updatedGame = playLogic.value

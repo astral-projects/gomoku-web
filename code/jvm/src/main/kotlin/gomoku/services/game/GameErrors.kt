@@ -40,6 +40,7 @@ sealed class GameMakeMoveError {
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
     object VariantNotFound : GameMakeMoveError()
+    
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
