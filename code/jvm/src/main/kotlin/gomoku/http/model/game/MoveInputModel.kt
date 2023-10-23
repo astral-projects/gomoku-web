@@ -6,6 +6,6 @@ import org.hibernate.validator.constraints.Range
 class MoveInputModel(
     @field:Size(min = 1, max = 1)
     val col: String,
-    @field:Range(min = 1, max = 1)
+    @field:Range(min = 1, max = 2)
     val row: Int
 )

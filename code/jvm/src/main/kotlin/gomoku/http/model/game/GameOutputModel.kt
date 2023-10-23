@@ -21,7 +21,6 @@ class GameOutputModel private constructor(
 ) {
     companion object : JsonOutputModel<Game, GameOutputModel> {
         override fun serializeFrom(domainClass: Game): GameOutputModel {
-            require(domainClass.board is BoardRun)
             return GameOutputModel(
                 id = domainClass.id.value,
                 state = GameStateOutputModel.serializeFrom(domainClass.state),
