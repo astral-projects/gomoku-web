@@ -13,8 +13,6 @@ tags:
   - name: Games
     description: Operations about games
 
-  - name: System
-    description: Operations about system
 paths:
   /api/users:
     post:
@@ -265,7 +263,7 @@ paths:
   /api/system:
     get:
       tags:
-        - System
+        - Games
       summary: Get System Info
       responses:
         '200':

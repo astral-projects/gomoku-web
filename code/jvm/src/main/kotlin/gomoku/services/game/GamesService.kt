@@ -5,9 +5,11 @@ import gomoku.domain.SystemInfo
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
+import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
+import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig

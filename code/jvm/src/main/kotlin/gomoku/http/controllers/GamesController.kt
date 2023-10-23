@@ -2,9 +2,6 @@ package gomoku.http.controllers
 
 import gomoku.domain.Id
 import gomoku.domain.SystemInfo
-import gomoku.domain.game.board.findPlayer
-import gomoku.domain.game.board.moves.Move
-import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
@@ -187,11 +184,8 @@ class GamesController(
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         logger.info("PUT ${Uris.Games.MAKE_MOVE}")
-        //val player = requireNotNull(findPlayer(play.move)) {
-         //   return ResponseEntity.status(400).body("Your movement is not correct")
-        //}
         val userId = user.user.id
-        val responseEntity = gamesService.makeMove(Id(id), userId, Square.toSquare(play.move))
+        val responseEntity = gamesService.makeMove(Id(id), userId, Square.toSquare(play.col, play.row))
         return when (responseEntity) {
             is Success -> ResponseEntity.status(200).body("The move was performed successfully")
             is Failure -> when (responseEntity.value) {

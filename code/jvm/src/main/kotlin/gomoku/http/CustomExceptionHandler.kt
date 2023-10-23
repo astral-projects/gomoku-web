@@ -39,11 +39,12 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest
     ): ResponseEntity<Any> {
         log.info("Handling HttpMessageNotReadableException: {}", ex.message)
+
         return Problem(
             type = Problem.invalidRequestContent,
             title = "Http message not readable",
             status = 400,
-            detail = ex.message
+            detail = ex.message.toString()
         ).toResponse()
     }
 
