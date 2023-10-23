@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    // for Spring boot
+    // for Spring web
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.0")
 
     // for Spring validation
