@@ -14,6 +14,7 @@ import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.Success
+import gomoku.utils.get
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
@@ -329,8 +330,8 @@ class UserServiceTests {
         // when: retrieving the users statistic information
         val limit = nrOfUsers
         val ranking = userService.getUsersStats(
-            offset = NonNegativeValue(0),
-            limit = PositiveValue(limit)
+            offset = NonNegativeValue(0).get(),
+            limit = PositiveValue(limit).get()
         )
 
         // then: the statistics is paginated
@@ -351,10 +352,10 @@ class UserServiceTests {
                 BCryptPasswordEncoder(),
                 Sha256TokenEncoder(),
                 UsersDomainConfig(
-                    tokenSizeInBytes = PositiveValue(256 / 8),
+                    tokenSizeInBytes = PositiveValue(256 / 8).get(),
                     tokenTtl = tokenTtl,
                     tokenRollingTtl = tokenRollingTtl,
-                    maxTokensPerUser = PositiveValue(maxTokensPerUser)
+                    maxTokensPerUser = PositiveValue(maxTokensPerUser).get()
                 )
             ),
             testClock

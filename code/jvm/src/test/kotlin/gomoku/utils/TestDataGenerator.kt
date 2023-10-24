@@ -11,12 +11,12 @@ object TestDataGenerator {
     /**
      * Generates a random [Username] prefixed with "user-".
      */
-    fun newTestUserName() = Username("user-${abs(Random.nextLong())}")
+    fun newTestUserName() = Username("user-${abs(Random.nextLong())}").get()
 
     /**
      * Generates a random [Email] prefixed with "email@" and suffixed with ".com".
      */
-    fun newTestEmail() = Email("email@${abs(Random.nextLong())}.com")
+    fun newTestEmail() = Email("email@${abs(Random.nextLong())}.com").get()
 
     /**
      * Generates a random [Password] prefixed with "password-".

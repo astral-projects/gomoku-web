@@ -1,19 +1,22 @@
 package gomoku.domain
 
-import gomoku.domain.errors.InvalidIdError
 import gomoku.domain.errors.GettingIdResult
+import gomoku.domain.errors.InvalidIdError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
 /**
  * Provides a generic identifier container for domain objects.
  */
-class Id (val value: Int) {
+class Id private constructor(val value: Int) {
 
     companion object {
-        operator fun invoke(value: Int): GettingIdResult = when {
-            value <= 0 -> Failure(InvalidIdError.InvalidId)
-            else -> Success(Id(value))
+        operator fun invoke(value: Int): GettingIdResult {
+            return if (value > 0) {
+                Success(Id(value))
+            } else {
+                Failure(InvalidIdError.InvalidId(value))
+            }
         }
     }
 

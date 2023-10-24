@@ -2,6 +2,7 @@ package gomoku.http.controllers
 
 import gomoku.domain.Id
 import gomoku.domain.SystemInfo
+import gomoku.domain.errors.InvalidIdError
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
@@ -36,31 +37,40 @@ class GamesController(
     private val gamesService: GamesService
 ) {
     /**
-     * Returns the game with the given id.
-     * @param id the id of the game
-     * @return the game with the given id
-     * If the game with the given id does not exist, returns a 404 Not Found error.
+     * Retrieves the game with the given id.
+     * @param id the id of the game.
+     * @return the game with the given id.
      */
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GET_BY_ID}")
-        return when (val res = gamesService.getGameById(Id(id))) {
-            is Success ->
-                ResponseEntity
-                    .status(200)
-                    .body(GameOutputModel.serializeFrom(res.value))
+        return when (val validId = Id(id)) {
+            is Failure -> Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be a positive integer",
+                instance = Uris.Games.byId(validId.value.value)
+            ).toResponse()
 
-            is Failure -> when (res.value) {
-                GettingGameError.GameNotFound -> Problem(
-                    type = Problem.gameNotFound,
-                    title = "Requested game was not found",
-                    status = 404,
-                    detail = "The game with id $id was not found",
-                    instance = Uris.Games.byId(id)
-                ).toResponse()
+            is Success -> return when (val res = gamesService.getGameById(validId.value)) {
+                is Success ->
+                    ResponseEntity
+                        .status(200)
+                        .body(GameOutputModel.serializeFrom(res.value))
+
+                is Failure -> when (res.value) {
+                    GettingGameError.GameNotFound -> Problem(
+                        type = Problem.gameNotFound,
+                        title = "Requested game was not found",
+                        status = 404,
+                        detail = "The game with id ${validId.value} was not found",
+                        instance = Uris.Games.byId(validId.value.value)
+                    ).toResponse()
+                }
             }
         }
+
     }
 
     /**
@@ -75,36 +85,47 @@ class GamesController(
     @PostMapping(Uris.Games.FIND_GAME)
     @NotTested
     fun findGame(@Valid @RequestBody variantInputModel: VariantInputModel, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Games.FIND_GAME}")
         val userId = user.user.id
-        val variantId = variantInputModel.id
-        return when (val result = gamesService.findGame(Id(variantId), userId)) {
-            is Success -> ResponseEntity.status(201).body(result.value)
-            is Failure -> when (result.value) {
-                GameCreationError.VariantNotFound -> Problem(
-                    type = Problem.gameVariantNotFound,
-                    title = "Requested game variant not found",
-                    status = 404,
-                    detail = "The game variant with id <${variantId}> was not found",
-                    instance = Uris.Games.findGame()
-                ).toResponse()
-
-                GameCreationError.UserAlreadyInLobby -> Problem(
-                    type = Problem.userAlreadyInLobby,
-                    title = "User already in lobby",
+        return when (val variantId = Id(variantInputModel.id)) {
+            is Failure -> when (variantId.value) {
+                is InvalidIdError.InvalidId -> Problem(
+                    type = Problem.invalidId,
+                    title = "Invalid id",
                     status = 400,
-                    detail = "The user with id <$userId> is already in a lobby",
-                    instance = Uris.Games.findGame()
-                ).toResponse()
-
-                GameCreationError.UserAlreadyInGame -> Problem(
-                    type = Problem.userAlreadyInGame,
-                    title = "User already in game",
-                    status = 400,
-                    detail = "The user with id <$userId> is already in game",
+                    detail = "The id must be a positive integer",
                     instance = Uris.Games.findGame()
                 ).toResponse()
             }
+
+            is Success ->
+                when (val result = gamesService.findGame(variantId.value, userId)) {
+                    is Success -> ResponseEntity.status(201).body(result.value)
+                    is Failure -> when (result.value) {
+                        GameCreationError.VariantNotFound -> Problem(
+                            type = Problem.gameVariantNotFound,
+                            title = "Requested game variant not found",
+                            status = 404,
+                            detail = "The game variant with id <${variantId}> was not found",
+                            instance = Uris.Games.findGame()
+                        ).toResponse()
+
+                        GameCreationError.UserAlreadyInLobby -> Problem(
+                            type = Problem.userAlreadyInLobby,
+                            title = "User already in lobby",
+                            status = 400,
+                            detail = "The user with id <$userId> is already in a lobby",
+                            instance = Uris.Games.findGame()
+                        ).toResponse()
+
+                        GameCreationError.UserAlreadyInGame -> Problem(
+                            type = Problem.userAlreadyInGame,
+                            title = "User already in game",
+                            status = 400,
+                            detail = "The user with id <$userId> is already in game",
+                            instance = Uris.Games.findGame()
+                        ).toResponse()
+                    }
+                }
         }
     }
 
@@ -112,7 +133,7 @@ class GamesController(
      * Deletes the game with the given id.
      * @param id the id of the game
      * @param user the authenticated user
-     * @return a 200 OK response if the game was deleted successfully
+     * @return a 200-OK response if the game was deleted successfully
      * If the game with the given id does not exist, returns a 404 Not Found error.
      * If the user is not the host of the game, returns a 403 Forbidden error.
      * If the game is already finished, returns a 400 Bad Request error.
@@ -121,34 +142,44 @@ class GamesController(
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
     @NotTested
     fun deleteById(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("DELETE ${Uris.Games.DELETE_BY_ID}")
         val userId = user.user.id
-        return when (val game = gamesService.deleteGame(Id(id), userId)) {
-            is Success -> ResponseEntity.status(200).body("Game deleted")
-            is Failure -> when (game.value) {
-                GamePutError.GameNotFound -> Problem(
-                    type = Problem.gameNotFound,
-                    title = "Game not found",
-                    status = 404,
-                    detail = "The game with id <$id> was not found",
-                    instance = Uris.Games.deleteById(id)
-                ).toResponse()
+        return when (val validId = Id(id)) {
+            is Failure -> Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be greater than 0",
+                instance = Uris.Games.deleteById(validId.value)
+            ).toResponse()
 
-                GamePutError.UserIsNotTheHost -> Problem(
-                    type = Problem.userIsNotTheHost,
-                    title = "User is not the host",
-                    status = 403,
-                    detail = "The user with id <$userId> is not the host of the game with id <$id>",
-                    instance = Uris.Games.deleteById(id)
-                ).toResponse()
+            is Success ->
+                when (val game = gamesService.deleteGame(validId.value, userId)) {
+                    is Success -> ResponseEntity.status(200).body("Game deleted")
+                    is Failure -> when (game.value) {
+                        GamePutError.GameNotFound -> Problem(
+                            type = Problem.gameNotFound,
+                            title = "Game not found",
+                            status = 404,
+                            detail = "The game with id <$validId> was not found",
+                            instance = Uris.Games.deleteById(validId)
+                        ).toResponse()
 
-                GamePutError.GameIsInprogress -> Problem(
-                    type = Problem.gameIsInProgress,
-                    title = "Game is in progress",
-                    status = 400,
-                    instance = Uris.Games.deleteById(id)
-                ).toResponse()
-            }
+                        GamePutError.UserIsNotTheHost -> Problem(
+                            type = Problem.userIsNotTheHost,
+                            title = "User is not the host",
+                            status = 403,
+                            detail = "The user with id <$userId> is not the host of the game with id <$validId>",
+                            instance = Uris.Games.deleteById(validId)
+                        ).toResponse()
+
+                        GamePutError.GameIsInprogress -> Problem(
+                            type = Problem.gameIsInProgress,
+                            title = "Game is in progress",
+                            status = 400,
+                            instance = Uris.Games.deleteById(validId)
+                        ).toResponse()
+                    }
+                }
         }
     }
 
@@ -159,7 +190,6 @@ class GamesController(
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
     @NotTested
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
-        logger.info("GET ${Uris.Games.GET_SYSTEM_INFO}")
         val systemInfo: SystemInfo = gamesService.getSystemInfo()
         return ResponseEntity.ok(SystemInfoOutputModel.serializeFrom(systemInfo))
     }
@@ -183,43 +213,54 @@ class GamesController(
         @Valid @RequestBody play: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
-        logger.info("PUT ${Uris.Games.MAKE_MOVE}")
         val userId = user.user.id
-        val responseEntity = gamesService.makeMove(Id(id), userId, Square.toSquare(play.col, play.row))
-        return when (responseEntity) {
-            is Success -> ResponseEntity.status(200).body("The move was performed successfully")
-            is Failure -> when (responseEntity.value) {
-                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem(
-                    type = Problem.userIsNotTheHost,
-                    title = "User is not the host",
-                    status = 403,
-                    detail = "The user is not the host of the game with id <$userId>",
-                    instance = Uris.Games.makeMove(id)
-                ).toResponse()
+        return when (val validId = Id(id)) {
+            is Failure -> Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be greater than 0",
+                instance = Uris.Games.makeMove(validId.value)
+            ).toResponse()
 
-                GameMakeMoveError.GameNotFound -> Problem(
-                    type = Problem.gameNotFound,
-                    title = "Game not found",
-                    status = 404,
-                    detail = "The game with id <$id> was not found",
-                    instance = Uris.Games.makeMove(id)
-                ).toResponse()
+            is Success ->
+                when (val responseEntity =
+                    gamesService.makeMove(validId.value, userId, Square.toSquare(play.col, play.row))
+                ) {
+                    is Success -> ResponseEntity.status(200).body("The move was performed successfully")
+                    is Failure -> when (responseEntity.value) {
+                        GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem(
+                            type = Problem.userIsNotTheHost,
+                            title = "User is not the host",
+                            status = 403,
+                            detail = "The user is not the host of the game with id <$userId>",
+                            instance = Uris.Games.makeMove(id)
+                        ).toResponse()
 
-                GameMakeMoveError.VariantNotFound -> Problem(
-                    type = Problem.gameVariantNotFound,
-                    title = "Game variant not found",
-                    status = 404,
-                    instance = Uris.Games.makeMove(id)
-                ).toResponse()
+                        GameMakeMoveError.GameNotFound -> Problem(
+                            type = Problem.gameNotFound,
+                            title = "Game not found",
+                            status = 404,
+                            detail = "The game with id <$id> was not found",
+                            instance = Uris.Games.makeMove(id)
+                        ).toResponse()
 
-                is GameMakeMoveError.MoveNotValid -> Problem(
-                    type = Problem.invalidMove,
-                    title = "Invalid move",
-                    status = 400,
-                    detail = responseEntity.value.error.toString(),
-                    instance = Uris.Games.makeMove(id)
-                ).toResponse()
-            }
+                        GameMakeMoveError.VariantNotFound -> Problem(
+                            type = Problem.gameVariantNotFound,
+                            title = "Game variant not found",
+                            status = 404,
+                            instance = Uris.Games.makeMove(id)
+                        ).toResponse()
+
+                        is GameMakeMoveError.MoveNotValid -> Problem(
+                            type = Problem.invalidMove,
+                            title = "Invalid move",
+                            status = 400,
+                            detail = responseEntity.value.error.toString(),
+                            instance = Uris.Games.makeMove(id)
+                        ).toResponse()
+                    }
+                }
         }
     }
 
@@ -227,7 +268,7 @@ class GamesController(
      * Exits the game with the given the game id.
      * @param id the id of the game
      * @param user the authenticated user
-     * @return a 200 OK response if the game was exited successfully
+     * @return a 200-OK response if the game was exited successfully
      * If the game with the given id does not exist, returns a 404 Not Found error.
      * If the user is not the host of the game, returns a 403 Forbidden error.
      * If the game is already finished, returns a 400 Bad Request error.
@@ -236,46 +277,52 @@ class GamesController(
     @PostMapping(Uris.Games.EXIT_GAME)
     @NotTested
     fun exitGame(@Valid @Range(min = 1) @PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
-        logger.info("POST ${Uris.Games.EXIT_GAME}")
         val userId = user.user.id
-        return when (val game = gamesService.exitGame(Id(id), userId)) {
-            is Success -> ResponseEntity.status(200).body("Game exited")
-            is Failure -> when (game.value) {
-                GameDeleteError.GameNotFound -> Problem(
-                    type = Problem.gameNotFound,
-                    title = "Game not found",
-                    status = 404,
-                    detail = "The game with id <$id> was not found",
-                    instance = Uris.Games.exitGame(id)
-                ).toResponse()
+        when (val validId = Id(id)) {
+            is Failure -> return Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be greater than 0",
+                instance = Uris.Games.exitGame(validId.value.toString())
+            ).toResponse()
 
-                GameDeleteError.UserDoesntBelongToThisGame -> Problem(
-                    type = Problem.userIsNotTheHost,
-                    title = "User is not the host",
-                    status = 403,
-                    detail = "The user with id <$userId> is not in the game with id <$id>",
-                    instance = Uris.Games.exitGame(id)
-                ).toResponse()
+            is Success ->
+                return when (val game = gamesService.exitGame(validId.value, userId)) {
+                    is Success -> ResponseEntity.status(200).body("Game exited")
+                    is Failure -> when (game.value) {
+                        GameDeleteError.GameNotFound -> Problem(
+                            type = Problem.gameNotFound,
+                            title = "Game not found",
+                            status = 404,
+                            detail = "The game with id <$id> was not found",
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse()
 
-                GameDeleteError.VariantNotFound -> Problem(
-                    type = Problem.gameVariantNotFound,
-                    title = "Game variant not found",
-                    status = 404,
-                    instance = Uris.Games.exitGame(id)
-                ).toResponse()
+                        GameDeleteError.UserDoesntBelongToThisGame -> Problem(
+                            type = Problem.userIsNotTheHost,
+                            title = "User is not the host",
+                            status = 403,
+                            detail = "The user with id <$userId> is not in the game with id <$id>",
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse()
 
-                GameDeleteError.GameAlreadyFinished -> Problem(
-                    type = Problem.gameAlreadyFinished,
-                    title = "Game already finished",
-                    status = 400,
-                    instance = Uris.Games.exitGame(id)
-                ).toResponse()
-            }
+                        GameDeleteError.VariantNotFound -> Problem(
+                            type = Problem.gameVariantNotFound,
+                            title = "Game variant not found",
+                            status = 404,
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse()
+
+                        GameDeleteError.GameAlreadyFinished -> Problem(
+                            type = Problem.gameAlreadyFinished,
+                            title = "Game already finished",
+                            status = 400,
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse()
+                    }
+                }
         }
     }
 
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(GamesController::class.java)
-    }
 }

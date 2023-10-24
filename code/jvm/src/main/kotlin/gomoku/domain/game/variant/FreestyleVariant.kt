@@ -9,13 +9,16 @@ import gomoku.domain.game.GamePointsOnWin
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
+import gomoku.utils.get
 import org.springframework.stereotype.Component
 
 private const val WINNING_PIECES = 5
@@ -63,13 +66,13 @@ class FreestyleVariant : Variant {
 
     override val points: GamePoints
         get() = GamePoints(
-            onFinish = GamePointsOnWin(winner = NonNegativeValue(300), loser = NonNegativeValue(100)),
-            onDraw = GamePointsOnDraw(shared = NonNegativeValue(150)),
+            onFinish = GamePointsOnWin(winner = NonNegativeValue(300).get(), loser = NonNegativeValue(100).get()),
+            onDraw = GamePointsOnDraw(shared = NonNegativeValue(150).get()),
             onForfeitOrTimer = GamePointsOnForfeitOrTimer(
-                winner = NonNegativeValue(400),
-                forfeiter = NonNegativeValue(0)
+                winner = NonNegativeValue(400).get(),
+                forfeiter = NonNegativeValue(0).get()
             )
         )
     override val turnTimer: NonNegativeValue
-        get() = NonNegativeValue(60)
+        get() = NonNegativeValue(60).get()
 }

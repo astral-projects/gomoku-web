@@ -2,7 +2,6 @@ package gomoku.http.model.game
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import gomoku.domain.game.Game
-import gomoku.domain.game.board.BoardRun
 import gomoku.http.jackson.serializers.InstantSerializer
 import gomoku.http.model.JsonOutputModel
 import kotlinx.datetime.Instant

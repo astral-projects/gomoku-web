@@ -6,6 +6,7 @@ import gomoku.domain.user.UsersDomainConfig
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
 import gomoku.repository.jdbi.configureWithAppRequirements
+import gomoku.utils.get
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
@@ -41,10 +42,10 @@ class GomokuApplication {
 
     @Bean
     fun usersDomainConfig() = UsersDomainConfig(
-        tokenSizeInBytes = PositiveValue(256 / 8),
+        tokenSizeInBytes = PositiveValue(256 / 8).get(),
         tokenTtl = 24.hours,
         tokenRollingTtl = 1.hours,
-        maxTokensPerUser = PositiveValue(3)
+        maxTokensPerUser = PositiveValue(3).get()
     )
 }
 

@@ -1,4 +1,4 @@
-package gomoku.domain.game.variant
+package gomoku.domain.game.variant.config
 
 enum class VariantName {
     FREESTYLE,

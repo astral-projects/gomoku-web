@@ -11,7 +11,7 @@ import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.VariantConfig
-import gomoku.domain.game.variant.VariantName
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
 import gomoku.repository.jdbi.model.JdbiIdModel

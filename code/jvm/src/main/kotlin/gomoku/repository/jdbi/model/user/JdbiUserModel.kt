@@ -6,6 +6,7 @@ import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.Username
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 
 class JdbiUserModel(
@@ -17,10 +18,10 @@ class JdbiUserModel(
 ) : JdbiModel<User> {
     override fun toDomainModel(): User {
         return User(
-            id = Id(id),
-            username = Username(username),
-            email = Email(email),
+            id = Id(id).get(),
+            username = Username(username).get(),
+            email = Email(email).get(),
             passwordValidation = PasswordValidationInfo(passwordValidation)
-        )
+        ).get()
     }
 }

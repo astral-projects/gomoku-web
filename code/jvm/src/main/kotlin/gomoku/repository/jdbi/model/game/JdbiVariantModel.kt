@@ -1,11 +1,12 @@
 package gomoku.repository.jdbi.model.game
 
 import gomoku.domain.Id
-import gomoku.domain.game.board.BoardSize
-import gomoku.domain.game.variant.VariantName
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.OpeningRule
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 
 class JdbiVariantModel(
@@ -18,7 +19,7 @@ class JdbiVariantModel(
 ) : JdbiModel<GameVariant> {
     override fun toDomainModel(): GameVariant {
         return GameVariant(
-            id = Id(id),
+            id = Id(id).get(),
             name = VariantName.valueOf(name),
             openingRule = OpeningRule.valueOf(openingRule),
             boardSize = BoardSize.fromSize(boardSize)

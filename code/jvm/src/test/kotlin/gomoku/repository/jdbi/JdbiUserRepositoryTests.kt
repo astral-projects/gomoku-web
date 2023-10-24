@@ -11,6 +11,7 @@ import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -87,7 +88,7 @@ class JdbiUserRepositoryTests {
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
-        repo.createToken(token, PositiveValue(1))
+        repo.createToken(token, PositiveValue(1).get())
 
         // then: createToken does not throw errors
         // no exception
@@ -139,7 +140,7 @@ class JdbiUserRepositoryTests {
             createdAt = tokenCreationInstant,
             lastUsedAt = tokenCreationInstant
         )
-        repo.createToken(token, PositiveValue(1))
+        repo.createToken(token, PositiveValue(1).get())
 
         // when: retrieving the token and associated user
         val userAndToken = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
@@ -200,8 +201,8 @@ class JdbiUserRepositoryTests {
         // and: retrieving the first 3 users statistic information
         val limitValue = 3
         val usersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(0),
-            limit = PositiveValue(limitValue)
+            offset = NonNegativeValue(0).get(),
+            limit = PositiveValue(limitValue).get()
         )
 
         // then: the users statistic information is paginated
@@ -220,8 +221,8 @@ class JdbiUserRepositoryTests {
         // when: retrieving all users statistic information
         val secondLimitValue = nrOfUsers
         val allUsersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(0),
-            limit = PositiveValue(secondLimitValue)
+            offset = NonNegativeValue(0).get(),
+            limit = PositiveValue(secondLimitValue).get()
         )
 
         // then: the users statistic is paginated
@@ -230,8 +231,8 @@ class JdbiUserRepositoryTests {
 
         // when: when retrieving the second page of users statistic information
         val secondPageUsersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(limitValue),
-            limit = PositiveValue(limitValue)
+            offset = NonNegativeValue(limitValue).get(),
+            limit = PositiveValue(limitValue).get()
         )
 
         // then:

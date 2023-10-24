@@ -2,7 +2,7 @@
 package gomoku.domain
 
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
+import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player

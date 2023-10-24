@@ -9,6 +9,7 @@ import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.Username
 import gomoku.repository.jdbi.model.JdbiModel
+import gomoku.utils.get
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 
@@ -27,13 +28,13 @@ class JdbiUserAndTokenModel(
 ) : JdbiModel<UserAndToken> {
     override fun toDomainModel(): UserAndToken {
         return User(
-            id = Id(id),
-            username = Username(username),
-            email = Email(email),
+            id = Id(id).get(),
+            username = Username(username).get(),
+            email = Email(email).get(),
             passwordValidation = PasswordValidationInfo(passwordValidation)
-        ) to Token(
+        ).get() to Token(
             tokenValidationInfo = TokenValidationInfo(tokenValidation),
-            userId = Id(id),
+            userId = Id(id).get(),
             createdAt = Instant.fromEpochSeconds(createdAt),
             lastUsedAt = Instant.fromEpochSeconds(lastUsedAt)
         )

@@ -3,6 +3,7 @@ package gomoku.http
 import gomoku.http.media.Problem
 import gomoku.http.pipeline.errors.HttpServletRequestRequiredException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.TypeMismatchException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -32,6 +33,25 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         ).toResponse()
     }
 
+    override fun handleTypeMismatch(
+        ex: TypeMismatchException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        log.info("Handling TypeMismatchException: {}", ex.message)
+
+        val type = ex.value?.let { it::class.java.simpleName } ?: "null"
+
+        val detail = "The value '${ex.value}' of type '${type}' could not be converted to ${ex.requiredType?.name}"
+        return Problem(
+            type = Problem.invalidRequestContent,
+            title = "Invalid Argument",
+            status = 400,
+            detail = detail
+        ).toResponse()
+    }
+
     override fun handleHttpMessageNotReadable(
         ex: HttpMessageNotReadableException,
         headers: HttpHeaders,
@@ -45,18 +65,6 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
             title = "Http message not readable",
             status = 400,
             detail = ex.message.toString()
-        ).toResponse()
-    }
-
-    // TODO("remove this method once all componets use Either in there constructors")
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<Any> {
-        log.info("Handling IllegalArgumentException: {}", ex.message)
-        return Problem(
-            type = Problem.invalidRequestContent,
-            title = "Illegal argument",
-            status = 400,
-            detail = ex.message
         ).toResponse()
     }
 

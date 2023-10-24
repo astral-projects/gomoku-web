@@ -1,4 +1,4 @@
-# Gomoku - API Documentation
+# Gomoku - API Documentation 🉐
 
 > This document contains the HTTP API documentation required for a frontend client application to use this API.
 
@@ -14,6 +14,7 @@
 - [Requests](#requests)
     - [User](#user)
     - [Game](#game)
+- [Responses](#responses)
 - [Usage Examples](#usage-examples)
     - [User Creation](#user-creation)
     - [User Login](#user-login)
@@ -79,7 +80,8 @@ The API provides the following operations/resources related to the `User` entity
 - `POST /users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
 - `GET /users/home 🔒` - returns logged-in user's information;
 - `GET /users/{id}` - returns the user with the given id;
-- `GET /users/stats 📖` - returns the users statistic information by ranking;
+- `GET /users/stats 📖` - returns the users statistic information by ranking; See [Pagination](#pagination) for more
+  information;
 
 ### Game
 
@@ -93,6 +95,12 @@ The API provides the following operations/resources related to the `Game` entity
 - `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id; See [Game Move](#game-move) for more
   information;
 - `POST /games/{id}/exit 🔒` - exits the game with the given id;
+
+### Responses
+
+Information about the responses:
+
+- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes.
 
 ## Usage Examples
 
@@ -127,7 +135,7 @@ The API provides the following operations/resources related to the `Game` entity
       }
       ```
     - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
-  
+
       Example:
       ```json
       {
@@ -187,7 +195,7 @@ The API provides the following operations/resources related to the `Game` entity
   header with the `Bearer` scheme;
 - The API then:
     - **On Success** - invalidates the user's token and returns a `200 OK` response with a message in the response body.
-  
+
       Example:
       ```text/plain
       The user was logged out successfully.
@@ -223,7 +231,7 @@ The API provides the following operations/resources related to the `Game` entity
           user waiting for a game, the API creates a new lobby with the given variant id and returns a `201 Created`
           response
           with the lobby id and a message in the response body;
-          
+
           Example:
           ```json
           {
@@ -236,7 +244,7 @@ The API provides the following operations/resources related to the `Game` entity
         - **Game created** - creates a new game with the provided variant id and returns a `201 Created` response with
           the
           game id and a message in the response body.
-          
+
           Example:
           ```json
           {
@@ -247,7 +255,7 @@ The API provides the following operations/resources related to the `Game` entity
           }
           ```
     - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
-  
+
       ```json
       {
          "type": "https:://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/game-variant-not-found",
@@ -262,8 +270,8 @@ The API provides the following operations/resources related to the `Game` entity
 
 - The client application makes a `POST` request to the `games/{id}/move` resource, with the move information in the
   request body. The request body should be a JSON object with the following properties:
-  
-  Example: 
+
+  Example:
   ```json
   {
     "col": "a",
@@ -273,14 +281,14 @@ The API provides the following operations/resources related to the `Game` entity
 
 - The API then:
     - **On Success** - makes the move and returns a `200 OK` response with a message in the response body.
-      
+
       Example:
       ```text/plain
       The move was performed successfully.
       ```
 
     - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
-  
+
       ```json
       {
          "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-move",
@@ -293,9 +301,8 @@ The API provides the following operations/resources related to the `Game` entity
 
 ### Pagination
 
-- The client application makes a `GET` request a resource marked as paginated, with the following optional query
-  parameters:
-  
+- The client application makes a `GET` request a resource marked as paginated.
+
   Example:
   ```text
    GET /api/users/stats?limit=0&offset=10

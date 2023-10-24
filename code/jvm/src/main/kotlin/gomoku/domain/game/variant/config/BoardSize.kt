@@ -1,4 +1,4 @@
-package gomoku.domain.game.board
+package gomoku.domain.game.variant.config
 
 enum class BoardSize(val size: Int) {
     FIFTEEN(15),

@@ -2,7 +2,6 @@ package gomoku.domain.game.board.moves.move
 
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
-import java.util.*
 
 /**
  * Represents a square instance defined by a combination of a [Column] and [Row].
