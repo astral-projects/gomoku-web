@@ -42,5 +42,8 @@ data class Problem (
         val invalidEmail = URI("${baseUrl}invalid-email")
         val blankUsername = URI("${baseUrl}blank-username")
         val invalidUsernameLength = URI("${baseUrl}invalid-username-length")
+        val gameIsNotInProgress = URI("${baseUrl}game-is-not-in-progress")
+        val gameOver = URI("${baseUrl}game-over")
+        val notYourNotTurn = URI("${baseUrl}not-your-not-turn")
     }
 }

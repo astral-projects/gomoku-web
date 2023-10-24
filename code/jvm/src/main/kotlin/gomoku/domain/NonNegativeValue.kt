@@ -9,7 +9,7 @@ class NonNegativeValue private constructor(val value: Int) {
 
     companion object {
         operator fun invoke(value: Int): NonNegativeValueResult {
-            return if (value <= 0) {
+            return if (value < 0) {
                 Failure(NonNegativeValueError.InvalidNonNegativeValue)
             } else {
                 Success(NonNegativeValue(value))

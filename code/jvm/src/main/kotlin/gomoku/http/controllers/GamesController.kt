@@ -3,6 +3,7 @@ package gomoku.http.controllers
 import gomoku.domain.Id
 import gomoku.domain.SystemInfo
 import gomoku.domain.errors.InvalidIdError
+import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
@@ -252,13 +253,41 @@ class GamesController(
                             instance = Uris.Games.makeMove(id)
                         ).toResponse()
 
-                        is GameMakeMoveError.MoveNotValid -> Problem(
-                            type = Problem.invalidMove,
-                            title = "Invalid move",
-                            status = 400,
-                            detail = responseEntity.value.error.toString(),
-                            instance = Uris.Games.makeMove(id)
-                        ).toResponse()
+                        is GameMakeMoveError.MoveNotValid -> {
+                            when(responseEntity.value.error) {
+                                is MakeMoveError.GameIsNotInProgress -> Problem(
+                                    type = Problem.gameIsNotInProgress,
+                                    title = "Game is not in progress",
+                                    status = 400,
+                                    detail = responseEntity.value.error.toString(),
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
+
+                                is MakeMoveError.GameOver -> Problem(
+                                    type = Problem.gameOver,
+                                    title = "Game is over",
+                                    status = 400,
+                                    detail = responseEntity.value.error.toString(),
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
+
+                                is MakeMoveError.NotYourTurn -> Problem(
+                                    type = Problem.notYourNotTurn,
+                                    title = "Not your turn",
+                                    status = 400,
+                                    detail = responseEntity.value.error.toString(),
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
+
+                                is MakeMoveError.InvalidMove -> Problem(
+                                    type = Problem.invalidMove,
+                                    title = "Invalid move",
+                                    status = 400,
+                                    detail = responseEntity.value.error.toString(),
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
+                            }
+                        }
                     }
                 }
         }
