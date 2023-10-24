@@ -308,6 +308,7 @@ class JdbiGameRepositoryTests {
         // when: updating game 1 with a new board
         val move = Square(Column('a'), Row(1))
         val newBoard = board.play(move, variant)
+        assertNotNull(newBoard)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 
         // then: game 1 is updated and the board is different

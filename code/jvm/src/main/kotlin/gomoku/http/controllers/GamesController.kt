@@ -44,7 +44,6 @@ class GamesController(
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(@Valid @Range(min = 1) @PathVariable id: Int): ResponseEntity<*> {
-        logger.info("GET ${Uris.Games.GET_BY_ID}")
         return when (val validId = Id(id)) {
             is Failure -> Problem(
                 type = Problem.invalidId,

@@ -7,16 +7,16 @@ import gomoku.domain.game.GamePointsOnForfeitOrTimer
 import gomoku.domain.game.GamePointsOnWin
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
-import gomoku.domain.game.variant.OpeningRule
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
-import gomoku.domain.game.variant.VariantName
+import gomoku.domain.game.variant.config.BoardSize
+import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantName
 import gomoku.utils.get
 
 class TestVariant : Variant {

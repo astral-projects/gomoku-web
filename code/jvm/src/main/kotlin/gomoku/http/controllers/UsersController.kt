@@ -50,7 +50,6 @@ class UsersController(
         @Valid @RequestBody
         input: UserCreateInputModel
     ): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.REGISTER}")
         return when (val validEmail = Email(input.email)) {
             is Failure -> Problem(
                 type = Problem.invalidEmail,
@@ -128,7 +127,6 @@ class UsersController(
         @Valid @RequestBody
         input: UserCreateTokenInputModel
     ): ResponseEntity<*> {
-        logger.info("POST ${Uris.Users.TOKEN}")
         return when (val validUsername = Username(input.username)) {
             is Failure -> when (validUsername.value) {
                 InvalidUsernameError.BlankUsername -> Problem(
@@ -209,7 +207,6 @@ class UsersController(
         @PathVariable
         id: Int
     ): ResponseEntity<*> {
-        logger.info("GET ${Uris.Users.GET_BY_ID}")
         return when (val validId = Id(id)) {
             is Failure -> Problem(
                 type = Problem.invalidId,
@@ -240,7 +237,6 @@ class UsersController(
         @Valid @Range(min = 0) @RequestParam(name = "offset", defaultValue = "0") offset: Int,
         @Valid @Range(min = 1) @RequestParam(name = "limit", defaultValue = "10") limit: Int
     ): ResponseEntity<*> {
-        logger.info("GET ${Uris.Users.STATS}")
         return when (val validNonNegative = NonNegativeValue(offset)) {
             is Failure -> Problem(
                 type = Problem.invalidOffset,

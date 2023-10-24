@@ -68,6 +68,7 @@ class GameLogic(
             return failure(MakeMoveError.NotYourTurn)
         }
         val newBoard = game.board.play(pos, variant)
+            ?: return failure(MakeMoveError.InvalidMove)
         return success(
             game.copy(
                 board = newBoard,

@@ -9,7 +9,6 @@ import gomoku.domain.game.GamePointsOnWin
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
-import gomoku.domain.game.board.BoardSize
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
