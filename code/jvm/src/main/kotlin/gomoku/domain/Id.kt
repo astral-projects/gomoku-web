@@ -8,7 +8,7 @@ import gomoku.utils.Success
 /**
  * Provides a generic identifier container for domain objects.
  */
-class Id private constructor(val value: Int) {
+class Id private constructor(val value: Int): Component {
 
     companion object {
         operator fun invoke(value: Int): GettingIdResult {

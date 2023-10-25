@@ -5,7 +5,7 @@ import gomoku.domain.errors.PositiveValueResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
-class PositiveValue private constructor(val value: Int) {
+class PositiveValue private constructor(val value: Int): Component {
     init {
         require(value > 0) { "Value must be positive" }
     }
