@@ -32,6 +32,8 @@ class User private constructor(
         }
     }
 
+    // other meth
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is User) return false

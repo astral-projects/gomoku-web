@@ -1,5 +1,5 @@
 package gomoku.http.model.game
 
-class GameDeletedOutputModel (
+class GameDeletedOutputModel(
     val value: String = "Game Deleted Successfully"
 )

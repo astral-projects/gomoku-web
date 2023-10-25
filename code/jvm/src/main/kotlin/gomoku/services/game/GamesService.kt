@@ -36,7 +36,9 @@ class GamesService(
             val variantsConfig: List<VariantConfig> = variants.map { it.config }
             transaction.gamesRepository.insertVariants(variantsConfig)
             val gameVariants = transaction.gamesRepository.getVariants()
-            require(gameVariants.isNotEmpty()) { "No variants found in the database" }
+            if (gameVariants.isNotEmpty()) {
+                throw NoVariantImplementationFoundException("No variants found in the database")
+            }
             gameVariants.associateBy({ it.id }, { variants.first { v -> v.config.name === it.name } })
         }
     }
@@ -235,19 +237,18 @@ class GamesService(
                 }
                 return@run failure(GameWaitError.UserIsInLobby)
             }
-            //TODO(Try a better name )
+            // TODO(Try a better name )
             val foundLobby = gamesRepository.waitForGame(lobbyId, userId)
-              ?: return@run failure(GameWaitError.UserDoesNotBelongToThisLobby)
+                ?: return@run failure(GameWaitError.UserDoesNotBelongToThisLobby)
             success(foundLobby.value.toString())
         }
 
     fun exitLobby(lobbyId: Id, userId: Id): LobbyDeleteResult =
-        transactionManager.run {transaction->
-            val gamesRepository= transaction.gamesRepository
-            when(val res = gamesRepository.deleteLobby(lobbyId, userId)){
+        transactionManager.run { transaction ->
+            val gamesRepository = transaction.gamesRepository
+            when (val res = gamesRepository.deleteLobby(lobbyId, userId)) {
                 true -> success(res)
                 else -> failure(LobbyDeleteError.LobbyNotFound)
             }
         }
-
 }

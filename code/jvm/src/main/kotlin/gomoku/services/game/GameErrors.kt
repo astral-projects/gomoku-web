@@ -47,22 +47,17 @@ sealed class GameMakeMoveError {
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
 
-
-
 sealed class GameWaitError {
     object UserIsInLobby : GameWaitError()
 
     object UserDoesNotBelongToThisLobby : GameWaitError()
 }
-//TODO: change to GameWaitResult
-typealias GameWaitResult = Either<GameWaitError, String>
 
+// TODO: change to GameWaitResult
+typealias GameWaitResult = Either<GameWaitError, String>
 
 sealed class LobbyDeleteError {
 
     object LobbyNotFound : LobbyDeleteError()
-
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>
-
-

@@ -1,5 +1,5 @@
 package gomoku.http.model.game
 
-class GameExitedOutputModel (
+class GameExitedOutputModel(
     val message: String = "Game exited"
 )

@@ -11,6 +11,7 @@
 - [Functionality](#functionality)
 - [Open-API Specification](#open-api-specification)
 - [Media Types](#media-types)
+- [Navigation Graph](#navigation-graph)
 - [Requests](#requests)
     - [User](#user)
     - [Game](#game)
@@ -52,9 +53,15 @@ In our specification, we highlight the following aspects:
 
 The API uses the following media types:
 
-- `application/json` and `text/plain` - for the API response bodies;
+- `application/json` - for the API response bodies;
 - `application/problem+json` - [RFC7807](https://tools.ietf.org/html/rfc7807) problem details for the API responses in
   case of errors;
+
+## Navigation Graph
+
+| ![Navigation Graph](../docs/diagrams/navigation-graph.png) |
+|:----------------------------------------------------------:|
+|                    **Navigation Graph**                    |
 
 ## Requests
 
@@ -81,7 +88,8 @@ The API provides the following operations/resources related to the `User` entity
 - `GET /users/home 🔒` - returns logged-in user's information;
 - `GET /users/{id}` - returns the user with the given id;
 - `GET /users/stats 📖` - returns the users statistic information by ranking; See [Pagination](#pagination) for more
-  information;
+  information.
+- `GET /users/stats/{id}` - returns the user statistic information with the given id.
 
 ### Game
 
@@ -94,7 +102,9 @@ The API provides the following operations/resources related to the `Game` entity
 - `GET /system` - returns the system information;
 - `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id; See [Game Move](#game-move) for more
   information;
-- `POST /games/{id}/exit 🔒` - exits the game with the given id;
+- `POST /games/{id}/exit 🔒` - exits the game with the given id.
+- `GET /games/{id}/lobby 🔒` - returns the lobby with the given id.
+- `DELETE /games/{id}/lobby 🔒` - deletes the lobby with the given id.
 
 ### Responses
 
@@ -122,8 +132,7 @@ Information about the responses:
   }
   ```
 - The API then:
-    - **On Success** - creates a new user with the provided credentials and returns a `201 Created` response with the *
-      *user id**
+    - **On Success** - creates a new user with the provided credentials and returns a `201 Created` response with the **user id**
       in the response body.
 
       Example:
@@ -139,15 +148,13 @@ Information about the responses:
       Example:
       ```json
       {
-         "type": "https:://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/insecure-password",
+         "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/insecure-password",
          "title": "Received password is considered insecure",
          "status": 400,
-         "detail": "Password must be between 8 and 40 characters",
+         "detail": "Password length must be between 8 and 40 characters",
          "instance": "/api/users"
       }
       ```
-
-- The client application should store the user token in a secure place.
 
 ### User Login
 
@@ -181,13 +188,16 @@ Information about the responses:
 
       ```json
       {
-         "type": "https:://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-username",
+         "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-username",
          "title": "Invalid username",
          "status": 400,
          "detail": "The username <postman-user> is invalid",
          "instance": "/api/users/token"
       }
       ```
+
+- The client application should store the user token in a secure place, such as the browser's local storage or a
+  cookie.
 
 ### User Logout
 
@@ -197,21 +207,25 @@ Information about the responses:
     - **On Success** - invalidates the user's token and returns a `200 OK` response with a message in the response body.
 
       Example:
-      ```text/plain
-      The user was logged out successfully.
+      ```json
+      { 
+         "message": "User was logged out successfully."
+      }
       ```
+      
     - **On Failure Example** - returns a `401 Unauthorized` response with a message in the response body.
 
       ```json
       {
-        "type": "https:://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/token-is-invalid",
+        "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/token-is-invalid",
         "title": "Invalid token",
         "status": 401,
         "detail": "The token received is invalid",
         "instance": "/api/users/logout"
       }
       ```
-- In order to login again, the client application should request a new token to the API.
+      
+- To log in again, the client application should request a new token to the API.
 
 ### Game Creation
 
@@ -220,7 +234,7 @@ Information about the responses:
 
   ```json 
   {
-    "id": 1
+    "variantId": 1
   }
   ```
 
@@ -251,14 +265,14 @@ Information about the responses:
              "id": {
                 "value": 1
              },
-          "message": "Game created successfully."
+             "message": "Game created successfully."
           }
           ```
     - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
 
       ```json
       {
-         "type": "https:://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/game-variant-not-found",
+         "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/game-variant-not-found",
           "title": "Game variant not found",
           "status": 400,
           "detail": "The game variant with id <1> was not found",
@@ -284,8 +298,10 @@ Information about the responses:
     - **On Success** - makes the move and returns a `200 OK` response with a message in the response body.
 
       Example:
-      ```text/plain
-      The move was performed successfully.
+      ```json
+       {
+          "message": "Move was made successfully."
+       }
       ```
 
     - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
@@ -358,4 +374,4 @@ Information about the responses:
     ] 
     // ...
   }
-    ```
+  ```

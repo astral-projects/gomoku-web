@@ -426,8 +426,7 @@ class GamesController(
                             status = 403,
                             detail = "The user with id <$userId> is waiting in lobby with id <$id>. Try again later",
                             instance = Uris.Games.exitGame(id)
-                        ).toResponse(
-                        )
+                        ).toResponse()
                     }
                 }
         }

@@ -3,7 +3,7 @@ package gomoku.http.model.user
 import gomoku.domain.user.UserRankInfo
 import gomoku.http.model.JsonOutputModel
 
-class UserRankOutputModel private constructor(
+class UserStatsOutputModel private constructor(
     val id: Int,
     val username: String,
     val email: String,
@@ -14,9 +14,9 @@ class UserRankOutputModel private constructor(
     val draws: Int,
     val losses: Int
 ) {
-    companion object : JsonOutputModel<UserRankInfo, UserRankOutputModel> {
-        override fun serializeFrom(domainClass: UserRankInfo): UserRankOutputModel {
-            return UserRankOutputModel(
+    companion object : JsonOutputModel<UserRankInfo, UserStatsOutputModel> {
+        override fun serializeFrom(domainClass: UserRankInfo): UserStatsOutputModel {
+            return UserStatsOutputModel(
                 id = domainClass.id.value,
                 username = domainClass.username.value,
                 email = domainClass.email.value,

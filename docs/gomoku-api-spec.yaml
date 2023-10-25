@@ -99,9 +99,9 @@ paths:
         '200':
           description: User was successfully logged out
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/DefaultMessageOutputModel'
           headers:
             RequestId:
               $ref: '#/components/headers/RequestId'
@@ -242,6 +242,55 @@ paths:
           headers:
             RequestId:
               $ref: '#/components/headers/RequestId'
+  /api/users/{id}/stats:
+    get:
+      tags:
+        - Users
+      summary: Get User statistic information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Retrieved user statistic information successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatsOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
   /api/games:
     post:
       tags:
@@ -256,12 +305,9 @@ paths:
         '201':
           description: Created
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-          headers:
-            RequestId:
-              $ref: '#/components/headers/RequestId'
+                $ref: '#/components/schemas/DefaultMessageOutputModel'#/components/headers/RequestId'
         '400':
           description: Bad Request
           content:
@@ -383,9 +429,9 @@ paths:
         '200':
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/DefaultMessageOutputModel'
           headers:
             RequestId:
               $ref: '#/components/headers/RequestId'
@@ -432,14 +478,63 @@ paths:
         '200':
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/DefaultMessageOutputModel'
           headers:
             RequestId:
               $ref: '#/components/headers/RequestId'
         '400':
           description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+  /api/games/{id}/lobby:
+    get:
+      tags:
+        - Games
+      summary: Get game lobby
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultMessageOutputModel'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          headers:
+            RequestId:
+              $ref: '#/components/headers/RequestId'
+        '403':
+          description: User is still in the lobby
           content:
             application/problem+json:
               schema:
@@ -468,9 +563,12 @@ components:
     MoveInputModel:
       type: object
       properties:
-        move:
+        col:
           type: string
-          example: 'c11-W'
+          example: 'c'
+        row:
+          type: integer
+          example: 11
     UserCreateTokenInputModel:
       type: object
       properties:
@@ -520,6 +618,37 @@ components:
         email:
           type: string
           example: 'email@example.com'
+    UserStatsOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: 'username'
+        email:
+          type: string
+          example: 'email@example.com'
+        points:
+          type: integer
+          example: 1534
+        rank:
+            type: integer
+            example: 1
+        gamesPlayed:
+            type: integer
+            example: 1
+        wins:
+            type: integer
+            example: 1
+        draws:
+            type: integer
+            example: 0
+        losses:
+            type: integer
+            example: 0
+
     GameStateOutputModel:
       type: object
       properties:
@@ -587,6 +716,12 @@ components:
         guestId:
           type: integer
           example: 2
+    DefaultMessageOutputModel:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Hello World!'
     PaginatedResult:
       type: object
       properties:
@@ -654,6 +789,7 @@ components:
         instance:
           type: string
           example: 'https://losthost:8080/api/users'
+  # Headers
   headers:
     RequestId:
       description: The unique request identifier.

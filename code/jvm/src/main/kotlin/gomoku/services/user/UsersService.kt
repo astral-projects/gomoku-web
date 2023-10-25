@@ -106,9 +106,10 @@ class UsersService(
         }
 
     @NotTested
-    fun getUserStats(userId: Id): UserRankInfo? {
-        TODO("Not yet implemented")
-    }
+    fun getUserStats(userId: Id): UserRankInfo? =
+        transactionManager.run {
+            it.usersRepository.getUserStats(userId)
+        }
 
     @NotTested
     fun editUser(user: User): User {

@@ -42,11 +42,11 @@ Some dependencies used in this project are:
 
 ### Conceptual Model
 
-The following diagram holds the Enhanced Entity-Relationship (EER) model for the information managed by the system.
+The following diagram holds the Extended Entity-Relationship (EER) model for the information managed by the system.
 
-| ![Entity Relationship Diagram](../../../docs/diagrams/gomoku-er-diagram.png) |
-|:----------------------------------------------------------------------------:|
-|                    *Enhanced Entity relationship diagram*                    |
+| ![Extended Entity Relationship Diagram](../../../docs/diagrams/gomoku-eer-diagram.png) |
+|:--------------------------------------------------------------------------------------:|
+|                         *Extended Entity relationship diagram*                         |
 
 We highlight the following aspects:
 
@@ -54,7 +54,7 @@ The conceptual model has the following restrictions:
 
 - `User` entity:
     - The `username` and `email` attributes should be unique;
-    - The `username` attribute length should be 5-30 characters long;
+    - The `username` attribute length should be 5–30 characters long;
     - The `email` attribute needs to follow the following regex pattern: `^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$`.
 
 - `Token` entity:
@@ -139,12 +139,13 @@ The Spring MVC framework was used to implement the REST API.
 |:------------------------------------------------------------------------------:|
 |                       *Spring MVC architecture diagram*                        |
 
-In the above example, the client makes a request to the server, which requires the authentication. The request follows
-the pipeline and is handled by the `AuthenticationInterceptor`, which checks if the user is in fact authenticated. In
-order to do that, the interceptor uses the `RequestTokenProcessor` to parse the token and validate it based on the token
+In the above example, the client makes a request to the server, which requires authentication. The request follows
+the pipeline and is handled by the `AuthenticationInterceptor`, which checks if the user is in fact authenticated. To do
+that, the interceptor uses the `RequestTokenProcessor` to parse the token and validate it based on the token
 validation value stored on the database. If the token is valid, the `AuthenticatedUser` information is placed on the
 request in order for the `AuthenticatedUserArgumentResolver` to retrieve it and place it on the controller method
-parameter. If the token is invalid, the `AuthenticationInterceptor` short-circuits the pipeline and returns an error
+parameter when the handler is called. If the token is invalid, the `AuthenticationInterceptor` short-circuits the
+pipeline and returns an error
 response to the client.
 
 The `LoggingFilter` and `RequestIdFilter` are responsible for logging and generating a unique id for each request,
@@ -422,7 +423,7 @@ It consists of:
   to the users to choose from.
 - **Add more tests**: We only implemented the basic tests for the application, but we could add more tests to improve
   the code
-  coverage and ensure that the application is working as expected in all scenarios.
+  coverage and ensure that the application is working as expected in all possible scenarios.
 - **Support more operations**: We plan to add more service operations to further enhance the application functionality.
   However, we will make sure that the new services are backward compatible with the existing ones, so we can add new
   features without breaking the existing ones.

@@ -24,7 +24,7 @@ fun <L> failure(error: L) = Either.Left(error)
  * Returns the value of [Either.Right] class, or throws an exception
  */
 fun <L, R> Either<L, R>.get(): R = when (this) {
-    is Failure -> throw IllegalArgumentException("Either.Left has no value")
+    is Failure -> throw IllegalArgumentException("Cannot get value from a failure")
     is Success -> this.value
 }
 

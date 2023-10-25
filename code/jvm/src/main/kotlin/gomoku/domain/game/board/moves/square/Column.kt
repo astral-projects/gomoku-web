@@ -5,7 +5,7 @@ package gomoku.domain.game.board.moves.square
  */
 data class Column(val letter: Char) {
 
-    //TODO(Get rid of the require)
+    // TODO(Get rid of the require)
     init {
         require(letter in 'a'..'z') {
             "Column letter value must be between 'a' and 'z'"

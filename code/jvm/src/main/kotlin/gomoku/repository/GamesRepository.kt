@@ -153,7 +153,7 @@ interface GamesRepository {
      * @param userId the id of the user to search for.
      * @return Id if the user is in a game to start, false otherwise.
      */
-    fun waitForGame(lobbyId:Id, userId: Id): Id?
+    fun waitForGame(lobbyId: Id, userId: Id): Id?
 
     fun deleteLobby(lobbyId: Id, userId: Id): Boolean
 }

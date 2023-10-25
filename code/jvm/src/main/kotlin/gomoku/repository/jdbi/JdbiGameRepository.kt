@@ -224,7 +224,6 @@ class JdbiGameRepository(
             .bind("userId", userId.value)
             .execute() == 1
 
-
     /**
      * Converts a board to a json string to be stored in the database, depending on the type of board.
      * @param board the board to be converted.

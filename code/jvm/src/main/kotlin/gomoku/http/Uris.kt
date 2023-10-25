@@ -20,6 +20,7 @@ object Uris {
         const val LOGOUT = "$PREFIX/users/logout"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
+        fun byIdStats(id: Int) = UriTemplate(STATS_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
         fun stats(): URI = URI(STATS)
         fun register(): URI = URI(REGISTER)
@@ -33,6 +34,8 @@ object Uris {
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
         const val GET_SYSTEM_INFO = "$PREFIX/system"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
+
+        // TODO("move to another controller")
         const val GET_IS_IN_LOBBY = "$PREFIX/games/{id}/lobby"
         const val DELETE_IS_IN_LOBBY = "$PREFIX/games/{id}/lobby"
 

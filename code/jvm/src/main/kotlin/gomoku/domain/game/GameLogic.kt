@@ -18,6 +18,7 @@ import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.springframework.stereotype.Component
 
+// TODO("revisited this code..")
 @Component
 class GameLogic(
     private val variant: Variant,
