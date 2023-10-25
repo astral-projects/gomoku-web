@@ -4,4 +4,3 @@ enum class Player {
     w,
     b
 }
-

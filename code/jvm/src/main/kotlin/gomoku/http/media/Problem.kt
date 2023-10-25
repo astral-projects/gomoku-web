@@ -3,7 +3,7 @@ package gomoku.http.media
 import org.springframework.http.ResponseEntity
 import java.net.URI
 
-data class Problem (
+data class Problem(
     val type: URI,
     val title: String,
     val status: Int,
@@ -21,13 +21,12 @@ data class Problem (
         const val MEDIA_TYPE = "application/problem+json"
 
         val insecurePassword = URI("${baseUrl}insecure-password")
-        val usernameIsInvalid = URI("${baseUrl}username-is-invalid")
-        val passwordIsInvalid = URI("${baseUrl}password-is-invalid")
         val invalidRequestContent = URI("${baseUrl}invalid-request-content")
         val gameNotFound = URI("${baseUrl}game-not-found")
         val userAlreadyInLobby = URI("${baseUrl}user-already-in-lobby")
         val userIsNotTheHost = URI("${baseUrl}user-is-not-the-host")
         val invalidMove = URI("${baseUrl}invalid-move")
+        val positionTaken = URI("${baseUrl}position-taken")
         val userAlreadyInGame = URI("${baseUrl}user-already-in-game")
         val usernameAlreadyExists = URI("${baseUrl}username-already-exists")
         val emailAlreadyExists = URI("${baseUrl}email-already-exists")
@@ -41,10 +40,14 @@ data class Problem (
         val invalidLimit = URI("${baseUrl}invalid-limit")
         val invalidEmail = URI("${baseUrl}invalid-email")
         val blankUsername = URI("${baseUrl}blank-username")
+        val passwordIsEmpty = URI("${baseUrl}password-is-empty")
         val invalidUsernameLength = URI("${baseUrl}invalid-username-length")
         val gameIsNotInProgress = URI("${baseUrl}game-is-not-in-progress")
         val gameOver = URI("${baseUrl}game-over")
         val notYourNotTurn = URI("${baseUrl}not-your-not-turn")
+        val wrongPassword = URI("${baseUrl}wrong-password")
+        val usernameDoesNotExist = URI("${baseUrl}username-does-not-exist")
+        val userAlreadyNotInLobby = URI("${baseUrl}user-already-not-in-lobby")
         val userDoesntBelongToThisGame = URI("${baseUrl}user-doesnt-belong-to-this-game")
         val userIsInLobby = URI("${baseUrl}user-is-in-lobby")
         val lobbyNotFound = URI("${baseUrl}lobby-not-found")

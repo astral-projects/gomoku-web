@@ -63,7 +63,6 @@ class JdbiGameRepositoryTests {
         assertNotNull(variantId)
         assertEquals(variantId, repoGames.getVariants().find { it.name == VariantName.TEST }?.id)
 
-
         // when: creating a game
         val createdGameId = repoGames.createGame(
             variantId = variantId,
@@ -142,7 +141,6 @@ class JdbiGameRepositoryTests {
         assertNull(gameAfterDeleted)
 
         handle.rollback()
-
     }
 
     @Test
@@ -307,7 +305,7 @@ class JdbiGameRepositoryTests {
 
         // when: updating game 1 with a new board
         val move = Square(Column('a'), Row(1))
-        val newBoard = board.play(move, variant)
+        val newBoard = board.play(move, variant).get()
         assertNotNull(newBoard)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 
@@ -411,7 +409,6 @@ class JdbiGameRepositoryTests {
         assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value + 1).get())
 
         handle.rollback()
-
     }
 
     @Test
@@ -475,6 +472,5 @@ class JdbiGameRepositoryTests {
         assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value).get())
 
         handle.rollback()
-
     }
 }

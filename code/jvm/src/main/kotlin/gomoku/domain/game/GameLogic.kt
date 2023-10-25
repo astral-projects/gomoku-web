@@ -11,6 +11,8 @@ import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.user.User
 import gomoku.utils.Either
+import gomoku.utils.Failure
+import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
@@ -56,27 +58,32 @@ class GameLogic(
      * @param pos - Square position on the board
      * @return Game with new move
      */
-    fun play(pos: Square, game: Game, userId: Id): MakeMoveResult {
+    fun play(pos: Square, game: Game, userId: Id): GameMakeMoveResult {
         val board = game.board
         if (game.state != GameState.IN_PROGRESS) {
-            return failure(MakeMoveError.GameIsNotInProgress)
+            return failure(MakeMoveError.GameOver)
         }
         if (board !is BoardRun) {
             return failure(MakeMoveError.GameOver)
         }
-        if (board.turn?.player != userId.toPlayer(game)) {
-            return failure(MakeMoveError.NotYourTurn)
+        if (board.turn?.player != userId.toPlayer(game) && board.turn != null) {
+            return failure(MakeMoveError.NotYourTurn(board.turn.player))
         }
-        //TODO(This needs to be changed to a Either<MakeMoveError, Board>)
-        val newBoard = game.board.play(pos, variant)
-
-        return success(
-            game.copy(
-                board = newBoard,
-                state = if (newBoard.isFinished(variant)) GameState.FINISHED else GameState.IN_PROGRESS,
-                updatedAt = clock.now()
+        return when (val newBoard = board.play(pos, variant)) {
+            is Failure -> when (newBoard.value) {
+                MakeMoveError.GameOver -> Failure(MakeMoveError.GameOver)
+                is MakeMoveError.NotYourTurn -> Failure(MakeMoveError.NotYourTurn(newBoard.value.player))
+                is MakeMoveError.PositionTaken -> Failure(MakeMoveError.PositionTaken(newBoard.value.square))
+                is MakeMoveError.InvalidPosition -> Failure(MakeMoveError.InvalidPosition(newBoard.value.square))
+            }
+            is Success -> success(
+                game.copy(
+                    board = newBoard.value,
+                    state = if (newBoard.value.isFinished(variant)) GameState.FINISHED else GameState.IN_PROGRESS,
+                    updatedAt = clock.now()
+                )
             )
-        )
+        }
     }
 
     /**
@@ -98,4 +105,4 @@ class GameLogic(
     private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.w else Player.b
 }
 
-typealias MakeMoveResult = Either<MakeMoveError, Game>
+typealias GameMakeMoveResult = Either<MakeMoveError, Game>

@@ -100,7 +100,7 @@ The API provides the following operations/resources related to the `Game` entity
 
 Information about the responses:
 
-- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes.
+- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also if someone report a bug in the future, this header can be used to identify the request.
 
 ## Usage Examples
 
@@ -270,14 +270,15 @@ Information about the responses:
 
 - The client application makes a `POST` request to the `games/{id}/move` resource, with the move information in the
   request body. The request body should be a JSON object with the following properties:
-
-  Example:
-  ```json
-  {
-    "col": "a",
-    "row": 11
-  }
-  ```
+  - `col` - the column of the square where player will play (must be between `a` and `o`);
+  - `row` - the row of the square where player will play (must be between `1` and `15`).
+    Example:
+    ```json
+    {
+      "col": "a",
+      "row": 11
+    }
+    ```
 
 - The API then:
     - **On Success** - makes the move and returns a `200 OK` response with a message in the response body.

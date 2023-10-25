@@ -51,9 +51,9 @@ class UsersService(
         transactionManager.run {
             val usersRepository = it.usersRepository
             val user: User = usersRepository.getUserByUsername(username)
-                ?: return@run failure(TokenCreationError.UsernameIsInvalid)
+                ?: return@run failure(TokenCreationError.UsernameNotExists)
             if (!usersDomain.validatePassword(password.value, user.passwordValidation)) {
-                return@run failure(TokenCreationError.PasswordIsInvalid)
+                return@run failure(TokenCreationError.PasswordIsWrong)
             }
             val tokenValue = usersDomain.generateTokenValue()
             val newToken = Token(

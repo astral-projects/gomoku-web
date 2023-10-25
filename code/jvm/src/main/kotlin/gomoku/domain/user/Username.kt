@@ -1,5 +1,6 @@
 package gomoku.domain.user
 
+import gomoku.domain.Component
 import gomoku.domain.errors.GettingUsernameResult
 import gomoku.domain.errors.InvalidUsernameError
 import gomoku.utils.Failure
@@ -8,7 +9,7 @@ import gomoku.utils.Success
 private const val MAX_USERNAME_LENGTH = 30
 private const val MIN_USERNAME_LENGTH = 5
 
-class Username private constructor(val value: String) {
+class Username private constructor(val value: String) : Component {
 
     companion object {
         operator fun invoke(value: String): GettingUsernameResult = when {

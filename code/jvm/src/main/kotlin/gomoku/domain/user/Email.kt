@@ -1,5 +1,6 @@
 package gomoku.domain.user
 
+import gomoku.domain.Component
 import gomoku.domain.errors.GettingEmailResult
 import gomoku.domain.errors.InvalidEmailError
 import gomoku.utils.Failure
@@ -7,7 +8,7 @@ import gomoku.utils.Success
 
 class Email private constructor(
     val value: String
-) {
+) : Component {
 
     companion object {
         private const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
@@ -32,6 +33,4 @@ class Email private constructor(
     }
 
     override fun toString() = value
-
-
 }

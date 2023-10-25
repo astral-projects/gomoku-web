@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import java.net.URI
 
 @ControllerAdvice
 class CustomExceptionHandler : ResponseEntityExceptionHandler() {
@@ -43,12 +44,14 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
 
         val type = ex.value?.let { it::class.java.simpleName } ?: "null"
 
-        val detail = "The value '${ex.value}' of type '${type}' could not be converted to ${ex.requiredType?.name}"
+        val detail = "The value '${ex.value}' of type '$type' could not be converted to ${ex.requiredType?.name}"
+        val uri = URI(request.toString().substringAfter("uri=").substringBefore("}").substringBefore(";"))
         return Problem(
             type = Problem.invalidRequestContent,
             title = "Invalid Argument",
             status = 400,
-            detail = detail
+            detail = detail,
+            instance = uri
         ).toResponse()
     }
 

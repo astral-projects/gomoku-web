@@ -5,7 +5,7 @@ import gomoku.domain.errors.NonNegativeValueResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
-class NonNegativeValue private constructor(val value: Int) {
+class NonNegativeValue private constructor(val value: Int) : Component {
 
     companion object {
         operator fun invoke(value: Int): NonNegativeValueResult {

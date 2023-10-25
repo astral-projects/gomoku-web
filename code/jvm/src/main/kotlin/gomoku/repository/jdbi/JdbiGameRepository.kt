@@ -64,7 +64,7 @@ class JdbiGameRepository(
             """
                 insert into dbo.Lobbies (host_id, variant_id)
                 values (:host_id, :variant_id)
-           """.trimIndent()
+            """.trimIndent()
         )
             .bind("host_id", userId.value)
             .bind("variant_id", variantId.value)
@@ -98,7 +98,7 @@ class JdbiGameRepository(
     override fun userBelongsToTheGame(userId: Id, gameId: Id): Game? =
         handle.createQuery(
             "SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
-                    "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND (g.host_id = :userId OR g.guest_id = :userId)"
+                "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND (g.host_id = :userId OR g.guest_id = :userId)"
         )
             .bind("gameId", gameId.value)
             .bind("userId", userId.value)
@@ -108,7 +108,7 @@ class JdbiGameRepository(
     override fun userIsTheHost(gameId: Id, userId: Id): Game? =
         handle.createQuery(
             "SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
-                    "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND g.host_id = :userId"
+                "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND g.host_id = :userId"
         )
             .bind("gameId", gameId.value)
             .bind("userId", userId.value)

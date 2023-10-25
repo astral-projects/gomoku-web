@@ -30,4 +30,3 @@ fun <L, R> Either<L, R>.get(): R = when (this) {
 
 typealias Success<S> = Either.Right<S>
 typealias Failure<F> = Either.Left<F>
-
