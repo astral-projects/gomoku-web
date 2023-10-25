@@ -210,6 +210,21 @@ class JdbiGameRepository(
             .bind("lobbyId", lobbyId.value)
             .execute() == 1
 
+    override fun waitForGame(lobbyId: Id, userId: Id): Id? =
+        handle.createQuery("SELECT id FROM dbo.Games WHERE lobby_id = :lobbyId AND host_id = :userId AND state = :state ")
+            .bind("lobbyId", lobbyId.value)
+            .bind("userId", userId.value)
+            .bind("state", GameState.IN_PROGRESS.name)
+            .mapTo<JdbiIdModel>()
+            .singleOrNull()?.toDomainModel()
+
+    override fun deleteLobby(lobbyId: Id, userId: Id): Boolean =
+        handle.createUpdate("Delete FROM dbo.Lobbies WHERE id = :lobbyId AND host_id = :userId")
+            .bind("lobbyId", lobbyId.value)
+            .bind("userId", userId.value)
+            .execute() == 1
+
+
     /**
      * Converts a board to a json string to be stored in the database, depending on the type of board.
      * @param board the board to be converted.

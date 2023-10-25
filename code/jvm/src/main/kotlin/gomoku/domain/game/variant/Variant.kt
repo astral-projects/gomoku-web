@@ -30,7 +30,8 @@ interface Variant {
      * @param square The square where the move is being made.
      * @return The updated game board if the move is valid, or null if the move is invalid.
      */
-    fun isMoveValid(board: Board, square: Square): Board?
+    //TODO(Instead of returning board needs to return a either)
+    fun isMoveValid(board: Board, square: Square): Board
 
     /**
      * Check if the game is won based on the last move made.

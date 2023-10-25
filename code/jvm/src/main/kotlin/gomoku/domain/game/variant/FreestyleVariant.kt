@@ -29,6 +29,7 @@ class FreestyleVariant : Variant {
     override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
 
     // TODO("change return type to Either<MakeMoveError, Board>")
+    // TODO(Get rid of the requires)
     override fun isMoveValid(board: Board, square: Square): Board {
         return when (board) {
             is BoardWin, is BoardDraw -> error("Game is over")

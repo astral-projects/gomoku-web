@@ -5,7 +5,7 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
 
 sealed class Board(val grid: Moves, val turn: BoardTurn?) {
-    fun play(pos: Square, variant: Variant): Board? = variant.isMoveValid(this, pos)
+    fun play(pos: Square, variant: Variant): Board = variant.isMoveValid(this, pos)
     fun isFinished(variant: Variant): Boolean = variant.isFinished(this)
 }
 

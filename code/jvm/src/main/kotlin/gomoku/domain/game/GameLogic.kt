@@ -67,8 +67,9 @@ class GameLogic(
         if (board.turn?.player != userId.toPlayer(game)) {
             return failure(MakeMoveError.NotYourTurn)
         }
+        //TODO(This needs to be changed to a Either<MakeMoveError, Board>)
         val newBoard = game.board.play(pos, variant)
-            ?: return failure(MakeMoveError.InvalidMove)
+
         return success(
             game.copy(
                 board = newBoard,

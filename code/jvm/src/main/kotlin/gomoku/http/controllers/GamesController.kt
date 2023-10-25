@@ -16,14 +16,17 @@ import gomoku.services.game.GameCreationError
 import gomoku.services.game.GameDeleteError
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GamePutError
+import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
 import gomoku.services.game.GettingGameError
+import gomoku.services.game.LobbyDeleteError
+import gomoku.services.game.LobbyDeleteResult
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
+import gomoku.utils.get
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
-import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -254,7 +257,7 @@ class GamesController(
                         ).toResponse()
 
                         is GameMakeMoveError.MoveNotValid -> {
-                            when(responseEntity.value.error) {
+                            when (responseEntity.value.error) {
                                 is MakeMoveError.GameIsNotInProgress -> Problem(
                                     type = Problem.gameIsNotInProgress,
                                     title = "Game is not in progress",
@@ -354,4 +357,72 @@ class GamesController(
         }
     }
 
+    @GetMapping(Uris.Games.GET_IS_IN_LOBBY)
+    @NotTested
+    fun waitingInLobby(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
+        val userId = user.user.id
+        when (val validId = Id(id)) {
+            is Failure -> return Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be greater than 0",
+                instance = Uris.Games.exitGame(validId.value.toString())
+            ).toResponse()
+
+            is Success ->
+                return when (val res = gamesService.waitForGame(Id(id).get(), user.user.id)) {
+                    is Success -> ResponseEntity.status(200).body("You joined the game with the ${res.value}")
+                    is Failure -> when (res.value) {
+                        GameWaitError.UserDoesNotBelongToThisLobby -> Problem(
+                            type = Problem.userDoesntBelongToThisGame,
+                            title = "User doesnt belong to this lobby",
+                            status = 403,
+                            detail = "The user with id <$userId> is not in the Lobby with id <$id>",
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse()
+
+                        GameWaitError.UserIsInLobby -> Problem(
+                            type = Problem.userIsInLobby,
+                            title = "User is waiting lobby",
+                            status = 403,
+                            detail = "The user with id <$userId> is waiting in  lobby with id <$id>",
+                            instance = Uris.Games.exitGame(id)
+                        ).toResponse(
+                        )
+                    }
+                }
+        }
+    }
+
+    @DeleteMapping(Uris.Games.DELETE_IS_IN_LOBBY)
+    @NotTested
+    fun exitLobby(@PathVariable id: Int, user: AuthenticatedUser): ResponseEntity<*> {
+        val userId = user.user.id
+        when (val validId = Id(id)) {
+            is Failure -> return Problem(
+                type = Problem.invalidId,
+                title = "Invalid id",
+                status = 400,
+                detail = "The id must be greater than 0",
+                instance = Uris.Games.exitGame(validId.value.toString())
+            ).toResponse()
+
+            is Success ->
+                return when (val res = gamesService.exitLobby(validId.get(), userId)) {
+                    is Success -> ResponseEntity.status(200).body("You exited the lobby with the id=${validId}")
+                    is Failure -> {
+                        when (res.value) {
+                            LobbyDeleteError.LobbyNotFound -> Problem(
+                                type = Problem.lobbyNotFound,
+                                title = "Lobby not found",
+                                status = 404,
+                                detail = "The lobby with id <$id> was not found",
+                                instance = Uris.Games.exitGame(id)
+                            ).toResponse()
+                        }
+                    }
+                }
+        }
+    }
 }

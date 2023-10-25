@@ -33,6 +33,8 @@ object Uris {
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
         const val GET_SYSTEM_INFO = "$PREFIX/system"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
+        const val GET_IS_IN_LOBBY = "$PREFIX/games/{id}/lobby"
+        const val DELETE_IS_IN_LOBBY = "$PREFIX/games/{id}/lobby"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun makeMove(id: Any) = UriTemplate(MAKE_MOVE).expand(id)

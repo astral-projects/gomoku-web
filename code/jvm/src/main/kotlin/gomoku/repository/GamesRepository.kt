@@ -146,4 +146,14 @@ interface GamesRepository {
         loserPoints: NonNegativeValue,
         shouldCountAsGameWin: Boolean
     ): Boolean
+
+    /**
+     * Asserts if a user is  waiting in a lobby or if is already in a game to start.
+     * @param lobbyId the id of the lobby to search for.
+     * @param userId the id of the user to search for.
+     * @return Id if the user is in a game to start, false otherwise.
+     */
+    fun waitForGame(lobbyId:Id, userId: Id): Id?
+
+    fun deleteLobby(lobbyId: Id, userId: Id): Boolean
 }

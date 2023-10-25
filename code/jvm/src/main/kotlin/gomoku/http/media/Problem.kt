@@ -45,5 +45,9 @@ data class Problem (
         val gameIsNotInProgress = URI("${baseUrl}game-is-not-in-progress")
         val gameOver = URI("${baseUrl}game-over")
         val notYourNotTurn = URI("${baseUrl}not-your-not-turn")
+        val userDoesntBelongToThisGame = URI("${baseUrl}user-doesnt-belong-to-this-game")
+        val userIsInLobby = URI("${baseUrl}user-is-in-lobby")
+        val lobbyNotFound = URI("${baseUrl}lobby-not-found")
+        //TODO(ADD FILES gameOVer, notYourNotTurn, gameIsNotInProgress)
     }
 }
