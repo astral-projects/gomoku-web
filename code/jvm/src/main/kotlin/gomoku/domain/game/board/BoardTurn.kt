@@ -7,7 +7,7 @@ data class BoardTurn(
     val timeLeftInSec: NonNegativeValue
 ) {
     fun other(): BoardTurn = when (player) {
-        Player.W -> BoardTurn(Player.B, timeLeftInSec)
-        Player.B -> BoardTurn(Player.W, timeLeftInSec)
+        Player.w -> BoardTurn(Player.b, timeLeftInSec)
+        Player.b -> BoardTurn(Player.w, timeLeftInSec)
     }
 }

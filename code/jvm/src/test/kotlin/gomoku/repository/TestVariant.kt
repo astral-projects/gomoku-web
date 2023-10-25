@@ -67,7 +67,7 @@ class TestVariant : Variant {
         return BoardRun(
             moves = emptyMap(),
             turn = BoardTurn(
-                player = Player.W,
+                player = Player.w,
                 timeLeftInSec = turnTimer
             )
         )

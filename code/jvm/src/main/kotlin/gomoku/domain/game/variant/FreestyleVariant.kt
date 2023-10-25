@@ -39,7 +39,7 @@ class FreestyleVariant : Variant {
                     return Failure(MakeMoveError.InvalidPosition(square))
                 }
                 if (square in board.grid) return Failure(MakeMoveError.PositionTaken(square))
-                if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.B))
+                if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.b))
                 val moves = board.grid + Move(square, Piece(board.turn.player))
                 return when {
                     checkWin(board, square) -> Success(BoardWin(moves, board.turn.player))
@@ -67,7 +67,7 @@ class FreestyleVariant : Variant {
         is BoardRun -> false
     }
 
-    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.W, turnTimer))
+    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.w, turnTimer))
 
     override val points: GamePoints
         get() = GamePoints(

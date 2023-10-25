@@ -102,7 +102,7 @@ class GameLogic(
      *
      * @param game - game to which the user belongs
      */
-    private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.W else Player.B
+    private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.w else Player.b
 }
 
 typealias GameMakeMoveResult = Either<MakeMoveError, Game>

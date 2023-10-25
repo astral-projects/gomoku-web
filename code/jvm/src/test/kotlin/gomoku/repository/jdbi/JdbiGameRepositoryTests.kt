@@ -317,7 +317,7 @@ class JdbiGameRepositoryTests {
         // when: updating game 1 with a board that is won
         val boardWin = BoardWin(
             moves = newBoard.grid,
-            winner = Player.W
+            winner = Player.w
         )
         val updatedGameWin = repoGames.updateGame(game1.id, boardWin)
 
