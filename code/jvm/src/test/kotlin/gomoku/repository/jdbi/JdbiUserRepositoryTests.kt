@@ -1,9 +1,5 @@
 package gomoku.repository.jdbi
 
-import gomoku.utils.TestClock
-import gomoku.utils.TestDataGenerator.newTestEmail
-import gomoku.utils.TestDataGenerator.newTestUserName
-import gomoku.utils.TestDataGenerator.newTokenValidationData
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.token.Token
@@ -11,6 +7,10 @@ import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestUserName
+import gomoku.utils.TestDataGenerator.newTokenValidationData
 import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -241,5 +241,4 @@ class JdbiUserRepositoryTests {
 
         handle.rollback()
     }
-
 }

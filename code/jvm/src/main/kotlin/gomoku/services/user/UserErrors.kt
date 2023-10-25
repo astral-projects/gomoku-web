@@ -7,7 +7,6 @@ import gomoku.utils.Either
 sealed class UserCreationError {
     object UsernameAlreadyExists : UserCreationError()
     object EmailAlreadyExists : UserCreationError()
-    object InsecurePassword : UserCreationError()
 }
 
 typealias UserCreationResult = Either<UserCreationError, Id>

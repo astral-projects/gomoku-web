@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class GamesService(
-    private val transactionManager: TransactionManager,
+    val transactionManager: TransactionManager,
     private val clock: Clock,
     private val variants: List<Variant>
 ) {
@@ -72,13 +72,15 @@ class GamesService(
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
             val game = gamesRepository.findIfUserIsInGame(userId)
-            if(gamesRepository.checkIfUserIsInLobby(userId) != null)
-                return@run failure(GameCreationError.UserAlreadyInLobby)
+            val lobbyWaiting = gamesRepository.checkIfUserIsInLobby(userId)
+            if (lobbyWaiting != null) {
+                return@run failure(GameCreationError.UserAlreadyInLobby(lobbyWaiting.lobbyId))
+            }
             if (game == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
-                        failure(GameCreationError.UserAlreadyInLobby)
+                        failure(GameCreationError.UserAlreadyNotInLobby)
                     } else {
                         val gameId = gamesRepository.createGame(
                             variantId = variantId,
@@ -88,20 +90,20 @@ class GamesService(
                             board = variant.initialBoard()
                         )
                         when (gameId) {
-                            null -> failure(GameCreationError.UserAlreadyInGame)
+                            null -> failure(GameCreationError.ErrorCreatingGame)
                             else -> success(FindGameSuccess(gameId, "Joining game"))
                         }
                     }
                 } else {
                     gamesRepository.checkIfUserIsInLobby(userId)
-                        ?: failure(GameCreationError.UserAlreadyInLobby)
+                        ?: failure(GameCreationError.UserAlreadyNotInLobby)
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.VariantNotFound)
                         else -> success(FindGameSuccess(lobbyId, "Waiting in lobby"))
                     }
                 }
             } else {
-                failure(GameCreationError.UserAlreadyInGame)
+                failure(GameCreationError.UserAlreadyInGame(game.id))
             }
         }
 
@@ -129,7 +131,7 @@ class GamesService(
     fun getSystemInfo(): SystemInfo = SystemInfo
 
     /**
-     * Makes a move in the game , passing the user id and the move.
+     * Makes a move in the game, passing the user id and the move.
      * If the user does not belong to the game, returns an error.
      * If the move is not valid, returns an error.
      * If the game is not found, returns an error.
@@ -152,8 +154,7 @@ class GamesService(
                 is Success -> {
                     val updatedGame = playLogic.value
                     updatedPointsBasedOnBoardType(gamesRepository, variant.points, user, updatedGame)
-                    when (val makeMove =
-                        gamesRepository.updateGame(gameId, updatedGame.board)) {
+                    when (val makeMove = gamesRepository.updateGame(gameId, updatedGame.board)) {
                         false -> failure(GameMakeMoveError.GameNotFound)
                         true -> success(makeMove)
                     }
@@ -226,7 +227,4 @@ class GamesService(
 
         is BoardRun -> true
     }
-
 }
-
-

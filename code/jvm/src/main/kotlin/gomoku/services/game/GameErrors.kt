@@ -1,13 +1,16 @@
 package gomoku.services.game
 
+import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.utils.Either
 
 sealed class GameCreationError {
-    object UserAlreadyInLobby : GameCreationError()
-    object UserAlreadyInGame : GameCreationError()
+    class UserAlreadyInLobby(val lobbyId: Id) : GameCreationError()
+    class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     object VariantNotFound : GameCreationError()
+    object ErrorCreatingGame : GameCreationError()
+    object UserAlreadyNotInLobby : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, FindGameSuccess>
@@ -40,7 +43,6 @@ sealed class GameMakeMoveError {
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
     object VariantNotFound : GameMakeMoveError()
-    
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>

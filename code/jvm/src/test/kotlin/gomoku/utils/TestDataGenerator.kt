@@ -21,15 +21,12 @@ object TestDataGenerator {
     /**
      * Generates a random [Password] prefixed with "password-".
      */
-    fun newTestPassword() = Password("password-${abs(Random.nextLong())}")
+    fun newTestPassword() = Password("password-${abs(Random.nextLong())}").get()
 
     /**
      * Generates a random token validation data prefixed with "token-".
      */
     fun newTokenValidationData() = "token-${abs(Random.nextLong())}"
-
-
-
 
     /**
      * Generates a random number between this [Int] and [end] (inclusive).

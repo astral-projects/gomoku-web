@@ -9,8 +9,8 @@ data class TokenExternalInfo(
 )
 
 sealed class TokenCreationError {
-    object PasswordIsInvalid : TokenCreationError()
-    object UsernameIsInvalid : TokenCreationError()
+    object PasswordIsWrong : TokenCreationError()
+    object UsernameNotExists : TokenCreationError()
 }
 
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>

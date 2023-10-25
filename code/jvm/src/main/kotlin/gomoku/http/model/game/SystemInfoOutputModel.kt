@@ -17,7 +17,7 @@ data class SystemInfoOutputModel(
                 version = domainClass.VERSION,
                 description = domainClass.DESCRIPTION,
                 releaseDate = domainClass.releaseDate,
-                authors = domainClass.authors.map { AuthorOutputModel.serializeFrom(it) },
+                authors = domainClass.authors.map { AuthorOutputModel.serializeFrom(it) }
             )
         }
     }

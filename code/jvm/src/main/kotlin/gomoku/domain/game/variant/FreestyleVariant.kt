@@ -1,7 +1,8 @@
 package gomoku.domain.game.variant
 
 import gomoku.domain.NonNegativeValue
-import gomoku.domain.PositiveValue
+import gomoku.domain.errors.BoardMakeMoveResult
+import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GamePointsOnDraw
 import gomoku.domain.game.GamePointsOnForfeitOrTimer
@@ -18,28 +19,32 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
 import gomoku.domain.game.variant.config.VariantName
+import gomoku.utils.Failure
+import gomoku.utils.Success
 import gomoku.utils.get
 import org.springframework.stereotype.Component
 
 private const val WINNING_PIECES = 5
 
-@Component
 // TODO("revisited game variant logic")
+@Component
 class FreestyleVariant : Variant {
     override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
 
-    // TODO("change return type to Either<MakeMoveError, Board>")
-    override fun isMoveValid(board: Board, square: Square): Board {
-        return when (board) {
-            is BoardWin, is BoardDraw -> error("Game is over")
+    override fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult {
+        when (board) {
+            is BoardWin, is BoardDraw -> return Failure(MakeMoveError.GameOver)
             is BoardRun -> {
-                require(square !in board.grid) { "Position taken $square" }
-                require(board.turn != null) { "Game is running" }
+                if (square.row.toIndex() >= config.boardSize.size || square.col.toIndex() >= config.boardSize.size) {
+                    return Failure(MakeMoveError.InvalidPosition(square))
+                }
+                if (square in board.grid) return Failure(MakeMoveError.PositionTaken(square))
+                if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.B))
                 val moves = board.grid + Move(square, Piece(board.turn.player))
-                when {
-                    checkWin(board, square) -> BoardWin(moves, board.turn.player)
-                    moves.size == config.boardSize.size * config.boardSize.size -> BoardDraw(moves)
-                    else -> BoardRun(moves, board.turn.other())
+                return when {
+                    checkWin(board, square) -> Success(BoardWin(moves, board.turn.player))
+                    moves.size == config.boardSize.size * config.boardSize.size -> Success(BoardDraw(moves))
+                    else -> Success(BoardRun(moves, board.turn.other()))
                 }
             }
         }
@@ -51,10 +56,10 @@ class FreestyleVariant : Variant {
         val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
         val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
         return places.count { it.col == square.col } == WINNING_PIECES ||
-                places.count { it.row == square.row } == WINNING_PIECES ||
-                places.count { backSlash } == WINNING_PIECES ||
-                places.count { slash } == WINNING_PIECES ||
-                board.turn.timeLeftInSec.value <= 0
+            places.count { it.row == square.row } == WINNING_PIECES ||
+            places.count { backSlash } == WINNING_PIECES ||
+            places.count { slash } == WINNING_PIECES ||
+            board.turn.timeLeftInSec.value <= 0
     }
 
     override fun isFinished(board: Board): Boolean = when (board) {
@@ -62,7 +67,7 @@ class FreestyleVariant : Variant {
         is BoardRun -> false
     }
 
-    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.w, turnTimer))
+    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.W, turnTimer))
 
     override val points: GamePoints
         get() = GamePoints(

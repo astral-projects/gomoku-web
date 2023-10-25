@@ -8,7 +8,7 @@ import gomoku.utils.Success
 
 class Email private constructor(
     val value: String
-): Component {
+) : Component {
 
     companion object {
         private const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
@@ -33,6 +33,4 @@ class Email private constructor(
     }
 
     override fun toString() = value
-
-
 }

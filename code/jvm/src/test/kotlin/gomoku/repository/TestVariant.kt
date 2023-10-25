@@ -1,6 +1,7 @@
 package gomoku.repository
 
 import gomoku.domain.NonNegativeValue
+import gomoku.domain.errors.BoardMakeMoveResult
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GamePointsOnDraw
 import gomoku.domain.game.GamePointsOnForfeitOrTimer
@@ -17,13 +18,14 @@ import gomoku.domain.game.variant.VariantConfig
 import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
 import gomoku.domain.game.variant.config.VariantName
+import gomoku.utils.Success
 import gomoku.utils.get
 
 class TestVariant : Variant {
     override val config = VariantConfig(
         name = VariantName.TEST,
         openingRule = OpeningRule.PRO,
-        boardSize = BoardSize.FIFTEEN,
+        boardSize = BoardSize.FIFTEEN
     )
     override val points: GamePoints
         get() = GamePoints(
@@ -42,11 +44,14 @@ class TestVariant : Variant {
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(10).get()
 
-    override fun isMoveValid(board: Board, square: Square): Board {
-        val turn = board.turn ?: return board
-        return BoardRun(
-            moves = board.grid + Move(square, Piece(turn.player)),
-            turn = turn.other()
+    override fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult {
+        val turn = board.turn ?: return Success(board)
+
+        return Success(
+            BoardRun(
+                moves = board.grid + Move(square, Piece(turn.player)),
+                turn = turn.other()
+            )
         )
     }
 
@@ -62,7 +67,7 @@ class TestVariant : Variant {
         return BoardRun(
             moves = emptyMap(),
             turn = BoardTurn(
-                player = Player.w,
+                player = Player.W,
                 timeLeftInSec = turnTimer
             )
         )

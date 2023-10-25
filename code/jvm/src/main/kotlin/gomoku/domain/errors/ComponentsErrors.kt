@@ -4,6 +4,7 @@ import gomoku.domain.Id
 import gomoku.domain.NonNegativeValue
 import gomoku.domain.PositiveValue
 import gomoku.domain.user.Email
+import gomoku.domain.user.Password
 import gomoku.domain.user.User
 import gomoku.domain.user.Username
 import gomoku.utils.Either
@@ -43,3 +44,9 @@ sealed class InvalidUserError {
 
 typealias GettingUserResult = Either<InvalidUserError, User>
 
+sealed class InvalidPasswordError {
+    object PasswordNotSafe : InvalidPasswordError()
+    object PasswordIsEmpty : InvalidPasswordError()
+}
+
+typealias GettingPasswordResult = Either<InvalidPasswordError, Password>

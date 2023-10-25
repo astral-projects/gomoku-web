@@ -3,9 +3,6 @@ package gomoku.services
 import gomoku.domain.Id
 import gomoku.domain.PositiveValue
 import gomoku.domain.game.GameState
-import gomoku.domain.game.board.Player
-import gomoku.domain.game.board.moves.Move
-import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
@@ -76,14 +73,13 @@ class GameServicesTests {
         // then: the game is created
         val gameResult = gameService.findGame(Id(1).get(), user.id)
         assertTrue(gameResult is Failure)
-        when(gameResult) {
+        when (gameResult) {
             is Success -> fail("User needs to be already in a Game $gameResult")
             is Failure -> {
                 assertTrue(gameResult.value is GameCreationError.UserAlreadyInGame)
             }
         }
     }
-
 
     @Test
     fun `get game by id`() {
@@ -103,7 +99,6 @@ class GameServicesTests {
             is Failure -> fail("Unexpected $gameResult")
             is Success -> assertEquals(gameId, gameResult.value.id)
         }
-
     }
 
     @Test
@@ -145,7 +140,6 @@ class GameServicesTests {
                 assertEquals(GameState.FINISHED, checkExit.value.state)
             }
         }
-
     }
 
     @Test
@@ -162,10 +156,10 @@ class GameServicesTests {
         val game = gameService.getGameById(gameId)
 
         // then: forcing the game to be FINISHED to be able to delete it
-        val exitGame= gameService.exitGame(gameId, user2.id)
+        val exitGame = gameService.exitGame(gameId, user2.id)
         assertTrue(exitGame is Success)
 
-        //then: Delete game can only be deleted by the host and if the game is not in progress
+        // then: Delete game can only be deleted by the host and if the game is not in progress
         if (game is Success) {
             assertEquals(gameId, game.value.id)
             val res = gameService.deleteGame(gameId, user.id)
@@ -210,7 +204,6 @@ class GameServicesTests {
                 fail("It isn't correct the same user play 2 times in a row $g2")
             }
         }
-
     }
 
     private fun createRandomGame(gameService: GamesService, user: User, user2: User): Id? {
@@ -267,16 +260,12 @@ class GameServicesTests {
             testClock
         )
 
-        private fun createGamesService(
+        fun createGamesService(
             testClock: TestClock
         ) = GamesService(
             JdbiTransactionManager(JdbiTestConfiguration.jdbi),
             testClock,
-            variants,
+            variants
         )
-
     }
 }
-
-
-

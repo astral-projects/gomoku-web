@@ -44,7 +44,7 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
 
         val type = ex.value?.let { it::class.java.simpleName } ?: "null"
 
-        val detail = "The value '${ex.value}' of type '${type}' could not be converted to ${ex.requiredType?.name}"
+        val detail = "The value '${ex.value}' of type '$type' could not be converted to ${ex.requiredType?.name}"
         val uri = URI(request.toString().substringAfter("uri=").substringBefore("}").substringBefore(";"))
         return Problem(
             type = Problem.invalidRequestContent,
