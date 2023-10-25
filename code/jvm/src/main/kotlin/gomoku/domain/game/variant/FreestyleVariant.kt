@@ -31,10 +31,9 @@ private const val WINNING_PIECES = 5
 class FreestyleVariant : Variant {
     override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
 
-    // TODO("change return type to Either<MakeMoveError, Board>")
-    override fun isMoveValid(board: Board, square: Square): Board {
-        return when (board) {
-            is BoardWin, is BoardDraw -> error("Game is over")
+    override fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult {
+        when (board) {
+            is BoardWin, is BoardDraw -> return Failure(MakeMoveError.GameOver)
             is BoardRun -> {
                 if (square.row.toIndex() >= config.boardSize.size || square.col.toIndex() >= config.boardSize.size) {
                     return Failure(MakeMoveError.InvalidPosition(square))
@@ -57,10 +56,10 @@ class FreestyleVariant : Variant {
         val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
         val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
         return places.count { it.col == square.col } == WINNING_PIECES ||
-            places.count { it.row == square.row } == WINNING_PIECES ||
-            places.count { backSlash } == WINNING_PIECES ||
-            places.count { slash } == WINNING_PIECES ||
-            board.turn.timeLeftInSec.value <= 0
+                places.count { it.row == square.row } == WINNING_PIECES ||
+                places.count { backSlash } == WINNING_PIECES ||
+                places.count { slash } == WINNING_PIECES ||
+                board.turn.timeLeftInSec.value <= 0
     }
 
     override fun isFinished(board: Board): Boolean = when (board) {
