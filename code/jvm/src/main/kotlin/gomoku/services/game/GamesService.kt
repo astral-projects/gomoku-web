@@ -36,7 +36,7 @@ class GamesService(
             val variantsConfig: List<VariantConfig> = variants.map { it.config }
             transaction.gamesRepository.insertVariants(variantsConfig)
             val gameVariants = transaction.gamesRepository.getVariants()
-            if (gameVariants.isNotEmpty()) {
+            if (gameVariants.isEmpty()) {
                 throw NoVariantImplementationFoundException("No variants found in the database")
             }
             gameVariants.associateBy({ it.id }, { variants.first { v -> v.config.name === it.name } })

@@ -53,7 +53,7 @@ class GameServicesTests {
         // when: joining a game
         val gameCreationResult = gameService.findGame(Id(1).get(), user.id)
 
-        // then: the  join is successful
+        // then: the join is successful
         when (gameCreationResult) {
             is Failure -> fail("Unexpected $gameCreationResult")
             is Success -> assertEquals("Waiting in lobby", gameCreationResult.value.message)
