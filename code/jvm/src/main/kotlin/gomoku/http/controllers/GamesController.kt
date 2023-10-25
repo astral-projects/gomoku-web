@@ -8,7 +8,11 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
+import gomoku.http.model.game.GameDeletedOutputModel
+import gomoku.http.model.game.GameExitedOutputModel
 import gomoku.http.model.game.GameOutputModel
+import gomoku.http.model.game.JoinedGameWithSuccessOutputModel
+import gomoku.http.model.game.LobbyExitOutputModel
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.MoveOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
@@ -21,7 +25,6 @@ import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
 import gomoku.services.game.GettingGameError
 import gomoku.services.game.LobbyDeleteError
-import gomoku.services.game.LobbyDeleteResult
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -107,7 +110,7 @@ class GamesController(
 
             is Success ->
                 when (val result = gamesService.findGame(variant.value, userId)) {
-                    is Success -> ResponseEntity.status(201).body(result.value) // TODO(create json response)
+                    is Success -> ResponseEntity.status(201).body(result.value)
                     is Failure -> when (result.value) {
                         is GameCreationError.UserAlreadyInGame -> Problem(
                             type = Problem.userAlreadyInGame,
@@ -174,7 +177,7 @@ class GamesController(
 
             is Success ->
                 when (val game = gamesService.deleteGame(validId.value, userId)) {
-                    is Success -> ResponseEntity.status(200).body("Game deleted")
+                    is Success -> ResponseEntity.status(200).body(GameDeletedOutputModel())
                     is Failure -> when (game.value) {
                         GamePutError.GameNotFound -> Problem(
                             type = Problem.gameNotFound,
@@ -356,7 +359,7 @@ class GamesController(
 
             is Success ->
                 return when (val game = gamesService.exitGame(validId.value, userId)) {
-                    is Success -> ResponseEntity.status(200).body("Game exited")
+                    is Success -> ResponseEntity.status(200).body(GameExitedOutputModel())
                     is Failure -> when (game.value) {
                         GameDeleteError.GameNotFound -> Problem(
                             type = Problem.gameNotFound,
@@ -407,7 +410,7 @@ class GamesController(
 
             is Success ->
                 return when (val res = gamesService.waitForGame(Id(id).get(), user.user.id)) {
-                    is Success -> ResponseEntity.status(200).body("You joined the game with the ${res.value}")
+                    is Success -> ResponseEntity.status(200).body(JoinedGameWithSuccessOutputModel(res.value))
                     is Failure -> when (res.value) {
                         GameWaitError.UserDoesNotBelongToThisLobby -> Problem(
                             type = Problem.userDoesntBelongToThisGame,
@@ -419,9 +422,9 @@ class GamesController(
 
                         GameWaitError.UserIsInLobby -> Problem(
                             type = Problem.userIsInLobby,
-                            title = "User is waiting lobby",
+                            title = "User is waiting in lobby",
                             status = 403,
-                            detail = "The user with id <$userId> is waiting in  lobby with id <$id>",
+                            detail = "The user with id <$userId> is waiting in lobby with id <$id>. Try again later",
                             instance = Uris.Games.exitGame(id)
                         ).toResponse(
                         )
@@ -445,7 +448,7 @@ class GamesController(
 
             is Success ->
                 return when (val res = gamesService.exitLobby(validId.get(), userId)) {
-                    is Success -> ResponseEntity.status(200).body("You exited the lobby with the id=${validId}")
+                    is Success -> ResponseEntity.status(200).body(LobbyExitOutputModel(validId.value.value))
                     is Failure -> {
                         when (res.value) {
                             LobbyDeleteError.LobbyNotFound -> Problem(

@@ -17,6 +17,7 @@ import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
+import gomoku.http.model.user.UserLogoutOutputModel
 import gomoku.http.model.user.UserOutputModel
 import gomoku.services.user.GettingUserError
 import gomoku.services.user.TokenCreationError
@@ -208,7 +209,7 @@ class UsersController(
     @PostMapping(Uris.Users.LOGOUT)
     fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
-            is Success -> ResponseEntity.ok("Logout was successful")
+            is Success -> ResponseEntity.ok(UserLogoutOutputModel())
             is Failure -> {
                 when (tokenRevocationResult.value) {
                     TokenRevocationError.TokenIsInvalid -> Problem(
