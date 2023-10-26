@@ -23,6 +23,7 @@ import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GamePutError
 import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
+import gomoku.services.game.GetVariantsError
 import gomoku.services.game.GettingGameError
 import gomoku.services.game.LobbyDeleteError
 import gomoku.utils.Failure
@@ -462,4 +463,25 @@ class GamesController(
                 }
         }
     }
+
+    @GetMapping(Uris.Games.FIND_VARIANTS)
+    @NotTested
+    fun findVariants(): ResponseEntity<*> =
+       when (val res = gamesService.getVariants()){
+           is Success-> ResponseEntity.status(200).body(res)
+           is Failure-> {
+               when(res.value){
+                   is GetVariantsError.VariantsEmpty->
+                    Problem(
+                        type = Problem.variantsEmpty,
+                        title = "Variants empty",
+                        status = 404,
+                        detail = "There are no variants",
+                        instance = Uris.Games.findVariants()
+                    ).toResponse(
+                    )
+               }
+           }
+       }
+
 }

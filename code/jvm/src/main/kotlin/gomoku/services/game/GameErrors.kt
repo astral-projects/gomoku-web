@@ -3,6 +3,8 @@ package gomoku.services.game
 import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
+import gomoku.domain.game.variant.GameVariant
+import gomoku.domain.game.variant.Variant
 import gomoku.utils.Either
 
 sealed class GameCreationError {
@@ -61,3 +63,9 @@ sealed class LobbyDeleteError {
     object LobbyNotFound : LobbyDeleteError()
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>
+
+
+sealed class GetVariantsError {
+    object VariantsEmpty : GetVariantsError()
+}
+typealias GetVariantsResult= Either<GetVariantsError, List<GameVariant>>

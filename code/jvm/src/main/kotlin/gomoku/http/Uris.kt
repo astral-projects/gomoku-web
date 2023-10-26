@@ -29,6 +29,7 @@ object Uris {
 
     object Games {
         const val FIND_GAME = "$PREFIX/games"
+        const val FIND_VARIANTS ="$PREFIX/games/variants"
         const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val GET_BY_ID = "$PREFIX/games/{id}"
         const val DELETE_BY_ID = "$PREFIX/games/{id}"
@@ -44,5 +45,7 @@ object Uris {
         fun deleteById(id: Any) = UriTemplate(GET_BY_ID).expand(id)
         fun exitGame(id: Any) = UriTemplate(EXIT_GAME).expand(id)
         fun findGame() = URI(FIND_GAME)
+
+        fun findVariants() = URI(FIND_VARIANTS)
     }
 }

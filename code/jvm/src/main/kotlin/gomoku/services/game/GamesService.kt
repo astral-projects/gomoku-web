@@ -251,4 +251,14 @@ class GamesService(
                 else -> failure(LobbyDeleteError.LobbyNotFound)
             }
         }
+
+    fun getVariants(): GetVariantsResult =
+        transactionManager.run {
+            val gamesRepository = it.gamesRepository
+            val variants = gamesRepository.getVariants()
+            if (variants.isEmpty()) {
+               return@run failure(GetVariantsError.VariantsEmpty)
+            }
+            success(variants)
+        }
 }
