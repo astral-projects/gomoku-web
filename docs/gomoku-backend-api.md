@@ -103,8 +103,8 @@ The API provides the following operations/resources related to the `Game` entity
 - `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id; See [Game Move](#game-move) for more
   information;
 - `POST /games/{id}/exit 🔒` - exits the game with the given id.
-- `GET /games/{id}/lobby 🔒` - returns the lobby with the given id.
-- `DELETE /games/{id}/lobby 🔒` - deletes the lobby with the given id.
+- `GET /games/lobby/{id} 🔒` - Checks the status of the lobby with the given ID, returning whether the user is still waiting in the lobby or has already entered a game.
+- `DELETE /games/lobby/{id} 🔒` - deletes the lobby with the given id.
 
 ### Responses
 

@@ -171,18 +171,18 @@ class GamesService(
     fun exitGame(gameId: Id, userId: Id): GameDeleteResult {
         return transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
+            val game = gamesRepository.getGameById(gameId)
+                ?: return@run failure(GameDeleteError.GameNotFound)
             gamesRepository.userBelongsToTheGame(userId, gameId)
                 ?: return@run failure(GameDeleteError.UserDoesntBelongToThisGame)
             val winner = gamesRepository.exitGame(gameId, userId)
             if (winner != null) {
-                val game = gamesRepository.getGameById(gameId)
-                    ?: return@run failure(GameDeleteError.GameNotFound)
                 val variant = gameVariantMap[game.variant.id]
                     ?: return@run failure(GameDeleteError.VariantNotFound)
                 success(
                     gamesRepository.updatePoints(
                         winnerId = winner,
-                        loserId = if (userId != game.hostId) game.guestId else game.hostId,
+                        loserId = userId,
                         winnerPoints = variant.points.onForfeitOrTimer.winner,
                         loserPoints = variant.points.onForfeitOrTimer.forfeiter,
                         shouldCountAsGameWin = true

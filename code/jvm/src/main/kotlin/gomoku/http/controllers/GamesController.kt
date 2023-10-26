@@ -371,7 +371,7 @@ class GamesController(
 
                         GameDeleteError.UserDoesntBelongToThisGame -> Problem(
                             type = Problem.userIsNotTheHost,
-                            title = "User is not the host",
+                            title = "User does not belong to this game",
                             status = 403,
                             detail = "The user with id <$userId> is not in the game with id <$id>",
                             instance = Uris.Games.exitGame(id)

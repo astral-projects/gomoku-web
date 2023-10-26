@@ -46,6 +46,7 @@ class JdbiGameRepository(
             .execute() == 1
     }
 
+    //TODO(id?)
     override fun getVariantByName(variantName: VariantName): Id {
         return handle.createQuery("select id from dbo.GameVariants where name = :variantName")
             .bind("variantName", variantName)

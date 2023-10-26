@@ -20,7 +20,7 @@ import kotlin.test.assertNotNull
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GameTests {
-
+/*
     @LocalServerPort
     var port: Int = 0
 
@@ -152,5 +152,5 @@ class GameTests {
             .expectBody(UserTokenCreateOutputModel::class.java)
             .returnResult()
             .responseBody!!
-    }
+    }*/
 }

@@ -20,4 +20,3 @@ FROM
 WHERE
         id = 1;
 
-
