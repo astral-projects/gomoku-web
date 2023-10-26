@@ -1,11 +1,14 @@
-package gomoku.domain.user
+package gomoku.domain.user.components
 
-import gomoku.domain.Component
-import gomoku.domain.errors.GettingEmailResult
-import gomoku.domain.errors.InvalidEmailError
+import gomoku.domain.components.Component
+import gomoku.domain.components.GettingEmailResult
+import gomoku.domain.components.InvalidEmailError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
+/**
+ * Component that provides a generic email container for domain objects.
+ */
 class Email private constructor(
     val value: String
 ) : Component {

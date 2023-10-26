@@ -51,7 +51,6 @@ data class Problem(
         val blankUsername = URI("${baseUrl}blank-username")
         val passwordIsEmpty = URI("${baseUrl}password-is-empty")
         val invalidUsernameLength = URI("${baseUrl}invalid-username-length")
-        val gameIsNotInProgress = URI("${baseUrl}game-is-not-in-progress")
         val gameOver = URI("${baseUrl}game-over")
         val notYourNotTurn = URI("${baseUrl}not-your-not-turn")
         val wrongPassword = URI("${baseUrl}wrong-password")
@@ -62,6 +61,8 @@ data class Problem(
         val lobbyNotFound = URI("${baseUrl}lobby-not-found")
         val variantsEmpty = URI("${baseUrl}variant-empty")
         val userDoesntBelongToAnyGameOrLobby= URI("${baseUrl}user-doesnt-belong-to-any-game")
+        val invalidRow = URI("${baseUrl}invalid-row")
+        val invalidColumn = URI("${baseUrl}invalid-column")
         // TODO(ADD FILES gameOVer, notYourNotTurn, gameIsNotInProgress)
     }
 }

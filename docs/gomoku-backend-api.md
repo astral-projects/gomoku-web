@@ -284,8 +284,8 @@ Information about the responses:
 
 - The client application makes a `POST` request to the `games/{id}/move` resource, with the move information in the
   request body. The request body should be a JSON object with the following properties:
-  - `col` - the column of the square where player will play (must be between `a` and `o`);
-  - `row` - the row of the square where player will play (must be between `1` and `15`).
+  - `col` - the column of the square where player will play (must be between `a` and `z`);
+  - `row` - the row of the square where player will play (must be minimum `1`).
     Example:
     ```json
     {

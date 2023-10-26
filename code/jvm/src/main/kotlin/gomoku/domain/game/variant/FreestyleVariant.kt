@@ -1,8 +1,6 @@
 package gomoku.domain.game.variant
 
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.errors.BoardMakeMoveResult
-import gomoku.domain.errors.MakeMoveError
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GamePointsOnDraw
 import gomoku.domain.game.GamePointsOnForfeitOrTimer
@@ -16,8 +14,11 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.errors.BoardMakeMoveResult
+import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.utils.Failure
 import gomoku.utils.Success
@@ -39,7 +40,7 @@ class FreestyleVariant : Variant {
                     return Failure(MakeMoveError.InvalidPosition(square))
                 }
                 if (square in board.grid) return Failure(MakeMoveError.PositionTaken(square))
-                if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.b))
+                if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.B))
                 val moves = board.grid + Move(square, Piece(board.turn.player))
                 return when {
                     checkWin(board, square) -> Success(BoardWin(moves, board.turn.player))
@@ -51,23 +52,23 @@ class FreestyleVariant : Variant {
     }
 
     override fun checkWin(board: Board, square: Square): Boolean {
-        require(board.turn != null) { "Game is running" }
-        val backSlash = square.row.toIndex() == square.col.toIndex()
-        val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
-        val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
-        return places.count { it.col == square.col } == WINNING_PIECES ||
-            places.count { it.row == square.row } == WINNING_PIECES ||
-            places.count { backSlash } == WINNING_PIECES ||
-            places.count { slash } == WINNING_PIECES ||
-            board.turn.timeLeftInSec.value <= 0
+        return try {
+            requireNotNull(board.turn)
+            val backSlash = square.row.toIndex() == square.col.toIndex()
+            val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
+            val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
+            places.count { it.col == square.col } == WINNING_PIECES ||
+                    places.count { it.row == square.row } == WINNING_PIECES ||
+                    places.count { backSlash } == WINNING_PIECES ||
+                    places.count { slash } == WINNING_PIECES ||
+                    board.turn.timeLeftInSec.value <= 0
+        } catch (ex: IllegalArgumentException) {
+            // only way found to use smart cast
+            false
+        }
     }
 
-    override fun isFinished(board: Board): Boolean = when (board) {
-        is BoardWin, is BoardDraw -> true
-        is BoardRun -> false
-    }
-
-    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.w, turnTimer))
+    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(Player.W, turnTimer))
 
     override val points: GamePoints
         get() = GamePoints(
@@ -78,6 +79,7 @@ class FreestyleVariant : Variant {
                 forfeiter = NonNegativeValue(0).get()
             )
         )
+
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(60).get()
 }

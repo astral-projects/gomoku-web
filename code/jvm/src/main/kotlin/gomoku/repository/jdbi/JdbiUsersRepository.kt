@@ -1,17 +1,17 @@
 package gomoku.repository.jdbi
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
 import gomoku.domain.PaginatedResult
-import gomoku.domain.PositiveValue
 import gomoku.domain.UserAndToken
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
+import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
-import gomoku.domain.user.Email
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
-import gomoku.domain.user.Username
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Username
 import gomoku.repository.UsersRepository
 import gomoku.repository.jdbi.model.JdbiIdModel
 import gomoku.repository.jdbi.model.user.JdbiUserAndStatsModel

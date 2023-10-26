@@ -29,7 +29,7 @@ object Uris {
 
     object Games {
         const val FIND_GAME = "$PREFIX/games"
-        const val FIND_VARIANTS ="$PREFIX/games/variants"
+        const val FIND_VARIANTS = "$PREFIX/games/variants"
         const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val GET_BY_ID = "$PREFIX/games/{id}"
         const val DELETE_BY_ID = "$PREFIX/games/{id}"

@@ -1,18 +1,38 @@
 package gomoku.domain.game.board.moves.square
 
-/**
- * Represents a Column instance defined by a unique [letter].
- */
-data class Column(val letter: Char) {
+import gomoku.domain.components.ColumnError
+import gomoku.domain.components.Component
+import gomoku.domain.components.GettingColumnResult
+import gomoku.utils.Failure
+import gomoku.utils.Success
 
-    // TODO(Get rid of the require)
-    init {
-        require(letter in 'a'..'z') {
-            "Column letter value must be between 'a' and 'z'"
+/**
+ * Component that represents a column in the board.
+ */
+class Column private constructor(val letter: Char) : Component, Indexable {
+
+    companion object {
+        operator fun invoke(value: Char): GettingColumnResult {
+            return if (value in 'a'..'z') {
+                Success(Column(value))
+            } else {
+                Failure(ColumnError.InvalidColumn(value))
+            }
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Column) return false
+
+        if (letter != other.letter) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = letter.hashCode()
+
     override fun toString(): String = letter.toString()
 
-    fun toIndex(): Int = letter - 'a'
+    override fun toIndex(): Int = letter - 'a'
 }

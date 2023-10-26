@@ -1,6 +1,6 @@
 package gomoku.http.model
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 
 class IdOutputModel private constructor(
     val id: Int

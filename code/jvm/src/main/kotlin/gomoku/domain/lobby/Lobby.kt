@@ -1,6 +1,6 @@
 package gomoku.domain.lobby
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 
 data class Lobby(
     val lobbyId: Id,

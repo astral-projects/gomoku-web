@@ -1,6 +1,6 @@
 package gomoku.domain.token
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import kotlinx.datetime.Instant
 
 class Token(

@@ -1,21 +1,19 @@
-package gomoku.domain
+package gomoku.domain.components
 
-import gomoku.domain.errors.InvalidPositiveValueError
-import gomoku.domain.errors.PositiveValueResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
+/**
+ * Component that provides a generic positive value container for domain objects.
+ */
 class PositiveValue private constructor(val value: Int) : Component {
-    init {
-        require(value > 0) { "Value must be positive" }
-    }
 
     companion object {
         operator fun invoke(value: Int): PositiveValueResult =
             if (value > 0) {
                 Success(PositiveValue(value))
             } else {
-                Failure(InvalidPositiveValueError.InvalidPositiveValue(value))
+                Failure(PositiveValueError.InvalidPositiveValue(value))
             }
     }
 
@@ -30,5 +28,5 @@ class PositiveValue private constructor(val value: Int) : Component {
 
     override fun hashCode(): Int = value
 
-    override fun toString() = "PositiveValue(value=$value)"
+    override fun toString() = "$value"
 }

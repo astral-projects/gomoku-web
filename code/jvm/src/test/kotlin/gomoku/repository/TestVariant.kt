@@ -1,7 +1,6 @@
 package gomoku.repository
 
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.errors.BoardMakeMoveResult
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GamePointsOnDraw
 import gomoku.domain.game.GamePointsOnForfeitOrTimer
@@ -13,10 +12,11 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.errors.BoardMakeMoveResult
 import gomoku.domain.game.variant.Variant
-import gomoku.domain.game.variant.VariantConfig
 import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.utils.Success
 import gomoku.utils.get
@@ -55,19 +55,15 @@ class TestVariant : Variant {
         )
     }
 
-    override fun checkWin(board: Board, square: Square): Boolean {
+    override fun checkWin(board: BoardRun, square: Square): Boolean {
         return true
-    }
-
-    override fun isFinished(board: Board): Boolean {
-        return board.grid.isNotEmpty()
     }
 
     override fun initialBoard(): Board {
         return BoardRun(
             moves = emptyMap(),
             turn = BoardTurn(
-                player = Player.w,
+                player = Player.W,
                 timeLeftInSec = turnTimer
             )
         )

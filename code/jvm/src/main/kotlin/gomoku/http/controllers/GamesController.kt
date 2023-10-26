@@ -1,10 +1,12 @@
 package gomoku.http.controllers
 
-import gomoku.domain.Id
 import gomoku.domain.SystemInfo
-import gomoku.domain.errors.InvalidIdError
-import gomoku.domain.errors.MakeMoveError
+import gomoku.domain.components.Id
+import gomoku.domain.components.IdError
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.board.moves.square.Column
+import gomoku.domain.game.board.moves.square.Row
+import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
@@ -100,7 +102,7 @@ class GamesController(
         val userId = user.user.id
         return when (val variant = Id(variantInputModel.id)) {
             is Failure -> when (variant.value) {
-                is InvalidIdError.InvalidId -> Problem(
+                is IdError.InvalidIdError -> Problem(
                     type = Problem.invalidId,
                     title = "Invalid id",
                     status = 404,
@@ -120,6 +122,7 @@ class GamesController(
                             detail = "The user with id <$userId> is already in the game with id <${result.value.gameId}>",
                             instance = Uris.Games.findGame()
                         ).toResponse()
+
                         is GameCreationError.UserAlreadyInLobby -> Problem(
                             type = Problem.userAlreadyInLobby,
                             title = "User already in lobby",
@@ -127,6 +130,7 @@ class GamesController(
                             detail = "The user with id <$userId> is already in the lobby with id <${result.value.lobbyId}>",
                             instance = Uris.Games.findGame()
                         ).toResponse()
+
                         GameCreationError.UserAlreadyNotInLobby -> Problem(
                             type = Problem.userAlreadyNotInLobby,
                             title = "User already not in lobby",
@@ -134,6 +138,7 @@ class GamesController(
                             detail = "The user with id <$userId> is already not in a lobby",
                             instance = Uris.Games.findGame()
                         ).toResponse()
+
                         GameCreationError.VariantNotFound -> Problem(
                             type = Problem.gameVariantNotFound,
                             title = "Game variant not found",
@@ -141,6 +146,7 @@ class GamesController(
                             detail = "The game variant with id <${variant.value}> was not found",
                             instance = Uris.Games.findGame()
                         ).toResponse()
+
                         GameCreationError.ErrorCreatingGame -> Problem(
                             type = Problem.gameNotFound,
                             title = "Error creating game",
@@ -209,7 +215,6 @@ class GamesController(
 
     /**
      * Returns the system information.
-     * @return the system information
      */
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
     @NotTested
@@ -221,7 +226,7 @@ class GamesController(
     /**
      * Makes a move in the game with the given id.
      * @param id the id of the game
-     * @param play the move to be made
+     * @param move the move to be made
      * @param user the authenticated user
      * @return a 200 OK response if the move was made successfully
      * If the game with the given id does not exist, returns a 404 Not Found error.
@@ -238,7 +243,7 @@ class GamesController(
         @PathVariable
         id: Int,
         @Valid @RequestBody
-        play: MoveInputModel,
+        move: MoveInputModel,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
@@ -251,81 +256,102 @@ class GamesController(
                 instance = Uris.Games.makeMove(validId.value)
             ).toResponse()
 
-            is Success ->
-                when (
-                    val responseEntity =
-                        gamesService.makeMove(validId.value, userId, Square.toSquare(play.col, play.row))
-                ) {
-                    is Success -> ResponseEntity.ok(MoveOutputModel())
-                    is Failure -> when (responseEntity.value) {
-                        is GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem(
-                            type = Problem.userIsNotTheHost,
-                            title = "User does not belong to this game",
-                            status = 403,
-                            detail = "The user with id <$userId> is not in the game with id <$id>",
-                            instance = Uris.Games.makeMove(id)
-                        ).toResponse()
+            is Success -> when (val gettingColumnResult = Column(move.col)) {
+                is Failure -> Problem(
+                    type = Problem.invalidColumn,
+                    title = "Invalid column",
+                    status = 400,
+                    detail = "The column must be a letter between A and Z",
+                    instance = Uris.Games.makeMove(validId.value)
+                ).toResponse()
 
-                        GameMakeMoveError.GameNotFound -> Problem(
-                            type = Problem.gameNotFound,
-                            title = "Game not found",
-                            status = 404,
-                            detail = "The game with id <$id> was not found",
-                            instance = Uris.Games.makeMove(id)
-                        ).toResponse()
+                is Success -> when (val gettingRowResult = Row(move.row)) {
+                    is Failure -> Problem(
+                        type = Problem.invalidRow,
+                        title = "Invalid row",
+                        status = 400,
+                        detail = "The row must be a positive integer",
+                        instance = Uris.Games.makeMove(validId.value)
+                    ).toResponse()
 
-                        GameMakeMoveError.VariantNotFound -> Problem(
-                            type = Problem.gameVariantNotFound,
-                            title = "Game variant not found",
-                            status = 404,
-                            instance = Uris.Games.makeMove(id)
-                        ).toResponse()
-
-                        is GameMakeMoveError.MoveNotValid -> {
-                            when (responseEntity.value.error) {
-                                is MakeMoveError.GameOver -> Problem(
-                                    type = Problem.gameOver,
-                                    title = "Game is over",
-                                    status = 400,
-                                    detail = "The game is already over",
+                    is Success -> {
+                        val square = Square(gettingColumnResult.value, gettingRowResult.value)
+                        val gameMakeMoveResult =
+                            gamesService.makeMove(validId.value, userId, square)
+                        when (gameMakeMoveResult) {
+                            is Success -> ResponseEntity.ok(MoveOutputModel())
+                            is Failure -> when (gameMakeMoveResult.value) {
+                                is GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem(
+                                    type = Problem.userIsNotTheHost,
+                                    title = "User does not belong to this game",
+                                    status = 403,
+                                    detail = "The user with id <$userId> is not in the game with id <$id>",
                                     instance = Uris.Games.makeMove(id)
                                 ).toResponse()
 
-                                is MakeMoveError.NotYourTurn -> Problem(
-                                    type = Problem.notYourNotTurn,
-                                    title = "Not your turn",
-                                    status = 400,
-                                    detail = "Is player <${responseEntity.value.error.player}> turn",
+                                GameMakeMoveError.GameNotFound -> Problem(
+                                    type = Problem.gameNotFound,
+                                    title = "Game not found",
+                                    status = 404,
+                                    detail = "The game with id <$id> was not found",
                                     instance = Uris.Games.makeMove(id)
                                 ).toResponse()
 
-                                is MakeMoveError.PositionTaken -> {
-                                    val col = responseEntity.value.error.square.col.toString()
-                                    val row = responseEntity.value.error.square.row.toString()
-                                    Problem(
-                                        type = Problem.positionTaken,
-                                        title = "Position taken",
-                                        status = 400,
-                                        detail = "The position <$col,$row> already taken",
-                                        instance = Uris.Games.makeMove(id)
-                                    ).toResponse()
-                                }
+                                GameMakeMoveError.VariantNotFound -> Problem(
+                                    type = Problem.gameVariantNotFound,
+                                    title = "Game variant not found",
+                                    status = 404,
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
 
-                                is MakeMoveError.InvalidPosition -> {
-                                    val col = responseEntity.value.error.square.col.toString()
-                                    val row = responseEntity.value.error.square.row.toString()
-                                    Problem(
-                                        type = Problem.invalidMove,
-                                        title = "Invalid position",
-                                        status = 400,
-                                        detail = "The position <$col,$row> is invalid",
-                                        instance = Uris.Games.makeMove(id)
-                                    ).toResponse()
+                                is GameMakeMoveError.MoveNotValid -> {
+                                    when (gameMakeMoveResult.value.error) {
+                                        is MakeMoveError.GameOver -> Problem(
+                                            type = Problem.gameOver,
+                                            title = "Game is over",
+                                            status = 400,
+                                            detail = "The game is already over",
+                                            instance = Uris.Games.makeMove(id)
+                                        ).toResponse()
+
+                                        is MakeMoveError.NotYourTurn -> Problem(
+                                            type = Problem.notYourNotTurn,
+                                            title = "Not your turn",
+                                            status = 400,
+                                            detail = "Is player <${gameMakeMoveResult.value.error.player}> turn",
+                                            instance = Uris.Games.makeMove(id)
+                                        ).toResponse()
+
+                                        is MakeMoveError.PositionTaken -> {
+                                            val col = gameMakeMoveResult.value.error.square.col.toString()
+                                            val row = gameMakeMoveResult.value.error.square.row.toString()
+                                            Problem(
+                                                type = Problem.positionTaken,
+                                                title = "Position taken",
+                                                status = 400,
+                                                detail = "The position <$col,$row> already taken",
+                                                instance = Uris.Games.makeMove(id)
+                                            ).toResponse()
+                                        }
+
+                                        is MakeMoveError.InvalidPosition -> {
+                                            val col = gameMakeMoveResult.value.error.square.col.toString()
+                                            val row = gameMakeMoveResult.value.error.square.row.toString()
+                                            Problem(
+                                                type = Problem.invalidMove,
+                                                title = "Invalid position",
+                                                status = 400,
+                                                detail = "The position <$col,$row> is invalid",
+                                                instance = Uris.Games.makeMove(id)
+                                            ).toResponse()
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
         }
     }
 
@@ -468,21 +494,19 @@ class GamesController(
     @GetMapping(Uris.Games.FIND_VARIANTS)
     @NotTested
     fun findVariants(): ResponseEntity<*> =
-       when (val res = gamesService.getVariants()){
-           is Success-> ResponseEntity.status(200).body(res)
-           is Failure-> {
-               when(res.value){
-                   is GetVariantsError.VariantsEmpty->
-                    Problem(
-                        type = Problem.variantsEmpty,
-                        title = "Variants empty",
-                        status = 404,
-                        detail = "There are no variants",
-                        instance = Uris.Games.findVariants()
-                    ).toResponse(
-                    )
-               }
-           }
-       }
-
+        when (val res = gamesService.getVariants()) {
+            is Success -> ResponseEntity.status(200).body(res)
+            is Failure -> {
+                when (res.value) {
+                    is GetVariantsError.VariantsEmpty ->
+                        Problem(
+                            type = Problem.variantsEmpty,
+                            title = "Variants empty",
+                            status = 404,
+                            detail = "There are no variants",
+                            instance = Uris.Games.findVariants()
+                        ).toResponse()
+                }
+            }
+        }
 }

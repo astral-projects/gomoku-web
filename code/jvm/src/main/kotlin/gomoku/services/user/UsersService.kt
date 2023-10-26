@@ -1,16 +1,16 @@
 package gomoku.services.user
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
 import gomoku.domain.PaginatedResult
-import gomoku.domain.PositiveValue
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
+import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Token
-import gomoku.domain.user.Email
-import gomoku.domain.user.Password
 import gomoku.domain.user.User
 import gomoku.domain.user.UserRankInfo
-import gomoku.domain.user.Username
 import gomoku.domain.user.UsersDomain
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Password
+import gomoku.domain.user.components.Username
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.NotTested
 import gomoku.utils.failure

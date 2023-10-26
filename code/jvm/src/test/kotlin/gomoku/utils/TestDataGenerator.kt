@@ -1,8 +1,8 @@
 package gomoku.utils
 
-import gomoku.domain.user.Email
-import gomoku.domain.user.Password
-import gomoku.domain.user.Username
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Password
+import gomoku.domain.user.components.Username
 import kotlin.math.abs
 import kotlin.random.Random
 
