@@ -1,6 +1,6 @@
 package gomoku.services.user
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import gomoku.domain.user.User
 import gomoku.utils.Either
 

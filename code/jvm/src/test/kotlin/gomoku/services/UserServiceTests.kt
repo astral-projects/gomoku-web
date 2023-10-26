@@ -1,7 +1,7 @@
 package gomoku.services
 
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.PositiveValue
+import gomoku.domain.components.NonNegativeValue
+import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig

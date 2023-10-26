@@ -1,10 +1,12 @@
 package gomoku.domain.game.variant
 
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.errors.BoardMakeMoveResult
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.board.Board
+import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.errors.BoardMakeMoveResult
+import gomoku.domain.game.variant.config.VariantConfig
 
 /**
  * Represents a game variant that defines the rules and characteristics of a game.
@@ -35,18 +37,11 @@ interface Variant {
 
     /**
      * Check if the game is won based on the last move made.
-     * @param board The game board.
+     * @param board The game board that is currently being played.
      * @param square The square where the last move was made.
      * @return true if the game is won, false otherwise.
      */
     fun checkWin(board: Board, square: Square): Boolean
-
-    /**
-     * Check if the game is finished, which may include a win, a draw, or other conditions specific to the variant.
-     * @param board The game board.
-     * @return true if the game is finished, false otherwise.
-     */
-    fun isFinished(board: Board): Boolean
 
     /**
      * Gets the initial game board for this variant.

@@ -1,8 +1,10 @@
 package gomoku.domain.user
 
-import gomoku.domain.Id
-import gomoku.domain.errors.GettingUserResult
-import gomoku.domain.errors.InvalidUserError
+import gomoku.domain.components.GettingUserResult
+import gomoku.domain.components.Id
+import gomoku.domain.components.UserError
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Username
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
@@ -24,9 +26,9 @@ class User private constructor(
             passwordValidation: PasswordValidationInfo
         ): GettingUserResult {
             return when {
-                username.value.isBlank() -> Failure(InvalidUserError.UserIsBlank)
+                username.value.isBlank() -> Failure(UserError.UserIsBlank)
                 username.value.length !in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH ->
-                    Failure(InvalidUserError.InvalidLength)
+                    Failure(UserError.InvalidLength)
                 else -> Success(User(id, username, email, passwordValidation))
             }
         }

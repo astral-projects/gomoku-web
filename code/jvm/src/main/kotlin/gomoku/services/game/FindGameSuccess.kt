@@ -1,6 +1,6 @@
 package gomoku.services.game
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 
 /**
  * Represents a successful operation result when finding a game.

@@ -1,7 +1,7 @@
 package gomoku.services.game
 
-import gomoku.domain.Id
 import gomoku.domain.SystemInfo
+import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GamePoints
@@ -10,7 +10,7 @@ import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.variant.Variant
-import gomoku.domain.game.variant.VariantConfig
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.repository.GamesRepository
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.Failure
@@ -257,7 +257,7 @@ class GamesService(
             val gamesRepository = it.gamesRepository
             val variants = gamesRepository.getVariants()
             if (variants.isEmpty()) {
-               return@run failure(GetVariantsError.VariantsEmpty)
+                return@run failure(GetVariantsError.VariantsEmpty)
             }
             success(variants)
         }

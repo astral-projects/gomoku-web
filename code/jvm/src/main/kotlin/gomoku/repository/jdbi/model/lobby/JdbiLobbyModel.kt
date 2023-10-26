@@ -1,6 +1,6 @@
 package gomoku.repository.jdbi.model.lobby
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.jdbi.model.JdbiModel
 import gomoku.utils.get

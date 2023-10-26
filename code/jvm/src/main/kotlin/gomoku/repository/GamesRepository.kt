@@ -1,11 +1,11 @@
 package gomoku.repository
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.Game
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.VariantConfig
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.lobby.Lobby
 

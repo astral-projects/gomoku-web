@@ -1,6 +1,6 @@
 package gomoku.repository.jdbi.model
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import gomoku.utils.get
 
 class JdbiIdModel(

@@ -1,6 +1,6 @@
 package gomoku
 
-import gomoku.domain.PositiveValue
+import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor

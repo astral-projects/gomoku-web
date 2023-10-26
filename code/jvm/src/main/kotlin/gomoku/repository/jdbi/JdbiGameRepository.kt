@@ -1,8 +1,8 @@
 package gomoku.repository.jdbi
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.Board
@@ -10,7 +10,7 @@ import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.VariantConfig
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
@@ -46,7 +46,7 @@ class JdbiGameRepository(
             .execute() == 1
     }
 
-    //TODO(id?)
+    // TODO(id?)
     override fun getVariantByName(variantName: VariantName): Id {
         return handle.createQuery("select id from dbo.GameVariants where name = :variantName")
             .bind("variantName", variantName)

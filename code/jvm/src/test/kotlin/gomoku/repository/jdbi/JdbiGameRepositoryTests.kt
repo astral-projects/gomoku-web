@@ -1,7 +1,7 @@
 package gomoku.repository.jdbi
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardWin
@@ -9,6 +9,7 @@ import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
+import gomoku.domain.game.board.play
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.repository.TestVariant
@@ -304,8 +305,8 @@ class JdbiGameRepositoryTests {
         assertSame(game2.state, GameState.IN_PROGRESS)
 
         // when: updating game 1 with a new board
-        val move = Square(Column('a'), Row(1))
-        val newBoard = board.play(move, variant).get()
+        val move = Square(Column('a').get(), Row(1).get())
+        val newBoard = board.play(variant, move).get()
         assertNotNull(newBoard)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 
@@ -317,7 +318,7 @@ class JdbiGameRepositoryTests {
         // when: updating game 1 with a board that is won
         val boardWin = BoardWin(
             moves = newBoard.grid,
-            winner = Player.w
+            winner = Player.W
         )
         val updatedGameWin = repoGames.updateGame(game1.id, boardWin)
 

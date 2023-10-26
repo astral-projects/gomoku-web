@@ -1,6 +1,6 @@
 package gomoku.domain.game
 
-import gomoku.domain.NonNegativeValue
+import gomoku.domain.components.NonNegativeValue
 
 data class GamePoints(val onFinish: GamePointsOnWin, val onDraw: GamePointsOnDraw, val onForfeitOrTimer: GamePointsOnForfeitOrTimer)
 data class GamePointsOnWin(val winner: NonNegativeValue, val loser: NonNegativeValue)

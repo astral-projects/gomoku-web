@@ -1,12 +1,10 @@
-package gomoku.domain
+package gomoku.domain.components
 
-import gomoku.domain.errors.GettingIdResult
-import gomoku.domain.errors.InvalidIdError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
 /**
- * Provides a generic identifier container for domain objects.
+ * Component that provides a generic identifier container for domain objects.
  */
 class Id private constructor(val value: Int) : Component {
 
@@ -15,7 +13,7 @@ class Id private constructor(val value: Int) : Component {
             return if (value > 0) {
                 Success(Id(value))
             } else {
-                Failure(InvalidIdError.InvalidId(value))
+                Failure(IdError.InvalidIdError(value))
             }
         }
     }
@@ -29,9 +27,7 @@ class Id private constructor(val value: Int) : Component {
         return true
     }
 
-    override fun hashCode(): Int {
-        return value
-    }
+    override fun hashCode(): Int = value
 
     override fun toString() = "$value"
 }

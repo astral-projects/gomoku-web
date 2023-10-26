@@ -1,15 +1,15 @@
 package gomoku.http.controllers
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
-import gomoku.domain.PositiveValue
-import gomoku.domain.errors.InvalidPasswordError
-import gomoku.domain.errors.InvalidUsernameError
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
+import gomoku.domain.components.PasswordError
+import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.UsernameError
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.domain.user.Email
-import gomoku.domain.user.Password
 import gomoku.domain.user.User
-import gomoku.domain.user.Username
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Password
+import gomoku.domain.user.components.Username
 import gomoku.http.Uris
 import gomoku.http.media.Problem
 import gomoku.http.model.IdOutputModel
@@ -60,7 +60,7 @@ class UsersController(
             is Success -> {
                 when (val validUsername = Username(input.username)) {
                     is Failure -> when (validUsername.value) {
-                        InvalidUsernameError.BlankUsername -> Problem(
+                        UsernameError.BlankUsername -> Problem(
                             type = Problem.blankUsername,
                             title = "Username blank",
                             status = 400,
@@ -68,7 +68,7 @@ class UsersController(
                             instance = Uris.Users.register()
                         ).toResponse()
 
-                        InvalidUsernameError.InvalidLength -> Problem(
+                        UsernameError.InvalidLength -> Problem(
                             type = Problem.invalidUsernameLength,
                             title = "Username invalid",
                             status = 400,
@@ -80,7 +80,7 @@ class UsersController(
                     is Success -> {
                         when (val validPassword = Password(input.password)) {
                             is Failure -> when (validPassword.value) {
-                                InvalidPasswordError.PasswordIsEmpty -> Problem(
+                                PasswordError.PasswordIsEmptyOrBlanck -> Problem(
                                     type = Problem.passwordIsEmpty,
                                     title = "Password empty",
                                     status = 400,
@@ -88,7 +88,7 @@ class UsersController(
                                     instance = Uris.Users.register()
                                 ).toResponse()
 
-                                InvalidPasswordError.PasswordNotSafe -> Problem(
+                                PasswordError.PasswordNotSafe -> Problem(
                                     type = Problem.insecurePassword,
                                     title = "Password not safe",
                                     status = 400,
@@ -144,7 +144,7 @@ class UsersController(
     ): ResponseEntity<*> {
         return when (val validUsername = Username(input.username)) {
             is Failure -> when (validUsername.value) {
-                InvalidUsernameError.BlankUsername -> Problem(
+                UsernameError.BlankUsername -> Problem(
                     type = Problem.blankUsername,
                     title = "Username is blank",
                     status = 400,
@@ -152,7 +152,7 @@ class UsersController(
                     instance = Uris.Users.login()
                 ).toResponse()
 
-                InvalidUsernameError.InvalidLength -> Problem(
+                UsernameError.InvalidLength -> Problem(
                     type = Problem.invalidUsernameLength,
                     title = "Username invalid",
                     status = 400,
@@ -164,7 +164,7 @@ class UsersController(
             is Success -> {
                 when (val validPassword = Password(input.password)) {
                     is Failure -> when (validPassword.value) {
-                        InvalidPasswordError.PasswordIsEmpty -> Problem(
+                        PasswordError.PasswordIsEmptyOrBlanck -> Problem(
                             type = Problem.passwordIsEmpty,
                             title = "Password is empty",
                             status = 400,
@@ -172,7 +172,7 @@ class UsersController(
                             instance = Uris.Users.login()
                         ).toResponse()
 
-                        InvalidPasswordError.PasswordNotSafe -> Problem(
+                        PasswordError.PasswordNotSafe -> Problem(
                             type = Problem.insecurePassword,
                             title = "Password not safe",
                             status = 400,

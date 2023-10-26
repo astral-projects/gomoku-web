@@ -1,10 +1,9 @@
 package gomoku.services.game
 
-import gomoku.domain.Id
-import gomoku.domain.errors.MakeMoveError
+import gomoku.domain.components.Id
 import gomoku.domain.game.Game
+import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.Variant
 import gomoku.utils.Either
 
 sealed class GameCreationError {
@@ -64,8 +63,7 @@ sealed class LobbyDeleteError {
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>
 
-
 sealed class GetVariantsError {
     object VariantsEmpty : GetVariantsError()
 }
-typealias GetVariantsResult= Either<GetVariantsError, List<GameVariant>>
+typealias GetVariantsResult = Either<GetVariantsError, List<GameVariant>>

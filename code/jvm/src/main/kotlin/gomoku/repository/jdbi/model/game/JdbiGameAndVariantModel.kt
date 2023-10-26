@@ -1,6 +1,6 @@
 package gomoku.repository.jdbi.model.game
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
 import gomoku.domain.game.variant.GameVariant

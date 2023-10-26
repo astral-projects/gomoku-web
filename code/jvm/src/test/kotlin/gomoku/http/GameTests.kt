@@ -1,25 +1,25 @@
-//package gomoku.http
+// package gomoku.http
 //
-//import gomoku.domain.game.variant.config.VariantName
-//import gomoku.domain.user.Email
-//import gomoku.domain.user.Password
-//import gomoku.domain.user.Username
-//import gomoku.http.model.IdOutputModel
-//import gomoku.http.model.token.UserTokenCreateOutputModel
-//import gomoku.services.GameServicesTests.Companion.createGamesService
-//import gomoku.services.game.FindGameSuccess
-//import gomoku.utils.TestClock
-//import gomoku.utils.TestDataGenerator.newTestEmail
-//import gomoku.utils.TestDataGenerator.newTestPassword
-//import gomoku.utils.TestDataGenerator.newTestUserName
-//import org.springframework.boot.test.context.SpringBootTest
-//import org.springframework.boot.test.web.server.LocalServerPort
-//import org.springframework.test.web.reactive.server.WebTestClient
-//import kotlin.test.Test
-//import kotlin.test.assertNotNull
+// import gomoku.domain.game.variant.config.VariantName
+// import gomoku.domain.user.components.Email
+// import gomoku.domain.user.components.Password
+// import gomoku.domain.user.components.Username
+// import gomoku.http.model.IdOutputModel
+// import gomoku.http.model.token.UserTokenCreateOutputModel
+// import gomoku.services.GameServicesTests.Companion.createGamesService
+// import gomoku.services.game.FindGameSuccess
+// import gomoku.utils.TestClock
+// import gomoku.utils.TestDataGenerator.newTestEmail
+// import gomoku.utils.TestDataGenerator.newTestPassword
+// import gomoku.utils.TestDataGenerator.newTestUserName
+// import org.springframework.boot.test.context.SpringBootTest
+// import org.springframework.boot.test.web.server.LocalServerPort
+// import org.springframework.test.web.reactive.server.WebTestClient
+// import kotlin.test.Test
+// import kotlin.test.assertNotNull
 //
-//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//class GameTests {
+// @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// class GameTests {
 //
 //    @LocalServerPort
 //    var port: Int = 0
@@ -153,4 +153,4 @@
 //            .returnResult()
 //            .responseBody!!
 //    }
-//}
+// }

@@ -1,6 +1,6 @@
 package gomoku.domain.user
 
-import gomoku.domain.PositiveValue
+import gomoku.domain.components.PositiveValue
 import kotlin.time.Duration
 
 data class UsersDomainConfig(

@@ -1,7 +1,9 @@
 package gomoku.domain.user
 
-import gomoku.domain.Id
-import gomoku.domain.NonNegativeValue
+import gomoku.domain.components.Id
+import gomoku.domain.components.NonNegativeValue
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Username
 
 data class UserRankInfo(
     val id: Id,

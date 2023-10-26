@@ -1,10 +1,10 @@
 package gomoku.repository.jdbi.model.user
 
-import gomoku.domain.Id
-import gomoku.domain.user.Email
+import gomoku.domain.components.Id
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import gomoku.domain.user.Username
+import gomoku.domain.user.components.Email
+import gomoku.domain.user.components.Username
 import gomoku.repository.jdbi.model.JdbiModel
 import gomoku.utils.get
 import org.jdbi.v3.core.mapper.reflect.ColumnName

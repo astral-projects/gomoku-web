@@ -1,6 +1,6 @@
 package gomoku.domain.game.variant
 
-import gomoku.domain.Id
+import gomoku.domain.components.Id
 import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
 import gomoku.domain.game.variant.config.VariantName

@@ -1,10 +1,11 @@
-package gomoku.domain
+package gomoku.domain.components
 
-import gomoku.domain.errors.NonNegativeValueError
-import gomoku.domain.errors.NonNegativeValueResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
+/**
+ * Component that provides a generic non-negative value container for domain objects.
+ */
 class NonNegativeValue private constructor(val value: Int) : Component {
 
     companion object {
@@ -26,9 +27,7 @@ class NonNegativeValue private constructor(val value: Int) : Component {
         return true
     }
 
-    override fun hashCode(): Int {
-        return value
-    }
+    override fun hashCode(): Int = value
 
     override fun toString() = "$value"
 }
