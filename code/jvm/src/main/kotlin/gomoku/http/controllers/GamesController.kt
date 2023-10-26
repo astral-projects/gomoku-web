@@ -19,6 +19,7 @@ import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.MoveOutputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
+import gomoku.services.game.FindGameSuccess
 import gomoku.services.game.GameCreationError
 import gomoku.services.game.GameDeleteError
 import gomoku.services.game.GameMakeMoveError
@@ -113,7 +114,18 @@ class GamesController(
 
             is Success ->
                 when (val result = gamesService.findGame(variant.value, userId)) {
-                    is Success -> ResponseEntity.status(result.value.status).body(result.value.toOutput())
+                    is Success -> when (result.value) {
+                        is FindGameSuccess.LobbyCreated -> ResponseEntity
+                            .status(201)
+                            .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
+
+                        is FindGameSuccess.GameMatch -> ResponseEntity.status(201)
+                            .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
+
+                        is FindGameSuccess.StillInLobby -> ResponseEntity.status(200)
+                            .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
+                    }
+
                     is Failure -> when (result.value) {
                         is GameCreationError.UserAlreadyInGame -> Problem(
                             type = Problem.userAlreadyInGame,

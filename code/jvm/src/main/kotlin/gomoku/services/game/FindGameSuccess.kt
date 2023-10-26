@@ -8,7 +8,20 @@ import gomoku.domain.components.Id
  * @param id The id of the game created or the lobby created.
  * @param message A message describing the result.
  */
-data class FindGameSuccess(val status:Int, val id: Id, val message: String){
-    fun toOutput() = FindGameSuccessOutput(id, message)
+
+sealed class FindGameSuccess(val id: Id, val message: String) {
+    class GameMatch(gameId: Id) : FindGameSuccess(
+        gameId,
+        "Joined the game successfully with the id=${gameId.value}"
+    )
+
+    class LobbyCreated(lobbyId: Id) : FindGameSuccess(
+        lobbyId,
+        "Lobby created successfully with the id=${lobbyId.value}"
+    )
+
+    class StillInLobby(lobbyId: Id) : FindGameSuccess(
+        lobbyId,
+        "Still waiting in the lobby with the id=${lobbyId.value}"
+    )
 }
- data class FindGameSuccessOutput(val id: Id, val message: String)

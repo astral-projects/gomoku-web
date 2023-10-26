@@ -75,7 +75,7 @@ class GamesService(
             val game = gamesRepository.findIfUserIsInGame(userId)
             val lobbyWaiting = gamesRepository.checkIfUserIsInLobby(userId)
             if (lobbyWaiting != null) {
-                return@run success(FindGameSuccess(200,lobbyWaiting.lobbyId,"Waiting in lobby ${lobbyWaiting.lobbyId}"))
+                return@run success(FindGameSuccess.StillInLobby(lobbyWaiting.lobbyId))
             }
             if (game == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
@@ -92,7 +92,7 @@ class GamesService(
                         )
                         when (gameId) {
                             null -> failure(GameCreationError.ErrorCreatingGame)
-                            else -> success(FindGameSuccess(201,gameId, "Joining game"))
+                            else -> success(FindGameSuccess.GameMatch(gameId))
                         }
                     }
                 } else {
@@ -100,7 +100,7 @@ class GamesService(
                     //    ?: failure(GameCreationError.UserAlreadyNotInLobby)
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success(FindGameSuccess(201,lobbyId, "Waiting in lobby"))
+                        else -> success(FindGameSuccess.LobbyCreated(lobbyId))
                     }
                 }
             } else {
