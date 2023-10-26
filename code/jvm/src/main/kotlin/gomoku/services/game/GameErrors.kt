@@ -4,7 +4,6 @@ import gomoku.domain.Id
 import gomoku.domain.errors.MakeMoveError
 import gomoku.domain.game.Game
 import gomoku.domain.game.variant.GameVariant
-import gomoku.domain.game.variant.Variant
 import gomoku.utils.Either
 
 sealed class GameCreationError {
@@ -50,8 +49,7 @@ sealed class GameMakeMoveError {
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
 
 sealed class GameWaitError {
-    object UserIsInLobby : GameWaitError()
-
+    object UserDoesntBelongToAnyGameOrLobby : GameWaitError()
     object UserDoesNotBelongToThisLobby : GameWaitError()
 }
 

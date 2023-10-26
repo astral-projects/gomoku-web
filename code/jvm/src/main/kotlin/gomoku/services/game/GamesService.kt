@@ -9,6 +9,7 @@ import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.moves.move.Square
+import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.VariantConfig
 import gomoku.repository.GamesRepository
@@ -74,7 +75,7 @@ class GamesService(
             val game = gamesRepository.findIfUserIsInGame(userId)
             val lobbyWaiting = gamesRepository.checkIfUserIsInLobby(userId)
             if (lobbyWaiting != null) {
-                return@run failure(GameCreationError.UserAlreadyInLobby(lobbyWaiting.lobbyId))
+                return@run success(FindGameSuccess(200,lobbyWaiting.lobbyId,"Waiting in lobby ${lobbyWaiting.lobbyId}"))
             }
             if (game == null) {
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
@@ -91,15 +92,15 @@ class GamesService(
                         )
                         when (gameId) {
                             null -> failure(GameCreationError.ErrorCreatingGame)
-                            else -> success(FindGameSuccess(gameId, "Joining game"))
+                            else -> success(FindGameSuccess(201,gameId, "Joining game"))
                         }
                     }
                 } else {
-                    gamesRepository.checkIfUserIsInLobby(userId)
-                        ?: failure(GameCreationError.UserAlreadyNotInLobby)
+                  //  gamesRepository.checkIfUserIsInLobby(userId)
+                    //    ?: failure(GameCreationError.UserAlreadyNotInLobby)
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.VariantNotFound)
-                        else -> success(FindGameSuccess(lobbyId, "Waiting in lobby"))
+                        else -> success(FindGameSuccess(201,lobbyId, "Waiting in lobby"))
                     }
                 }
             } else {
@@ -230,16 +231,15 @@ class GamesService(
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
             val lobby = gamesRepository.checkIfUserIsInLobby(userId)
-            //  ?: return@run failure(GameWaitError.UserIsNotInLobby)
             if (lobby != null) {
                 if (lobby.lobbyId != lobbyId) {
                     return@run failure(GameWaitError.UserDoesNotBelongToThisLobby)
                 }
-                return@run failure(GameWaitError.UserIsInLobby)
+                return@run success("Waiting in lobby ${lobby.lobbyId}")
             }
             // TODO(Try a better name )
             val foundLobby = gamesRepository.waitForGame(lobbyId, userId)
-                ?: return@run failure(GameWaitError.UserDoesNotBelongToThisLobby)
+                ?: return@run failure(GameWaitError.UserDoesntBelongToAnyGameOrLobby)
             success(foundLobby.value.toString())
         }
 
@@ -253,12 +253,11 @@ class GamesService(
         }
 
     fun getVariants(): GetVariantsResult =
-        transactionManager.run {
-            val gamesRepository = it.gamesRepository
-            val variants = gamesRepository.getVariants()
+        transactionManager.run {transaction->
+            val gamesRepository = transaction.gamesRepository
             if (variants.isEmpty()) {
                return@run failure(GetVariantsError.VariantsEmpty)
             }
-            success(variants)
+            success(gameVariantMap.map { GameVariant(it.key, it.value.config.name, it.value.config.openingRule, it.value.config.boardSize) })
         }
 }

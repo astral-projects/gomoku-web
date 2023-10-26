@@ -61,6 +61,7 @@ data class Problem(
         val userIsInLobby = URI("${baseUrl}user-is-in-lobby")
         val lobbyNotFound = URI("${baseUrl}lobby-not-found")
         val variantsEmpty = URI("${baseUrl}variant-empty")
+        val userDoesntBelongToAnyGameOrLobby= URI("${baseUrl}user-doesnt-belong-to-any-game")
         // TODO(ADD FILES gameOVer, notYourNotTurn, gameIsNotInProgress)
     }
 }

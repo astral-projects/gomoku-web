@@ -111,7 +111,7 @@ class GamesController(
 
             is Success ->
                 when (val result = gamesService.findGame(variant.value, userId)) {
-                    is Success -> ResponseEntity.status(201).body(result.value)
+                    is Success -> ResponseEntity.status(result.value.status).body(result.value.toOutput())
                     is Failure -> when (result.value) {
                         is GameCreationError.UserAlreadyInGame -> Problem(
                             type = Problem.userAlreadyInGame,
@@ -421,13 +421,14 @@ class GamesController(
                             instance = Uris.Games.exitGame(id)
                         ).toResponse()
 
-                        GameWaitError.UserIsInLobby -> Problem(
-                            type = Problem.userIsInLobby,
-                            title = "User is waiting in lobby",
+                        GameWaitError.UserDoesntBelongToAnyGameOrLobby -> Problem(
+                            type = Problem.userDoesntBelongToAnyGameOrLobby,
+                            title = "User doesnt belong to any game or lobby",
                             status = 403,
-                            detail = "The user with id <$userId> is waiting in lobby with id <$id>. Try again later",
+                            detail = "The user with id <$userId> is not in any game or lobby",
                             instance = Uris.Games.exitGame(id)
                         ).toResponse()
+
                     }
                 }
         }
