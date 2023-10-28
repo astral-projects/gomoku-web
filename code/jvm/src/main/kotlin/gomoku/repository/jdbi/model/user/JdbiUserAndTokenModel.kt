@@ -32,7 +32,7 @@ class JdbiUserAndTokenModel(
             username = Username(username).get(),
             email = Email(email).get(),
             passwordValidation = PasswordValidationInfo(passwordValidation)
-        ).get() to Token(
+        ) to Token(
             tokenValidationInfo = TokenValidationInfo(tokenValidation),
             userId = Id(id).get(),
             createdAt = Instant.fromEpochSeconds(createdAt),

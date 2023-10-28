@@ -30,7 +30,7 @@ class JdbiGameRepository(
 
     override fun getGameById(gameId: Id): Game? =
         handle.createQuery(
-            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
+            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id for update"
         )
             .bind("id", gameId.value)
             .mapTo<JdbiGameAndVariantModel>()
@@ -236,7 +236,7 @@ class JdbiGameRepository(
             is BoardDraw -> JdbiBoardDrawModel(grid = board.grid)
             is BoardRun -> JdbiBoardRunModel(
                 grid = board.grid,
-                turn = board.turn!!
+                turn = board.turn ?: throw IllegalStateException("BoardRun must have a turn")
             )
         }
         val mapper = jacksonObjectMapper()

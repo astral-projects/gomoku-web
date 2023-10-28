@@ -1,9 +1,7 @@
 package gomoku.domain.components
 
-import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
-import gomoku.domain.user.User
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
@@ -31,19 +29,15 @@ typealias PositiveValueResult = Either<PositiveValueError, PositiveValue>
 
 sealed class UsernameError {
     object InvalidLength : UsernameError()
+    object EmptyUsername : UsernameError()
     object BlankUsername : UsernameError()
 }
 typealias GettingUsernameResult = Either<UsernameError, Username>
 
-sealed class UserError {
-    object UserIsBlank : UserError()
-    object InvalidLength : UserError()
-}
-typealias GettingUserResult = Either<UserError, User>
-
 sealed class PasswordError {
     object PasswordNotSafe : PasswordError()
-    object PasswordIsEmptyOrBlanck : PasswordError()
+    object PasswordBlank : PasswordError()
+    object PasswordIsEmpty : PasswordError()
 }
 typealias GettingPasswordResult = Either<PasswordError, Password>
 
@@ -56,9 +50,3 @@ sealed class ColumnError {
     data class InvalidColumn(val value: Char) : ColumnError()
 }
 typealias GettingColumnResult = Either<ColumnError, Column>
-
-sealed class SquareError {
-    class ColumnErrorType(val error: ColumnError) : SquareError()
-    class RowErrorType(val error: RowError) : SquareError()
-}
-typealias GettingSquareResult = Either<SquareError, Square>

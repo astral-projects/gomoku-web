@@ -9,7 +9,7 @@ import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
 import gomoku.utils.NotTested
@@ -85,14 +85,14 @@ interface UsersRepository {
      * @return the user's statistic information in a paginated result.
      * The results are ordered by the user's rank.
      */
-    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo>
+    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo>
 
     /**
      * Retrieves single user statistic information.
      * @param userId the id of the user to retrieve.
      * @return the user or null if no such user exists.
      */
-    fun getUserStats(userId: Id): UserRankInfo?
+    fun getUserStats(userId: Id): UserStatsInfo?
 
     /**
      * Edits information in a user.

@@ -2,7 +2,7 @@ package gomoku.repository.jdbi.model.user
 
 import gomoku.domain.components.Id
 import gomoku.domain.components.NonNegativeValue
-import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
 import gomoku.repository.jdbi.model.JdbiModel
@@ -21,9 +21,9 @@ class JdbiUserAndStatsModel(
     val wins: Int,
     @ColumnName("games_drawn")
     val draws: Int
-) : JdbiModel<UserRankInfo> {
-    override fun toDomainModel(): UserRankInfo =
-        UserRankInfo(
+) : JdbiModel<UserStatsInfo> {
+    override fun toDomainModel(): UserStatsInfo =
+        UserStatsInfo(
             id = Id(id).get(),
             username = Username(username).get(),
             email = Email(email).get(),

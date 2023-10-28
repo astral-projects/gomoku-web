@@ -9,7 +9,7 @@ import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
 import gomoku.repository.UsersRepository
@@ -132,7 +132,7 @@ class JdbiUsersRepository(
             .execute()
             .let { it == 1 }
 
-    override fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> {
+    override fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo> {
         val totalItems = handle.createQuery("select count(*) from dbo.Statistics")
             .mapTo<Int>()
             .single()
@@ -153,7 +153,7 @@ class JdbiUsersRepository(
         return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
     }
 
-    override fun getUserStats(userId: Id): UserRankInfo? =
+    override fun getUserStats(userId: Id): UserStatsInfo? =
         handle.createQuery(
             """
                 select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won, games_drawn

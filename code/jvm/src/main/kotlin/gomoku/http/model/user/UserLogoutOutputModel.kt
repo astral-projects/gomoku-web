@@ -1,5 +1,5 @@
 package gomoku.http.model.user
 
-class UserLogoutOutputModel(
-    val message: String = "User logged out"
+data class UserLogoutOutputModel(
+    val message: String = "User logged out successfully, token was revoked."
 )

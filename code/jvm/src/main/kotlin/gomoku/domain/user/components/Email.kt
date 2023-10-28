@@ -14,7 +14,7 @@ class Email private constructor(
 ) : Component {
 
     companion object {
-        private const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
+        const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
 
         operator fun invoke(value: String): GettingEmailResult = when {
             value.matches(emailFormat.toRegex()) -> Success(Email(value))
