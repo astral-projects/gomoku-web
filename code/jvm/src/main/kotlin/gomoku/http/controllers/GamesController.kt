@@ -17,18 +17,13 @@ import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
-import gomoku.http.model.lobby.LobbyExitOutputModel
 import gomoku.services.game.FindGameSuccess
 import gomoku.services.game.GameCreationError
 import gomoku.services.game.GameDeleteError
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GameUpdateError
-import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
 import gomoku.services.game.GettingGameError
-import gomoku.services.game.LobbyDeleteError
-import gomoku.services.game.WaitForGameSuccess.GameMatch
-import gomoku.services.game.WaitForGameSuccess.WaitingInLobby
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -107,13 +102,7 @@ class GamesController(
                         instance = instance
                     )
 
-                    is GameCreationError.UserAlreadyInLobby -> Problem.userAlreadyInLobby(
-                        userId = userId,
-                        lobbyId = gameCreationResult.value.lobbyId,
-                        instance = instance
-                    )
-
-                    is GameCreationError.UserNotInLobby -> Problem.userNotInLobby(
+                    is GameCreationError.UserAlreadyLeaveTheLobby -> Problem.userNotInLobby(
                         userId = userId,
                         instance = instance,
                         lobbyId = gameCreationResult.value.lobbyId
@@ -302,77 +291,6 @@ class GamesController(
 
                     GameUpdateError.GameAlreadyFinished -> Problem.gameAlreadyFinished(
                         gameId = gameIdResult.value,
-                        instance = instance
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Waits for a game in the lobby with the given id.
-     * @param id the id of the lobby.
-     * @param user the authenticated user.
-     */
-    @GetMapping(Uris.Games.GET_IS_IN_LOBBY)
-    @NotTested
-    fun waitingInLobby(
-        @Valid
-        @Range(min = 1)
-        @PathVariable id: Int,
-        user: AuthenticatedUser
-    ): ResponseEntity<*> {
-        val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
-        return when (val lobbyIdResult = Id(id)) {
-            is Failure -> Problem.invalidLobbyId(instance)
-            is Success -> when (val result = gamesService.waitForGame(lobbyIdResult.value, user.user.id)) {
-                is Success -> when (result.value) {
-                    is GameMatch -> ResponseEntity.ok(result.value)
-                    is WaitingInLobby -> ResponseEntity.ok(result.value)
-                }
-
-                is Failure -> when (result.value) {
-                    is GameWaitError.UserNotInLobby -> Problem.userNotInLobby(
-                        userId = userId,
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
-
-                    GameWaitError.UserNotInAnyGameOrLobby -> Problem.userNotInAnyGameOrLobby(
-                        userId = userId,
-                        instance = instance
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Exits the lobby with the given id.
-     * @param id the id of the lobby.
-     * @param user the authenticated user.
-     */
-    @DeleteMapping(Uris.Games.EXIT_LOBBY)
-    @NotTested
-    fun exitLobby(
-        @PathVariable id: Int,
-        user: AuthenticatedUser
-    ): ResponseEntity<*> {
-        val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
-        return when (val lobbyIdResult = Id(id)) {
-            is Failure -> Problem.invalidLobbyId(instance)
-            is Success -> when (val lobbyDeleteResult = gamesService.exitLobby(lobbyIdResult.value, userId)) {
-                is Success -> ResponseEntity.ok(LobbyExitOutputModel(lobbyIdResult.value.value))
-                is Failure -> when (lobbyDeleteResult.value) {
-                    LobbyDeleteError.LobbyNotFound -> Problem.lobbyNotFound(
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
-
-                    LobbyDeleteError.LobbyDeleteFailure -> Problem.lobbyDeleteFailure(
-                        lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
                 }

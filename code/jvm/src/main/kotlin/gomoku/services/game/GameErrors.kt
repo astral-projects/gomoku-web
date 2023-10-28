@@ -6,11 +6,10 @@ import gomoku.domain.game.errors.MakeMoveError
 import gomoku.utils.Either
 
 sealed class GameCreationError {
-    class UserAlreadyInLobby(val lobbyId: Id) : GameCreationError()
     class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     object VariantNotFound : GameCreationError()
     object GameInsertFailure : GameCreationError()
-    class UserNotInLobby(val lobbyId: Id) : GameCreationError()
+    class UserAlreadyLeaveTheLobby(val lobbyId: Id) : GameCreationError()
     object LobbyInsertFailure : GameCreationError()
 }
 
