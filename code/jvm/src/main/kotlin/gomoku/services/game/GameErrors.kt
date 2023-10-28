@@ -7,11 +7,10 @@ import gomoku.domain.game.variant.GameVariant
 import gomoku.utils.Either
 
 sealed class GameCreationError {
-    class UserAlreadyInLobby(val lobbyId: Id) : GameCreationError()
     class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     object VariantNotFound : GameCreationError()
     object ErrorCreatingGame : GameCreationError()
-    object UserAlreadyNotInLobby : GameCreationError()
+    object UserAlreadyLeaveTheLobby : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, FindGameSuccess>
@@ -53,11 +52,9 @@ sealed class GameWaitError {
     object UserDoesNotBelongToThisLobby : GameWaitError()
 }
 
-// TODO: change to GameWaitResult
 typealias GameWaitResult = Either<GameWaitError, String>
 
 sealed class LobbyDeleteError {
-
     object LobbyNotFound : LobbyDeleteError()
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>

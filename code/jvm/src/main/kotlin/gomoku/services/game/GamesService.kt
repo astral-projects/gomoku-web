@@ -81,7 +81,7 @@ class GamesService(
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
-                        failure(GameCreationError.UserAlreadyNotInLobby)
+                        failure(GameCreationError.UserAlreadyLeaveTheLobby)
                     } else {
                         val gameId = gamesRepository.createGame(
                             variantId = variantId,
@@ -96,8 +96,6 @@ class GamesService(
                         }
                     }
                 } else {
-                  //  gamesRepository.checkIfUserIsInLobby(userId)
-                    //    ?: failure(GameCreationError.UserAlreadyNotInLobby)
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.VariantNotFound)
                         else -> success(FindGameSuccess.LobbyCreated(lobbyId))
@@ -237,10 +235,9 @@ class GamesService(
                 }
                 return@run success("Waiting in lobby ${lobby.lobbyId}")
             }
-            // TODO(Try a better name )
-            val foundLobby = gamesRepository.waitForGame(lobbyId, userId)
+            val isUserInGame = gamesRepository.waitForGame(lobbyId, userId)
                 ?: return@run failure(GameWaitError.UserDoesntBelongToAnyGameOrLobby)
-            success(foundLobby.value.toString())
+            success(isUserInGame.value.toString())
         }
 
     fun exitLobby(lobbyId: Id, userId: Id): LobbyDeleteResult =
@@ -253,8 +250,7 @@ class GamesService(
         }
 
     fun getVariants(): GetVariantsResult =
-        transactionManager.run {transaction->
-            val gamesRepository = transaction.gamesRepository
+        transactionManager.run {
             if (variants.isEmpty()) {
                 return@run failure(GetVariantsError.VariantsEmpty)
             }

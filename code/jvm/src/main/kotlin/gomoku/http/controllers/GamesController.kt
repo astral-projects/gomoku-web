@@ -135,15 +135,7 @@ class GamesController(
                             instance = Uris.Games.findGame()
                         ).toResponse()
 
-                        is GameCreationError.UserAlreadyInLobby -> Problem(
-                            type = Problem.userAlreadyInLobby,
-                            title = "User already in lobby",
-                            status = 404,
-                            detail = "The user with id <$userId> is already in the lobby with id <${result.value.lobbyId}>",
-                            instance = Uris.Games.findGame()
-                        ).toResponse()
-
-                        GameCreationError.UserAlreadyNotInLobby -> Problem(
+                        GameCreationError.UserAlreadyLeaveTheLobby -> Problem(
                             type = Problem.userAlreadyNotInLobby,
                             title = "User already not in lobby",
                             status = 404,
