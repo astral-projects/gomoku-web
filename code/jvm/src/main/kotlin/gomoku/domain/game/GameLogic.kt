@@ -19,9 +19,9 @@ import org.springframework.stereotype.Component
 typealias GameMakeMoveResult = Either<MakeMoveError, Game>
 
 /**
- * Defines the logic of the game.
- * @param variant - variant implementation to be used in the game.
- * @param clock - clock implementation.
+ * Represents the logic of the game.
+ * @param variant variant implementation to be used in the game.
+ * @param clock clock implementation.
  */
 @Component
 class GameLogic(
@@ -30,17 +30,14 @@ class GameLogic(
 ) {
 
     /**
-     * Player makes a move. The move is valid if the game is in progress and the position is empty.
-     * @param square - Square position on the board.
-     * @param game - game to which the user belongs.
-     * @param userId - user who makes a move.
-     * @return Game with new move.
+     * Makes a move on the board.
+     * @param game game to which the user belongs.
+     * @param userId user who makes a move.
+     * @param square square position on the board.
+     * @return the updated game if the move is valid, or an error otherwise.
      */
-    fun play(square: Square, game: Game, userId: Id): GameMakeMoveResult {
+    fun play(game: Game, userId: Id, square: Square): GameMakeMoveResult {
         val board = game.board
-        if (game.state != GameState.IN_PROGRESS) {
-            return failure(MakeMoveError.GameOver)
-        }
         if (board !is BoardRun) {
             return failure(MakeMoveError.GameOver)
         }
@@ -66,10 +63,9 @@ class GameLogic(
     }
 
     /**
-     * Function that returns a player based on the user id.
-     * If the user is the host, the player is white, otherwise the player is black.
-     *
-     * @param game - game to which the user belongs
+     * Converts a user id to a player on the board.
+     * White player is the host, black player is the guest.
+     * @param game game to which the user belongs.
      */
     private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.W else Player.B
 }

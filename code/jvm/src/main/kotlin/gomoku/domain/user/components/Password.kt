@@ -22,8 +22,10 @@ class Password private constructor(
         operator fun invoke(value: String): GettingPasswordResult {
             return if (!isSafe(value)) {
                 Failure(PasswordError.PasswordNotSafe)
-            } else if (value.isBlank() && value.isEmpty()) {
-                Failure(PasswordError.PasswordIsEmptyOrBlanck)
+            } else if (value.isBlank()) {
+                Failure(PasswordError.PasswordBlank)
+            } else if (value.isEmpty()) {
+                Failure(PasswordError.PasswordIsEmpty)
             } else {
                 Success(Password(value))
             }

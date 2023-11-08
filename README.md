@@ -23,6 +23,6 @@ This project is divided into two phases:
 
 ---
 
-Instituto Superior de Engenharia de Lisboa
-Web Applications Development
+Instituto Superior de Engenharia de Lisboa<br>
+Web Applications Development<br>
 Winter Semester of 2023/2024

@@ -6,7 +6,7 @@ import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
-import gomoku.domain.user.UserRankInfo
+import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
@@ -100,13 +100,13 @@ class UsersService(
         }
     }
 
-    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserRankInfo> =
+    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
             it.usersRepository.getUsersStats(offset, limit)
         }
 
     @NotTested
-    fun getUserStats(userId: Id): UserRankInfo? =
+    fun getUserStats(userId: Id): UserStatsInfo? =
         transactionManager.run {
             it.usersRepository.getUserStats(userId)
         }

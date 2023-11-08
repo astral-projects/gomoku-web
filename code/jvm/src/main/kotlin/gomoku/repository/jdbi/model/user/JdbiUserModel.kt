@@ -22,6 +22,6 @@ class JdbiUserModel(
             username = Username(username).get(),
             email = Email(email).get(),
             passwordValidation = PasswordValidationInfo(passwordValidation)
-        ).get()
+        )
     }
 }

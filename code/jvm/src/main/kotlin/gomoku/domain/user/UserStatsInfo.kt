@@ -5,7 +5,7 @@ import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
 
-data class UserRankInfo(
+data class UserStatsInfo(
     val id: Id,
     val username: Username,
     val email: Email,

@@ -29,6 +29,7 @@ import gomoku.utils.NotTested
 import gomoku.utils.Success
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -43,90 +44,58 @@ class UsersController(
     private val userService: UsersService
 ) {
 
+    /**
+     * Creates a new user.
+     * @param input the user input with registration data.
+     */
     @PostMapping(Uris.Users.REGISTER)
     fun createUser(
         @RequestBody
         input: UserCreateInputModel
     ): ResponseEntity<*> {
-        return when (val validEmail = Email(input.email)) {
-            is Failure -> Problem(
-                type = Problem.invalidEmail,
-                title = "Email invalid",
-                status = 400,
-                detail = "The email is not a valid email address",
-                instance = Uris.Users.register()
-            ).toResponse()
-
+        val instance = Uris.Users.register()
+        return when (val emailResult = Email(input.email)) {
+            is Failure -> Problem.invalidEmail(instance)
             is Success -> {
-                when (val validUsername = Username(input.username)) {
-                    is Failure -> when (validUsername.value) {
-                        UsernameError.BlankUsername -> Problem(
-                            type = Problem.blankUsername,
-                            title = "Username blank",
-                            status = 400,
-                            detail = "The received username is blank",
-                            instance = Uris.Users.register()
-                        ).toResponse()
-
-                        UsernameError.InvalidLength -> Problem(
-                            type = Problem.invalidUsernameLength,
-                            title = "Username invalid",
-                            status = 400,
-                            detail = "The received username must be between 5 and 30 characters",
-                            instance = Uris.Users.register()
-                        ).toResponse()
+                when (val usernameResult = Username(input.username)) {
+                    is Failure -> when (usernameResult.value) {
+                        UsernameError.BlankUsername -> Problem.blankUsername(instance)
+                        UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
+                        UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
                     }
 
                     is Success -> {
-                        when (val validPassword = Password(input.password)) {
-                            is Failure -> when (validPassword.value) {
-                                PasswordError.PasswordIsEmptyOrBlanck -> Problem(
-                                    type = Problem.passwordIsEmpty,
-                                    title = "Password empty",
-                                    status = 400,
-                                    detail = "Password must not be empty",
-                                    instance = Uris.Users.register()
-                                ).toResponse()
-
-                                PasswordError.PasswordNotSafe -> Problem(
-                                    type = Problem.insecurePassword,
-                                    title = "Password not safe",
-                                    status = 400,
-                                    detail = "Password must be between 8 and 40 characters",
-                                    instance = Uris.Users.register()
-                                ).toResponse()
+                        when (val passwordResult = Password(input.password)) {
+                            is Failure -> when (passwordResult.value) {
+                                PasswordError.PasswordNotSafe -> Problem.insecurePassword(instance)
+                                PasswordError.PasswordBlank -> Problem.blankPassword(instance)
+                                PasswordError.PasswordIsEmpty -> Problem.emptyPassword(instance)
                             }
 
                             is Success -> {
-                                val res = userService.createUser(
-                                    username = validUsername.value,
-                                    email = validEmail.value,
-                                    password = validPassword.value
+                                val result = userService.createUser(
+                                    username = usernameResult.value,
+                                    email = emailResult.value,
+                                    password = passwordResult.value
                                 )
-                                when (res) {
-                                    is Success -> ResponseEntity.status(201)
+                                when (result) {
+                                    is Success -> ResponseEntity.status(HttpStatus.CREATED)
                                         .header(
                                             "Location",
-                                            Uris.Users.byId(res.value.value).toASCIIString()
+                                            Uris.Users.byId(result.value.value).toASCIIString()
                                         )
-                                        .body(IdOutputModel.serializeFrom(res.value))
+                                        .body(IdOutputModel.serializeFrom(result.value))
 
-                                    is Failure -> when (res.value) {
-                                        UserCreationError.UsernameAlreadyExists -> Problem(
-                                            type = Problem.usernameAlreadyExists,
-                                            title = "Received username already exists",
-                                            status = 400,
-                                            detail = "The chosen username is already in use by another user",
-                                            instance = Uris.Users.register()
-                                        ).toResponse()
+                                    is Failure -> when (result.value) {
+                                        UserCreationError.UsernameAlreadyExists -> Problem.usernameAlreadyExists(
+                                            username = usernameResult.value,
+                                            instance = instance
+                                        )
 
-                                        UserCreationError.EmailAlreadyExists -> Problem(
-                                            type = Problem.emailAlreadyExists,
-                                            title = "Received email already exists",
-                                            status = 400,
-                                            detail = "The chosen email is already in use by another user",
-                                            instance = Uris.Users.register()
-                                        ).toResponse()
+                                        UserCreationError.EmailAlreadyExists -> Problem.emailAlreadyExists(
+                                            email = emailResult.value,
+                                            instance = instance
+                                        )
                                     }
                                 }
                             }
@@ -137,76 +106,47 @@ class UsersController(
         }
     }
 
+    /**
+     * Creates a new token for the user.
+     * @param input the user input with username and password.
+     */
     @PostMapping(Uris.Users.TOKEN)
     fun createToken(
         @RequestBody
         input: UserCreateTokenInputModel
     ): ResponseEntity<*> {
-        return when (val validUsername = Username(input.username)) {
-            is Failure -> when (validUsername.value) {
-                UsernameError.BlankUsername -> Problem(
-                    type = Problem.blankUsername,
-                    title = "Username is blank",
-                    status = 400,
-                    detail = "Username must have a value",
-                    instance = Uris.Users.login()
-                ).toResponse()
-
-                UsernameError.InvalidLength -> Problem(
-                    type = Problem.invalidUsernameLength,
-                    title = "Username invalid",
-                    status = 400,
-                    detail = "Username must be between 5 and 30 characters",
-                    instance = Uris.Users.login()
-                ).toResponse()
+        val instance = Uris.Users.login()
+        return when (val usernameResult = Username(input.username)) {
+            is Failure -> when (usernameResult.value) {
+                UsernameError.BlankUsername -> Problem.blankUsername(instance)
+                UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
+                UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
             }
 
             is Success -> {
-                when (val validPassword = Password(input.password)) {
-                    is Failure -> when (validPassword.value) {
-                        PasswordError.PasswordIsEmptyOrBlanck -> Problem(
-                            type = Problem.passwordIsEmpty,
-                            title = "Password is empty",
-                            status = 400,
-                            detail = "Password must have a value",
-                            instance = Uris.Users.login()
-                        ).toResponse()
-
-                        PasswordError.PasswordNotSafe -> Problem(
-                            type = Problem.insecurePassword,
-                            title = "Password not safe",
-                            status = 400,
-                            detail = "Password must be between 8 and 40 characters",
-                            instance = Uris.Users.login()
-                        ).toResponse()
+                when (val passwordResult = Password(input.password)) {
+                    is Failure -> when (passwordResult.value) {
+                        PasswordError.PasswordNotSafe -> Problem.insecurePassword(instance)
+                        PasswordError.PasswordBlank -> Problem.blankPassword(instance)
+                        PasswordError.PasswordIsEmpty -> Problem.emptyPassword(instance)
                     }
 
                     is Success -> {
-                        val res = userService.createToken(
-                            username = validUsername.value,
-                            password = validPassword.value
+                        val tokenCreationResult = userService.createToken(
+                            username = usernameResult.value,
+                            password = passwordResult.value
                         )
-                        when (res) {
+                        when (tokenCreationResult) {
                             is Success ->
-                                ResponseEntity.status(200)
-                                    .body(UserTokenCreateOutputModel(res.value.tokenValue))
+                                ResponseEntity.ok(UserTokenCreateOutputModel(tokenCreationResult.value.tokenValue))
 
-                            is Failure -> when (res.value) {
-                                TokenCreationError.PasswordIsWrong -> Problem(
-                                    type = Problem.wrongPassword,
-                                    title = "Wrong password",
-                                    status = 400,
-                                    detail = "Invalid password",
-                                    instance = Uris.Users.login()
-                                ).toResponse()
+                            is Failure -> when (tokenCreationResult.value) {
+                                TokenCreationError.PasswordIsWrong -> Problem.passwordIsWrong(instance)
 
-                                TokenCreationError.UsernameNotExists -> Problem(
-                                    type = Problem.usernameDoesNotExist,
-                                    title = "Username not exists",
-                                    status = 400,
-                                    detail = "Username does not exists",
-                                    instance = Uris.Users.login()
-                                ).toResponse()
+                                TokenCreationError.UsernameNotExists -> Problem.usernameAlreadyExists(
+                                    username = usernameResult.value,
+                                    instance = instance
+                                )
                             }
                         }
                     }
@@ -215,30 +155,33 @@ class UsersController(
         }
     }
 
+    /**
+     * Revokes the token of the user.
+     * @param authenticatedUser the authenticated user.
+     */
     @PostMapping(Uris.Users.LOGOUT)
     fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
+        val instance = Uris.Users.logout()
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
             is Success -> ResponseEntity.ok(UserLogoutOutputModel())
-            is Failure -> {
-                when (tokenRevocationResult.value) {
-                    TokenRevocationError.TokenIsInvalid -> Problem(
-                        type = Problem.tokenIsInvalid,
-                        title = "Received token is invalid",
-                        status = 400,
-                        detail = "The received token is invalid",
-                        instance = Uris.Users.logout()
-                    ).toResponse()
-                }
+            is Failure -> when (tokenRevocationResult.value) {
+                TokenRevocationError.TokenIsInvalid -> Problem.invalidToken(instance)
             }
         }
     }
 
+    /**
+     * Retrieves user home data.
+     * @param authenticatedUser the authenticated user.
+     */
     @GetMapping(Uris.Users.HOME)
-    fun getUserHome(authenticatedUser: AuthenticatedUser): ResponseEntity<UserOutputModel> {
-        val userOutputmodel = UserOutputModel.serializeFrom(authenticatedUser.user)
-        return ResponseEntity.ok(userOutputmodel)
-    }
+    fun getUserHome(authenticatedUser: AuthenticatedUser): ResponseEntity<UserOutputModel> =
+        ResponseEntity.ok(UserOutputModel.serializeFrom(authenticatedUser.user))
 
+    /**
+     * Retrieves users by id.
+     * @param id the user id.
+     */
     @GetMapping(Uris.Users.GET_BY_ID)
     fun getUserById(
         @Valid
@@ -246,31 +189,26 @@ class UsersController(
         @PathVariable
         id: Int
     ): ResponseEntity<*> {
-        return when (val validId = Id(id)) {
-            is Failure -> Problem(
-                type = Problem.invalidId,
-                title = "Received id is invalid",
-                status = 404,
-                detail = "The received id is invalid",
-                instance = Uris.Users.byId(id)
-            ).toResponse()
-
-            is Success ->
-                when (val res = userService.getUserById(validId.value)) {
-                    is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(res.value))
-                    is Failure -> when (res.value) {
-                        GettingUserError.UserNotFound -> Problem(
-                            type = Problem.userNotFound,
-                            title = "User not found",
-                            status = 404,
-                            detail = "The user with the given id was not found",
-                            instance = Uris.Users.byId(id)
-                        ).toResponse()
-                    }
+        val instance = Uris.Users.byId(id)
+        return when (val userIdResult = Id(id)) {
+            is Failure -> Problem.invalidUserId(instance)
+            is Success -> when (val getUserResult = userService.getUserById(userIdResult.value)) {
+                is Success -> ResponseEntity.ok(UserOutputModel.serializeFrom(getUserResult.value))
+                is Failure -> when (getUserResult.value) {
+                    GettingUserError.UserNotFound -> Problem.userNotFound(
+                        userId = userIdResult.value,
+                        instance = instance
+                    )
                 }
+            }
         }
     }
 
+    /**
+     * Retrieves users stats.
+     * @param offset the offset to start from.
+     * @param limit the number of users to retrieve.
+     */
     @GetMapping(Uris.Users.STATS)
     fun getUsersStats(
         @Valid
@@ -282,35 +220,24 @@ class UsersController(
         @RequestParam(name = "limit", defaultValue = "10")
         limit: Int
     ): ResponseEntity<*> {
-        return when (val validNonNegative = NonNegativeValue(offset)) {
-            is Failure -> Problem(
-                type = Problem.invalidOffset,
-                title = "Received offset is invalid",
-                status = 400,
-                detail = "The received offset must be a non-negative integer",
-                instance = Uris.Users.stats()
-            ).toResponse()
-
-            is Success -> {
-                return when (val validValue = PositiveValue(limit)) {
-                    is Failure -> Problem(
-                        type = Problem.invalidLimit,
-                        title = "Received limit is invalid",
-                        status = 400,
-                        detail = "The received limit must be a positive integer",
-                        instance = Uris.Users.stats()
-                    ).toResponse()
-
-                    is Success -> {
-                        val paginatedResult =
-                            userService.getUsersStats(validNonNegative.value, validValue.value)
-                        ResponseEntity.ok(paginatedResult)
-                    }
+        val instance = Uris.Users.stats()
+        return when (val offsetResult = NonNegativeValue(offset)) {
+            is Failure -> Problem.invalidOffset(instance)
+            is Success -> when (val limitResult = PositiveValue(limit)) {
+                is Failure -> Problem.invalidLimit(instance)
+                is Success -> {
+                    val paginatedResult =
+                        userService.getUsersStats(offsetResult.value, limitResult.value)
+                    ResponseEntity.ok(paginatedResult)
                 }
             }
         }
     }
 
+    /**
+     * Retrieves user stats by id.
+     * @param id the user id.
+     */
     @GetMapping(Uris.Users.STATS_BY_ID)
     @NotTested
     fun getUserStats(
@@ -319,29 +246,21 @@ class UsersController(
         @PathVariable
         id: Int
     ): ResponseEntity<*> {
-        return when (val validId = Id(id)) {
-            is Failure -> Problem(
-                type = Problem.invalidId,
-                title = "Received id is invalid",
-                status = 404,
-                detail = "Received id <${validId.value.value}> is invalid",
-                instance = Uris.Users.byIdStats(id)
-            ).toResponse()
-
+        val instance = Uris.Users.byIdStats(id)
+        return when (val idResult = Id(id)) {
+            is Failure -> Problem.invalidUserId(instance)
             is Success -> {
-                val res = userService.getUserStats(validId.value)
-                    ?: return Problem(
-                        type = Problem.userNotFound,
-                        title = "User not found",
-                        status = 404,
-                        detail = "The user with the id <${validId.value.value}> was not found",
-                        instance = Uris.Users.byIdStats(id)
-                    ).toResponse()
-                return ResponseEntity.ok(UserStatsOutputModel.serializeFrom(res))
+                val getUserStatsResult = userService.getUserStats(idResult.value)
+                    ?: return Problem.userNotFound(userId = idResult.value, instance = instance)
+                ResponseEntity.ok(UserStatsOutputModel.serializeFrom(getUserStatsResult))
             }
         }
     }
 
+    /**
+     * Edits user data.
+     * @param user the authenticated user.
+     */
     @PutMapping(Uris.Users.EDIT_BY_ID)
     @NotTested
     fun editUser(user: AuthenticatedUser): ResponseEntity<User> {

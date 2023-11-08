@@ -16,6 +16,7 @@ class Username private constructor(val value: String) : Component {
 
     companion object {
         operator fun invoke(value: String): GettingUsernameResult = when {
+            value.isEmpty() -> Failure(UsernameError.EmptyUsername)
             value.isBlank() -> Failure(UsernameError.BlankUsername)
             value.length !in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH -> Failure(UsernameError.InvalidLength)
             else -> Success(Username(value))

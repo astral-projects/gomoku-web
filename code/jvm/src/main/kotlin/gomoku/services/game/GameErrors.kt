@@ -8,11 +8,11 @@ import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.utils.Either
 
 sealed class GameCreationError {
-    class UserAlreadyInLobby(val lobbyId: Id) : GameCreationError()
     class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     object VariantNotFound : GameCreationError()
-    object ErrorCreatingGame : GameCreationError()
-    object UserAlreadyNotInLobby : GameCreationError()
+    object GameInsertFailure : GameCreationError()
+    class UserAlreadyLeaveTheLobby(val lobbyId: Id) : GameCreationError()
+    object LobbyInsertFailure : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, FindGameSuccess>
@@ -23,28 +23,30 @@ sealed class GettingGameError {
 
 typealias GettingGameResult = Either<GettingGameError, Game>
 
-sealed class GamePutError {
-    object UserIsNotTheHost : GamePutError()
-    object GameIsInprogress : GamePutError()
-    object GameNotFound : GamePutError()
-}
-
-typealias GamePutResult = Either<GamePutError, Boolean>
-
 sealed class GameDeleteError {
-    object UserDoesntBelongToThisGame : GameDeleteError()
+    object UserIsNotTheHost : GameDeleteError()
+    object GameIsInprogress : GameDeleteError()
     object GameNotFound : GameDeleteError()
-    object GameAlreadyFinished : GameDeleteError()
-    object VariantNotFound : GameDeleteError()
+    object GameDeleteFailure : GameDeleteError()
 }
 
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
 
+sealed class GameUpdateError {
+    object UserDoesntBelongToThisGame : GameUpdateError()
+    object GameNotFound : GameUpdateError()
+    object GameAlreadyFinished : GameUpdateError()
+    object VariantNotFound : GameUpdateError()
+}
+
+typealias GameUpdateResult = Either<GameUpdateError, Boolean>
+
 sealed class GameMakeMoveError {
     class MoveNotValid(val error: MakeMoveError) : GameMakeMoveError()
-    object UserDoesNotBelongToThisGame : GameMakeMoveError()
+    object UserNotInGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
     object VariantNotFound : GameMakeMoveError()
+    object GameUpdateFailure : GameMakeMoveError()
     object IdempotencyKeyExpired : GameMakeMoveError()
     object IdempotencyKeyAlreadyExists : GameMakeMoveError()
     object IdempotencyKeyNotFound : GameMakeMoveError()
@@ -53,15 +55,15 @@ sealed class GameMakeMoveError {
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
 
 sealed class GameWaitError {
-    object UserDoesntBelongToAnyGameOrLobby : GameWaitError()
-    object UserDoesNotBelongToThisLobby : GameWaitError()
+    object UserNotInAnyGameOrLobby : GameWaitError()
+    object UserNotInLobby : GameWaitError()
 }
 
-typealias GameWaitResult = Either<GameWaitError, String>
+typealias GameWaitResult = Either<GameWaitError, WaitForGameSuccess>
 
 sealed class LobbyDeleteError {
-
     object LobbyNotFound : LobbyDeleteError()
+    object LobbyDeleteFailure : LobbyDeleteError()
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>
 

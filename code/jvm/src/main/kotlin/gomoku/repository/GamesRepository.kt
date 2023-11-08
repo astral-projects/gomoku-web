@@ -45,10 +45,10 @@ interface GamesRepository {
 
     /**
      * Creates a new game.
-     * @param variantId the id of the variant to retrieve.
+     * @param variantId the id of the variant to create the game with.
      * @param hostId the id of the host of the game.
      * @param guestId the id of the guest of the game.
-     * @param lobbyId the id of the lobby of the game.
+     * @param lobbyId the id of the lobby.
      * @param board the initial board of the game.
      * @return the id of the created game, or null if the game could not be created.
      */
@@ -150,13 +150,20 @@ interface GamesRepository {
     ): Boolean
 
     /**
-     * Asserts if a user is  waiting in a lobby or if is already in a game to start.
+     * Asserts if a user is waiting in a lobby or if is already in a game to start.
      * @param lobbyId the id of the lobby to search for.
      * @param userId the id of the user to search for.
-     * @return Id if the user is in a game to start, false otherwise.
+     * @return id of the game if the game is ready to start, null otherwise.
      */
     fun waitForGame(lobbyId: Id, userId: Id): Id?
 
+
+    /**
+     * Deletes a lobby.
+     * @param lobbyId the id of the lobby to delete.
+     * @param userId the id of the user requesting the deletion.
+     * @return true if the lobby was deleted successfully, false otherwise.
+     */
     fun deleteLobby(lobbyId: Id, userId: Id): Boolean
 
     /**
