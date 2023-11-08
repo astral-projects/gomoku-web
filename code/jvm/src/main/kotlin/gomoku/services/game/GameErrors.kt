@@ -8,9 +8,9 @@ import gomoku.utils.Either
 sealed class GameCreationError {
     class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     object VariantNotFound : GameCreationError()
-    object GameInsertFailure : GameCreationError()
-    class UserAlreadyLeaveTheLobby(val lobbyId: Id) : GameCreationError()
-    object LobbyInsertFailure : GameCreationError()
+    class UserAlreadyLeftTheLobby(val lobbyId: Id) : GameCreationError()
+    object GameInsertionError : GameCreationError()
+    object LobbyNotFound : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, FindGameSuccess>
@@ -25,7 +25,6 @@ sealed class GameDeleteError {
     object UserIsNotTheHost : GameDeleteError()
     object GameIsInprogress : GameDeleteError()
     object GameNotFound : GameDeleteError()
-    object GameDeleteFailure : GameDeleteError()
 }
 
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
@@ -44,7 +43,6 @@ sealed class GameMakeMoveError {
     object UserNotInGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
     object VariantNotFound : GameMakeMoveError()
-    object GameUpdateFailure : GameMakeMoveError()
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
@@ -58,6 +56,5 @@ typealias GameWaitResult = Either<GameWaitError, WaitForGameSuccess>
 
 sealed class LobbyDeleteError {
     object LobbyNotFound : LobbyDeleteError()
-    object LobbyDeleteFailure : LobbyDeleteError()
 }
 typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>

@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service
 class GamesService(
     val transactionManager: TransactionManager,
     private val clock: Clock,
-    private val variants: List<Variant>
+    private val variants: List<Variant>,
 ) {
 
     /**
@@ -70,6 +70,7 @@ class GamesService(
      * - The user is already in a game;
      * - The user is still in a lobby;
      * - The user was not in the lobby when the lobby was going to be deleted.
+     * - The game was not created correctly.
      *
      * **Returns success**, when:
      * - The game was created successfully;
@@ -92,7 +93,7 @@ class GamesService(
                 val lobby = gamesRepository.isMatchmaking(variantId, userId)
                 if (lobby != null) {
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
-                        failure(GameCreationError.UserAlreadyLeaveTheLobby(lobby.lobbyId))
+                        failure(GameCreationError.UserAlreadyLeftTheLobby(lobby.lobbyId))
                     } else {
                         val gameId = gamesRepository.createGame(
                             variantId = variantId,
@@ -102,13 +103,13 @@ class GamesService(
                             board = variant.initialBoard()
                         )
                         when (gameId) {
-                            null -> failure(GameCreationError.GameInsertFailure)
+                            null -> failure(GameCreationError.GameInsertionError)
                             else -> success(FindGameSuccess.GameMatch(gameId))
                         }
                     }
                 } else {
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
-                        null -> failure(GameCreationError.LobbyInsertFailure)
+                        null -> failure(GameCreationError.LobbyNotFound)
                         else -> success(FindGameSuccess.LobbyCreated(lobbyId))
                     }
                 }
@@ -118,15 +119,12 @@ class GamesService(
         }
 
     /**
-     * Deletes the game with the given id by a user if:
-     * - the user is the host;
-     * - the game is not in progress.
+     * Deletes the game with the given id if the user is the host and the game is not in progress.
      *
      * **Returns an error**, when:
      * - The game is not found;
      * - The user is not the host;
      * - The game is in progress;
-     * - The game was not deleted correctly.
      * @param gameId the id of the game to delete.
      * @param userId the id of the user requesting the deletion.
      */
@@ -142,7 +140,7 @@ class GamesService(
                 return@run failure(GameDeleteError.GameIsInprogress)
             }
             when (gamesRepository.deleteGame(gameId, userId)) {
-                false -> failure(GameDeleteError.GameDeleteFailure)
+                false -> failure(GameDeleteError.GameNotFound)
                 true -> success(true)
             }
         }
@@ -153,9 +151,10 @@ class GamesService(
      * **Returns an error**, when:
      * - The game is not found;
      * - The user does not belong to the game;
+     * - The variant is not found.
      * - The move is not valid;
-     * - The game was not updated correctly.
-     * Also, depending on the board type, the game points are updated differently.
+     *
+     * Note, depending on the board type, the game points are updated accordingly.
      */
     fun makeMove(gameId: Id, userId: Id, square: Square): GameMakeMoveResult =
         transactionManager.run { transaction ->
@@ -174,7 +173,7 @@ class GamesService(
                     val updatedGame = playLogic.value
                     updatedPointsBasedOnBoardType(gamesRepository, variant.points, userId, updatedGame)
                     when (gamesRepository.updateGame(gameId, updatedGame.board)) {
-                        false -> failure(GameMakeMoveError.GameUpdateFailure)
+                        false -> failure(GameMakeMoveError.GameNotFound)
                         true -> success(true)
                     }
                 }
@@ -247,8 +246,7 @@ class GamesService(
      * Exits the lobby with the given id if the user belongs to the lobby.
      *
      * **Returns an error**, when:
-     * - The lobby is not found because the user is not in a lobby;
-     * - The lobby was not deleted correctly.
+     * - The lobby is not found;
      * @param lobbyId the id of the lobby to exit.
      * @param userId the id of the user to exit the lobby.
      */
@@ -258,8 +256,8 @@ class GamesService(
             gamesRepository.checkIfUserIsInLobby(userId)
                 ?: return@run failure(LobbyDeleteError.LobbyNotFound)
             when (gamesRepository.deleteLobby(lobbyId, userId)) {
+                false -> failure(LobbyDeleteError.LobbyNotFound)
                 true -> success(true)
-                false -> failure(LobbyDeleteError.LobbyDeleteFailure)
             }
         }
 
@@ -283,7 +281,7 @@ class GamesService(
         gamesRepository: GamesRepository,
         gamePoints: GamePoints,
         userId: Id,
-        game: Game
+        game: Game,
     ): Boolean = when (game.board) {
         is BoardWin -> {
             gamesRepository.updatePoints(

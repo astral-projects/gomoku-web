@@ -86,11 +86,6 @@ class LobbysController(
                         lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
-
-                    LobbyDeleteError.LobbyDeleteFailure -> Problem.lobbyDeleteFailure(
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
                 }
             }
         }

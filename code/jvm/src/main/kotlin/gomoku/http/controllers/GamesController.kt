@@ -104,7 +104,7 @@ class GamesController(
                         instance = instance
                     )
 
-                    is GameCreationError.UserAlreadyLeaveTheLobby -> Problem.userNotInLobby(
+                    is GameCreationError.UserAlreadyLeftTheLobby -> Problem.userNotInLobby(
                         userId = userId,
                         instance = instance,
                         lobbyId = gameCreationResult.value.lobbyId
@@ -115,8 +115,13 @@ class GamesController(
                         instance = instance
                     )
 
-                    GameCreationError.GameInsertFailure -> Problem.gameInsertFailure(instance)
-                    GameCreationError.LobbyInsertFailure -> Problem.lobbyInsertFailure(instance)
+                    GameCreationError.LobbyNotFound -> Problem.lobbyNotFound(
+                        instance = instance
+                    )
+
+                    GameCreationError.GameInsertionError -> Problem.gameInsertFailure(
+                        instance = instance
+                    )
                 }
             }
         }
@@ -157,8 +162,6 @@ class GamesController(
                         gameId = gameIdResult.value,
                         instance = instance
                     )
-
-                    GameDeleteError.GameDeleteFailure -> Problem.gameDeleteFailure(instance)
                 }
             }
         }
@@ -215,11 +218,6 @@ class GamesController(
                                 )
 
                                 GameMakeMoveError.GameNotFound -> Problem.gameNotFound(
-                                    gameId = gameIdResult.value,
-                                    instance = instance
-                                )
-
-                                GameMakeMoveError.GameUpdateFailure -> Problem.gameUpdateFailure(
                                     gameId = gameIdResult.value,
                                     instance = instance
                                 )
