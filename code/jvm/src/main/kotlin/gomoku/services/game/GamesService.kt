@@ -26,7 +26,7 @@ import java.util.*
 
 @Service
 class GamesService(
-    private val transactionManager: TransactionManager,
+    val transactionManager: TransactionManager,
     private val clock: Clock,
     private val variants: List<Variant>
 ) {
@@ -190,7 +190,7 @@ class GamesService(
             } else {
                 gamesRepository.markIdempotencyKeyAsUsed(idempotencyKey, gameId)
             }
-            gamesRepository.userBelongsToTheGame(user, gameId)
+            gamesRepository.userBelongsToTheGame(userId, gameId)
                 ?: return@run failure(GameMakeMoveError.UserDoesNotBelongToThisGame)
             val variant = gameVariantMap[game.variant.id]
                 ?: return@run failure(GameMakeMoveError.VariantNotFound)
@@ -299,11 +299,6 @@ class GamesService(
         }
 
     /**
-     * Retrieves the system information.
-     */
-    fun getSystemInfo(): SystemInfo = SystemInfo
-
-    /**
      * Updates the points of the game based on the board type.
      */
     private fun updatedPointsBasedOnBoardType(
@@ -341,27 +336,8 @@ class GamesService(
     private fun getOtherPlayer(game: Game, userId: Id) =
         if (game.hostId == userId) game.guestId else game.hostId
 
-    fun getVariants(): GetVariantsResult =
-        transactionManager.run {
-            if (variants.isEmpty()) {
-                return@run failure(GetVariantsError.VariantsEmpty)
-            }
-            success(
-                gameVariantMap.map {
-                    GameVariant(
-                        it.key,
-                        it.value.config.name,
-                        it.value.config.openingRule,
-                        it.value.config.boardSize
-                    )
-                }
-            )
-        }
-
     fun getIdempotencyKeyInfo(idempotencyKey: UUID): IdempotencyKey? =
         transactionManager.run {
             it.gamesRepository.getIdempotencyKeyInfo(idempotencyKey)
         }
 }
-
-

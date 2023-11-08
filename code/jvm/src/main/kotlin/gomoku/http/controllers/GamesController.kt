@@ -87,9 +87,10 @@ class GamesController(
 
             is Success -> when (val gameCreationResult = gamesService.findGame(variantIdResult.value, userId)) {
                 is Success -> when (gameCreationResult.value) {
-                    is FindGameSuccess.LobbyCreated -> ResponseEntity
-                        .status(HttpStatus.CREATED)
-                        .body(gameCreationResult.value)
+                    is FindGameSuccess.LobbyCreated ->
+                        ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(gameCreationResult.value)
 
                     is FindGameSuccess.GameMatch -> ResponseEntity.ok(gameCreationResult.value)
                     is FindGameSuccess.StillInLobby -> ResponseEntity.ok(gameCreationResult.value)
@@ -210,6 +211,12 @@ class GamesController(
                                     instance = instance
                                 )
 
+                                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.userDoesntBelongToThisGame(
+                                    userId = userId,
+                                    gameId = gameIdResult.value,
+                                    instance = instance
+                                )
+
                                 GameMakeMoveError.GameNotFound -> Problem.gameNotFound(
                                     gameId = gameIdResult.value,
                                     instance = instance
@@ -249,13 +256,7 @@ class GamesController(
                                     )
                                 }
 
-                                GameMakeMoveError.IdempotencyKeyAlreadyExists -> Problem(
-                                    type = Problem.idempotencyKeyAlreadyExists,
-                                    title = "A request is outstanding for this Idempotency-Key",
-                                    status = 409,
-                                    detail = "A request with the same Idempotency-Key for the same operation is being processed or is outstanding.",
-                                    instance = Uris.Games.makeMove(id)
-                                ).toResponse()
+                                GameMakeMoveError.IdempotencyKeyAlreadyExists -> TODO()
                                 GameMakeMoveError.IdempotencyKeyExpired -> TODO()
                                 GameMakeMoveError.IdempotencyKeyNotFound -> TODO()
                             }

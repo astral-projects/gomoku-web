@@ -94,7 +94,7 @@ data class Problem(
             title = "Requested game was not found",
             status = 404,
             detail = "The game with id <${gameId.value}> was not found",
-            instance = instance,
+            instance = instance
         ).toResponse()
 
         fun userAlreadyInGame(userId: Id, gameId: Id, instance: URI): ResponseEntity<*> = Problem(
@@ -281,7 +281,7 @@ data class Problem(
             title = "Received token is invalid",
             status = 400,
             detail = "The received token is invalid because it does not correspond to any active user, or " +
-                    "it has already been revoked",
+                "it has already been revoked",
             instance = instance
         ).toResponse()
 
@@ -386,7 +386,7 @@ data class Problem(
             detail = "The position <$col, $row> is already taken",
             instance = instance,
             data = mapOf(
-                "gameId" to gameId.value,
+                "gameId" to gameId.value
             )
         ).toResponse()
 
@@ -397,7 +397,7 @@ data class Problem(
             detail = "The position <$col, $row> is invalid",
             instance = instance,
             data = mapOf(
-                "gameId" to gameId.value,
+                "gameId" to gameId.value
             )
         ).toResponse()
 
@@ -429,7 +429,7 @@ data class Problem(
             title = "User doesn't belong to any game or lobby",
             status = 403,
             detail = "The user with id <${userId.value}> doesn't belong to any game or lobby",
-            instance = instance,
+            instance = instance
         ).toResponse()
     }
 }
