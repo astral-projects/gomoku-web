@@ -3,11 +3,17 @@ package gomoku.http
 import org.springframework.web.util.UriTemplate
 import java.net.URI
 
+/**
+ * URI and URI templates for the REST API.
+ */
 object Uris {
 
     const val PREFIX = "/api"
     const val HOME = PREFIX
 
+    /**
+     * Associated with Users controller.
+     */
     object Users {
         const val REGISTER = "$PREFIX/users"
         const val TOKEN = "$PREFIX/users/token"
@@ -26,6 +32,9 @@ object Uris {
         fun logout(): URI = URI(LOGOUT)
     }
 
+    /**
+     * Associated with Games controller.
+     */
     object Games {
         const val FIND_GAME = "$PREFIX/games"
         const val GET_VARIANTS = "$PREFIX/games/variants"

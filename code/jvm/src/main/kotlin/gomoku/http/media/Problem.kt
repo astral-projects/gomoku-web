@@ -332,7 +332,7 @@ data class Problem(
             detail = "The email is invalid because it does not match the email format",
             instance = instance,
             data = mapOf(
-                "regex" to Email.emailFormat
+                "regex" to Email.EMAIL_FORMAT
             )
         ).toResponse()
 

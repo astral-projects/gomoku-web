@@ -1,5 +1,9 @@
 package gomoku.domain.game.variant.config
 
+/**
+ * Represents a board size.
+ * @property size The size of the board.
+ */
 enum class BoardSize(val size: Int) {
     FIFTEEN(15),
     NINETEEN(19);

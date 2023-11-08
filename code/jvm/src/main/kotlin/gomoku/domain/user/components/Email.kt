@@ -14,10 +14,10 @@ class Email private constructor(
 ) : Component {
 
     companion object {
-        const val emailFormat = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
+        const val EMAIL_FORMAT = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$"
 
         operator fun invoke(value: String): GettingEmailResult = when {
-            value.matches(emailFormat.toRegex()) -> Success(Email(value))
+            value.matches(EMAIL_FORMAT.toRegex()) -> Success(Email(value))
             else -> Failure(InvalidEmailError.InvalidEmail)
         }
     }

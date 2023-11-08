@@ -51,6 +51,7 @@ class GameLogic(
                 is MakeMoveError.PositionTaken -> Failure(MakeMoveError.PositionTaken(newBoard.value.square))
                 is MakeMoveError.InvalidPosition -> Failure(MakeMoveError.InvalidPosition(newBoard.value.square))
             }
+
             is Success -> success(
                 game.copy(
                     board = newBoard.value,
@@ -63,7 +64,7 @@ class GameLogic(
 
     /**
      * Converts a user id to a player on the board.
-     * White player is the host, black player is the guest.
+     * White player is always the host, black player is always the guest.
      * @param game game to which the user belongs.
      */
     private fun Id.toPlayer(game: Game) = if (this == game.hostId) Player.W else Player.B

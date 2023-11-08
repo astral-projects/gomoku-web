@@ -7,7 +7,7 @@ import gomoku.utils.Failure
 import gomoku.utils.Success
 
 /**
- * Component that represents a row in the board.
+ * Component that represents a row in a board.
  */
 class Row private constructor(val number: Int) : Component, Indexable {
 

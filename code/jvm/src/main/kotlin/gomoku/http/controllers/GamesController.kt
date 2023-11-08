@@ -50,7 +50,9 @@ class GamesController(
      */
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
-    fun getGameById(@PathVariable id: Int): ResponseEntity<*> {
+    fun getGameById(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
         val instance = Uris.Games.byId(id)
         return when (val gameIdResult = Id(id)) {
             is Failure -> Problem.invalidGameId(instance)
@@ -72,7 +74,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PostMapping(Uris.Games.FIND_GAME)
-    @NotTested
+    @RequiresAuthentication
     fun findGame(
         @Valid @RequestBody
         variant: VariantInputModel,
@@ -126,6 +128,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
+    @RequiresAuthentication
     @NotTested
     fun deleteById(
         @PathVariable id: Int,
@@ -165,6 +168,7 @@ class GamesController(
      * Retrieves the system information.
      */
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
+    @RequiresAuthentication
     @NotTested
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
         val systemInfo: SystemInfo = gamesService.getSystemInfo()
@@ -178,6 +182,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PutMapping(Uris.Games.MAKE_MOVE)
+    @RequiresAuthentication
     @NotTested
     fun makeMove(
         @Valid
@@ -261,6 +266,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PostMapping(Uris.Games.EXIT_GAME)
+    @RequiresAuthentication
     @NotTested
     fun exitGame(
         @Valid
