@@ -25,6 +25,7 @@ import gomoku.repository.jdbi.model.idempotencyKey.JdbiIdempotencyKey
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.Clock
 import java.util.*
 
 class JdbiGameRepository(
@@ -49,7 +50,6 @@ class JdbiGameRepository(
             .execute() == 1
     }
 
-    // TODO(id?)
     override fun getVariantByName(variantName: VariantName): Id {
         return handle.createQuery("select id from dbo.GameVariants where name = :variantName")
             .bind("variantName", variantName)
@@ -228,21 +228,23 @@ class JdbiGameRepository(
             .bind("userId", userId.value)
             .execute() == 1
 
-    // trying to use the same idempotency key twice
-    override fun isIdempotencyKeyUsed(idempotencyKey: IdempotencyKey, gameId: Id): Boolean {
-        handle.createUpdate("delete from dbo.idempotencykeys where expires_at < extract(epoch from now())")
+    override fun isIdempotencyKeyUsed(idempotencyKey: UUID, gameId: Id): Boolean {
+        handle.createUpdate("delete from dbo.idempotencykeys where expires_at < :expiresAt")
+            .bind("expiresAt", Clock.systemUTC().instant().epochSecond)
             .execute()
 
-        return handle.createUpdate("select * from dbo.idempotencykeys where idempotency_key = :idempotencyKey and game_id = :gameId")
-            .bind("idempotencyKey", idempotencyKey.idempotencyKey)
+        return handle.createQuery("select count(*) from dbo.idempotencykeys where idempotency_key = :idempotencyKey and game_id = :gameId and expires_at > :expiresAt")
+            .bind("idempotencyKey", idempotencyKey)
             .bind("gameId", gameId.value)
-            .execute() == 1
+            .bind("expiresAt", Clock.systemUTC().instant().epochSecond)
+            .mapTo<Int>()
+            .single() > 0
     }
 
-    override fun markIdempotencyKeyAsUsed(idempotencyKey: IdempotencyKey, gameId: Id) {
+    override fun markIdempotencyKeyAsUsed(idempotencyKey: UUID, gameId: Id) {
         handle.createUpdate("insert into dbo.idempotencykeys (idempotency_key, expires_at, game_id) values (:idempotencyKey, :expiresAt, :gameId)")
-            .bind("idempotencyKey", idempotencyKey.idempotencyKey)
-            .bind("expiresAt", idempotencyKey.expirationDate.epochSeconds)
+            .bind("idempotencyKey", idempotencyKey)
+            .bind("expiresAt", Clock.systemUTC().instant().epochSecond + 3600)
             .bind("gameId", gameId.value)
             .execute()
     }

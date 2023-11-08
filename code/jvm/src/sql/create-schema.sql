@@ -82,3 +82,5 @@ create table dbo.IdempotencyKeys
     game_id         int    references dbo.Games (id) on delete cascade on update cascade,
     constraint expires_at_is_valid check (expires_at > 0)
 );
+
+select * from dbo.idempotencykeys where idempotency_key = 'b7192d33-83cb-4157-913f-cd4ad757491f' and game_id = 1 and expires_at > extract(epoch from now());

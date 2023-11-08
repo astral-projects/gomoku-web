@@ -49,7 +49,7 @@ sealed class GameMakeMoveError {
     object VariantNotFound : GameMakeMoveError()
     object GameUpdateFailure : GameMakeMoveError()
     object IdempotencyKeyExpired : GameMakeMoveError()
-    object IdempotencyKeyAlreadyExists : GameMakeMoveError()
+    object IdempotencyKeyAlreadyUsed : GameMakeMoveError()
     object IdempotencyKeyNotFound : GameMakeMoveError()
 }
 

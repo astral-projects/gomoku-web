@@ -265,7 +265,7 @@ data class Problem(
             title = "Invalid limit",
             status = 400,
             detail = "The limit must be a positive integer",
-            instance = instance,
+            instance = instance
         ).toResponse()
 
         fun invalidOffset(instance: URI): ResponseEntity<*> = Problem(

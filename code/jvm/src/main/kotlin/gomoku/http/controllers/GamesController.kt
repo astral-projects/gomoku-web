@@ -256,7 +256,7 @@ class GamesController(
                                     )
                                 }
 
-                                GameMakeMoveError.IdempotencyKeyAlreadyExists -> TODO()
+                                GameMakeMoveError.IdempotencyKeyAlreadyUsed -> TODO()
                                 GameMakeMoveError.IdempotencyKeyExpired -> TODO()
                                 GameMakeMoveError.IdempotencyKeyNotFound -> TODO()
                             }

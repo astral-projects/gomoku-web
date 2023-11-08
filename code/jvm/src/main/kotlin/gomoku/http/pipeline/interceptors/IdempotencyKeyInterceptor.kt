@@ -23,7 +23,8 @@ class IdempotencyKeyInterceptor(
         if (handler is HandlerMethod && handler.methodParameters.any { it.parameterType == IdempotencyKey::class.java }) {
             logger.info("Request requires idempotency key")
             val key = request.getHeader(NAME_IDEMPOTENCY_KEY_HEADER)
-            val idempotencyKey = idempotencyKeyProcessor.processIdempotencyKey(key)
+            val gameId = request.requestURI.split("/")[3].toInt()
+            val idempotencyKey = idempotencyKeyProcessor.processIdempotencyKey(key, gameId)
             if (idempotencyKey == null) {
                 logger.info("Idempotency key not found")
                 response.status = 400
@@ -31,13 +32,13 @@ class IdempotencyKeyInterceptor(
                 return false
             } else {
                 IdempotencyKeyArgumentResolver.addIdempotencyKeyTo(idempotencyKey, request)
-                logger.info("Idempotency key found")
+                logger.info("Added the attribute of idempotency key to the request")
             }
         }
         return true
     }
     companion object {
-        val logger = LoggerFactory.getLogger(IdempotencyKeyInterceptor::class.java)
+        val logger = LoggerFactory.getLogger(IdempotencyKeyInterceptor::class.java)!!
         const val NAME_IDEMPOTENCY_KEY_HEADER = "Idempotency-Key"
     }
 }

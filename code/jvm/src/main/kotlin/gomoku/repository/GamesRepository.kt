@@ -157,7 +157,6 @@ interface GamesRepository {
      */
     fun waitForGame(lobbyId: Id, userId: Id): Id?
 
-
     /**
      * Deletes a lobby.
      * @param lobbyId the id of the lobby to delete.
@@ -172,14 +171,14 @@ interface GamesRepository {
      * @param gameId the id of the game to search for.
      * @return true if the idempotency key has been used, false otherwise.
      */
-    fun isIdempotencyKeyUsed(idempotencyKey: IdempotencyKey, gameId: Id): Boolean
+    fun isIdempotencyKeyUsed(idempotencyKey: UUID, gameId: Id): Boolean
 
     /**
      * Marks an idempotency key as used.
      * @param idempotencyKey the idempotency key to mark as used.
      * @param gameId the id of the game that key was used.
      */
-    fun markIdempotencyKeyAsUsed(idempotencyKey: IdempotencyKey, gameId: Id)
+    fun markIdempotencyKeyAsUsed(idempotencyKey: UUID, gameId: Id)
 
     /**
      * Retrieves the info of an idempotency key, gameId, expiration and the key.
