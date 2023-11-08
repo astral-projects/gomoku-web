@@ -7,7 +7,9 @@ import gomoku.domain.game.board.Board
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
+import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.domain.lobby.Lobby
+import java.util.*
 
 /**
  * Repository for managing game related data.
@@ -156,4 +158,25 @@ interface GamesRepository {
     fun waitForGame(lobbyId: Id, userId: Id): Id?
 
     fun deleteLobby(lobbyId: Id, userId: Id): Boolean
+
+    /**
+     * Asserts if an idempotency key has been used or not.
+     * @param idempotencyKey the idempotency key to search for.
+     * @param gameId the id of the game to search for.
+     * @return true if the idempotency key has been used, false otherwise.
+     */
+    fun isIdempotencyKeyUsed(idempotencyKey: IdempotencyKey, gameId: Id): Boolean
+
+    /**
+     * Marks an idempotency key as used.
+     * @param idempotencyKey the idempotency key to mark as used.
+     * @param gameId the id of the game that key was used.
+     */
+    fun markIdempotencyKeyAsUsed(idempotencyKey: IdempotencyKey, gameId: Id)
+
+    /**
+     * Retrieves the info of an idempotency key, gameId, expiration and the key.
+     * @param idempotencyKey the idempotency key to search for.
+     */
+    fun getIdempotencyKeyInfo(idempotencyKey: UUID): IdempotencyKey?
 }

@@ -55,7 +55,7 @@ class TestVariant : Variant {
         )
     }
 
-    override fun checkWin(board: BoardRun, square: Square): Boolean {
+    override fun checkWin(board: Board, square: Square): Boolean {
         return true
     }
 

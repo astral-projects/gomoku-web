@@ -63,6 +63,7 @@ data class Problem(
         val userDoesntBelongToAnyGameOrLobby= URI("${baseUrl}user-doesnt-belong-to-any-game")
         val invalidRow = URI("${baseUrl}invalid-row")
         val invalidColumn = URI("${baseUrl}invalid-column")
+        val idempotencyKeyAlreadyExists = URI("${baseUrl}idempotency-key-already-exists")
         // TODO(ADD FILES gameOVer, notYourNotTurn, gameIsNotInProgress)
     }
 }

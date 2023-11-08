@@ -4,6 +4,7 @@ import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.game.variant.GameVariant
+import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.utils.Either
 
 sealed class GameCreationError {
@@ -44,6 +45,9 @@ sealed class GameMakeMoveError {
     object UserDoesNotBelongToThisGame : GameMakeMoveError()
     object GameNotFound : GameMakeMoveError()
     object VariantNotFound : GameMakeMoveError()
+    object IdempotencyKeyExpired : GameMakeMoveError()
+    object IdempotencyKeyAlreadyExists : GameMakeMoveError()
+    object IdempotencyKeyNotFound : GameMakeMoveError()
 }
 
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
@@ -53,7 +57,6 @@ sealed class GameWaitError {
     object UserDoesNotBelongToThisLobby : GameWaitError()
 }
 
-// TODO: change to GameWaitResult
 typealias GameWaitResult = Either<GameWaitError, String>
 
 sealed class LobbyDeleteError {
@@ -66,3 +69,9 @@ sealed class GetVariantsError {
     object VariantsEmpty : GetVariantsError()
 }
 typealias GetVariantsResult = Either<GetVariantsError, List<GameVariant>>
+
+sealed class IdempotencyKeyError {
+    object IdempotencyKeyNotFound : IdempotencyKeyError()
+}
+
+typealias IdempotencyKeyResult = Either<IdempotencyKeyError, IdempotencyKey>

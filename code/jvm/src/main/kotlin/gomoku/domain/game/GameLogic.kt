@@ -54,6 +54,7 @@ class GameLogic(
                 is MakeMoveError.PositionTaken -> Failure(MakeMoveError.PositionTaken(newBoard.value.square))
                 is MakeMoveError.InvalidPosition -> Failure(MakeMoveError.InvalidPosition(newBoard.value.square))
             }
+
             is Success -> success(
                 game.copy(
                     board = newBoard.value,

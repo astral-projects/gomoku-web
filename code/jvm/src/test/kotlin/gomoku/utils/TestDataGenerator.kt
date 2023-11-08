@@ -3,6 +3,7 @@ package gomoku.utils
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
+import java.util.*
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -32,4 +33,9 @@ object TestDataGenerator {
      * Generates a random number between this [Int] and [end] (inclusive).
      */
     infix fun Int.randomTo(end: Int) = (this..end).random()
+
+    /**
+     * Generates a random [UUID]
+     */
+    fun newTestIdempotencyKey(): UUID = UUID.randomUUID()
 }

@@ -316,6 +316,7 @@ class UsersController(
     fun getUserStats(
         @Valid
         @Range(min = 1)
+        @PathVariable
         id: Int
     ): ResponseEntity<*> {
         return when (val validId = Id(id)) {
@@ -323,7 +324,7 @@ class UsersController(
                 type = Problem.invalidId,
                 title = "Received id is invalid",
                 status = 404,
-                detail = "Received <${validId.value}> is an invalid id",
+                detail = "Received id <${validId.value.value}> is invalid",
                 instance = Uris.Users.byIdStats(id)
             ).toResponse()
 
@@ -333,7 +334,7 @@ class UsersController(
                         type = Problem.userNotFound,
                         title = "User not found",
                         status = 404,
-                        detail = "The user with the id <${validId.value}> was not found",
+                        detail = "The user with the id <${validId.value.value}> was not found",
                         instance = Uris.Users.byIdStats(id)
                     ).toResponse()
                 return ResponseEntity.ok(UserStatsOutputModel.serializeFrom(res))

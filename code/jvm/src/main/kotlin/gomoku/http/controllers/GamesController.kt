@@ -7,6 +7,7 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.errors.MakeMoveError
+import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -115,9 +115,10 @@ class GamesController(
             is Success ->
                 when (val result = gamesService.findGame(variant.value, userId)) {
                     is Success -> when (result.value) {
-                        is FindGameSuccess.LobbyCreated -> ResponseEntity
-                            .status(201)
-                            .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
+                        is FindGameSuccess.LobbyCreated ->
+                            ResponseEntity
+                                .status(201)
+                                .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
 
                         is FindGameSuccess.GameMatch -> ResponseEntity.status(201)
                             .body(JoinedGameWithSuccessOutputModel(result.value.id.toString(), result.value.message))
@@ -247,7 +248,7 @@ class GamesController(
      * If the move is not valid, returns a 400 Bad Request error.
      * If the game is already finished, returns a 400 Bad Request error.
      */
-    @PutMapping(Uris.Games.MAKE_MOVE)
+    @PostMapping(Uris.Games.MAKE_MOVE)
     @NotTested
     fun makeMove(
         @Valid
@@ -256,7 +257,8 @@ class GamesController(
         id: Int,
         @Valid @RequestBody
         move: MoveInputModel,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        idempotencyKey: IdempotencyKey
     ): ResponseEntity<*> {
         val userId = user.user.id
         return when (val validId = Id(id)) {
@@ -289,7 +291,7 @@ class GamesController(
                     is Success -> {
                         val square = Square(gettingColumnResult.value, gettingRowResult.value)
                         val gameMakeMoveResult =
-                            gamesService.makeMove(validId.value, userId, square)
+                            gamesService.makeMove(validId.value, userId, square, idempotencyKey)
                         when (gameMakeMoveResult) {
                             is Success -> ResponseEntity.ok(MoveOutputModel())
                             is Failure -> when (gameMakeMoveResult.value) {
@@ -359,6 +361,16 @@ class GamesController(
                                         }
                                     }
                                 }
+
+                                GameMakeMoveError.IdempotencyKeyAlreadyExists -> Problem(
+                                    type = Problem.idempotencyKeyAlreadyExists,
+                                    title = "A request is outstanding for this Idempotency-Key",
+                                    status = 409,
+                                    detail = "A request with the same Idempotency-Key for the same operation is being processed or is outstanding.",
+                                    instance = Uris.Games.makeMove(id)
+                                ).toResponse()
+                                GameMakeMoveError.IdempotencyKeyExpired -> TODO()
+                                GameMakeMoveError.IdempotencyKeyNotFound -> TODO()
                             }
                         }
                     }
@@ -466,7 +478,6 @@ class GamesController(
                             detail = "The user with id <$userId> is not in any game or lobby",
                             instance = Uris.Games.exitGame(id)
                         ).toResponse()
-
                     }
                 }
         }

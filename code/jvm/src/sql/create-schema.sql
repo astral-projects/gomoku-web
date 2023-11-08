@@ -28,7 +28,7 @@ create table dbo.Statistics
     points       int not null default 0,
     games_played int not null default 0,
     games_won    int not null default 0,
-    games_drawn   int not null default 0,
+    games_drawn  int not null default 0,
     foreign key (user_id) references dbo.Users (id) on delete cascade on update cascade,
     constraint points_are_valid check ( points >= 0 ),
     constraint games_played_are_valid check ( games_played >= 0 ),
@@ -58,18 +58,27 @@ create table dbo.Lobbies
 
 create table dbo.Games
 (
-    id         int generated always as identity primary key,
-    state      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
-    variant_id int                                                      not null,
-    board      jsonb                                                    not null,
-    created_at int                                                      not null default extract(epoch from now()),
-    updated_at int                                                      not null default extract(epoch from now()),
-    host_id    int references dbo.Users (id),
-    guest_id   int references dbo.Users (id),
-    lobby_id   int unique                                               not null,
+    id                         int generated always as identity primary key,
+    state                      varchar(64) check (state in ('IN_PROGRESS', 'FINISHED')) not null,
+    variant_id                 int                                                      not null,
+    board                      jsonb                                                    not null,
+    created_at                 int                                                      not null default extract(epoch from now()),
+    updated_at                 int                                                      not null default extract(epoch from now()),
+    host_id                    int references dbo.Users (id),
+    guest_id                   int references dbo.Users (id),
+    lobby_id                   int unique                                               not null,
     foreign key (variant_id) references dbo.GameVariants (id) on delete cascade on update cascade,
     constraint host_and_guest_are_different check (host_id != guest_id),
     constraint created_before_updated check (created_at <= updated_at),
     constraint created_is_valid check (created_at > 0),
     constraint updated_is_valid check (updated_at > 0)
+);
+
+create table dbo.IdempotencyKeys
+(
+    idempotency_key uuid primary key,
+    -- expires_at is 30 seconds from now by default
+    expires_at      bigint not null default extract(epoch from now() + interval '1 hour'),
+    game_id         int    references dbo.Games (id) on delete cascade on update cascade,
+    constraint expires_at_is_valid check (expires_at > 0)
 );
