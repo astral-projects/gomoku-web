@@ -1,5 +1,7 @@
 package gomoku.domain.token
 
-data class TokenValidationInfo(
-    val validationInfo: String
-)
+/**
+ * Represents the information that can be used to validate a token.
+ * @property validationInfo The information that can be used to validate the token.
+ */
+data class TokenValidationInfo(val validationInfo: String)

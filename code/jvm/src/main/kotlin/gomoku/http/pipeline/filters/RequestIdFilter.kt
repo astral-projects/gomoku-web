@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.*
 
+/**
+ * Filter that adds a unique id to each request.
+ */
 @Component
 class RequestIdFilter : HttpFilter() {
 

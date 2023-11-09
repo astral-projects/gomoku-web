@@ -3,7 +3,6 @@ package gomoku.domain.game.variant
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.board.Board
-import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.errors.BoardMakeMoveResult
 import gomoku.domain.game.variant.config.VariantConfig

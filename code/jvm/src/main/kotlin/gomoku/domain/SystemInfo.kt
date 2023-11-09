@@ -4,6 +4,9 @@ import gomoku.domain.game.Author
 import java.net.URI
 import java.util.*
 
+/**
+ * Provides information about the system.
+ */
 object SystemInfo {
     const val GAME_NAME = "Gomoku Royale API"
     const val VERSION = "0.0.1"

@@ -25,12 +25,24 @@ import gomoku.utils.Success
 import gomoku.utils.get
 import org.springframework.stereotype.Component
 
+// Constants
 private const val WINNING_PIECES = 5
+private const val WINNER_POINTS = 300
+private const val LOSER_POINTS = 100
+private const val DRAW_POINTS = 150
+private const val FORFEITER_POINTS = 0
+private const val WINNER_ON_FORFEIT_OR_TIMER_POINTS = 400
+private const val MAX_TURN_TIME_IN_SEC = 60
 
-// TODO("revisited game variant logic")
+/**
+ * Represents the FreeStyle variant of the game.
+ * Freestyle gomoku has no restrictions on either player and allows a player to win by creating a line
+ * of five or more stones, with each player alternating turns placing one stone at a time.
+ * @see <a href="https://en.wikipedia.org/wiki/Gomoku#Freestyle">Freestyle</a>
+ */
 @Component
 class FreestyleVariant : Variant {
-    override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.PRO, BoardSize.FIFTEEN)
+    override val config: VariantConfig = VariantConfig(VariantName.FREESTYLE, OpeningRule.NONE, BoardSize.FIFTEEN)
 
     override fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult {
         when (board) {
@@ -54,14 +66,16 @@ class FreestyleVariant : Variant {
     override fun checkWin(board: Board, square: Square): Boolean {
         return try {
             requireNotNull(board.turn)
+            if (board.turn.timeLeftInSec.value <= 0) {
+                return true
+            }
             val backSlash = square.row.toIndex() == square.col.toIndex()
             val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
             val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
-            places.count { it.col == square.col } == WINNING_PIECES ||
-                    places.count { it.row == square.row } == WINNING_PIECES ||
-                    places.count { backSlash } == WINNING_PIECES ||
-                    places.count { slash } == WINNING_PIECES ||
-                    board.turn.timeLeftInSec.value <= 0
+            places.count { it.col == square.col } >= WINNING_PIECES ||
+                places.count { it.row == square.row } >= WINNING_PIECES ||
+                places.count { backSlash } >= WINNING_PIECES ||
+                places.count { slash } >= WINNING_PIECES
         } catch (ex: IllegalArgumentException) {
             // only way found to use smart cast
             false
@@ -72,14 +86,19 @@ class FreestyleVariant : Variant {
 
     override val points: GamePoints
         get() = GamePoints(
-            onFinish = GamePointsOnWin(winner = NonNegativeValue(300).get(), loser = NonNegativeValue(100).get()),
-            onDraw = GamePointsOnDraw(shared = NonNegativeValue(150).get()),
+            onFinish = GamePointsOnWin(
+                winner = NonNegativeValue(WINNER_POINTS).get(),
+                loser = NonNegativeValue(LOSER_POINTS).get()
+            ),
+            onDraw = GamePointsOnDraw(
+                shared = NonNegativeValue(DRAW_POINTS).get()
+            ),
             onForfeitOrTimer = GamePointsOnForfeitOrTimer(
-                winner = NonNegativeValue(400).get(),
-                forfeiter = NonNegativeValue(0).get()
+                winner = NonNegativeValue(WINNER_ON_FORFEIT_OR_TIMER_POINTS).get(),
+                forfeiter = NonNegativeValue(FORFEITER_POINTS).get()
             )
         )
 
     override val turnTimer: NonNegativeValue
-        get() = NonNegativeValue(60).get()
+        get() = NonNegativeValue(MAX_TURN_TIME_IN_SEC).get()
 }

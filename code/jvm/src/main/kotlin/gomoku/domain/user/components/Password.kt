@@ -6,6 +6,7 @@ import gomoku.domain.components.PasswordError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
+// Constants
 private const val MAX_PASSWORD_LENGTH = 40
 private const val MIN_PASSWORD_LENGTH = 8
 

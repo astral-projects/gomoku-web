@@ -155,7 +155,6 @@ interface GamesRepository {
      */
     fun waitForGame(lobbyId: Id, userId: Id): Id?
 
-
     /**
      * Deletes a lobby.
      * @param lobbyId the id of the lobby to delete.

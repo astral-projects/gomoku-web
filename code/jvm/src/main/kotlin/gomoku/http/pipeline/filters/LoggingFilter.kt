@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.util.StopWatch
 
+/**
+ * Filter that logs each request.
+ */
 @Component
 class LoggingFilter : HttpFilter() {
 
@@ -16,7 +19,7 @@ class LoggingFilter : HttpFilter() {
         chain.doFilter(request, response)
         stopWatch.stop()
         logger.info(
-            "method:{}, path:{}, status:{}, duration:{}",
+            "method:{}, path:{}, status:{}, duration:{} ms",
             request.method,
             request.requestURI,
             response.status,

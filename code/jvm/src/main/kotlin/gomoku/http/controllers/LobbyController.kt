@@ -21,24 +21,27 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class LobbysController (
+class LobbyController(
     private val lobbyService: GamesService
-){
+) {
+
     /**
      * Waits for a game in the lobby with the given id.
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
-    @GetMapping(Uris.Games.GET_IS_IN_LOBBY)
+    @GetMapping(Uris.Lobby.GET_IS_IN_LOBBY)
+    @RequiresAuthentication
     @NotTested
     fun waitingInLobby(
         @Valid
         @Range(min = 1)
-        @PathVariable id: Int,
+        @PathVariable
+        id: Int,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
+        val instance = Uris.Lobby.isInLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val result = lobbyService.waitForGame(lobbyIdResult.value, user.user.id)) {
@@ -68,14 +71,14 @@ class LobbysController (
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
-    @DeleteMapping(Uris.Games.EXIT_LOBBY)
+    @DeleteMapping(Uris.Lobby.EXIT_LOBBY)
     @NotTested
     fun exitLobby(
         @PathVariable id: Int,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
+        val instance = Uris.Lobby.exitLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val lobbyDeleteResult = lobbyService.exitLobby(lobbyIdResult.value, userId)) {
@@ -85,14 +88,8 @@ class LobbysController (
                         lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
-
-                    LobbyDeleteError.LobbyDeleteFailure -> Problem.lobbyDeleteFailure(
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
                 }
             }
         }
     }
-
 }
