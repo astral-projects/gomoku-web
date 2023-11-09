@@ -12,7 +12,6 @@ import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
-import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.domain.lobby.Lobby
 import gomoku.repository.GamesRepository
 import gomoku.repository.jdbi.model.JdbiIdModel
@@ -21,12 +20,9 @@ import gomoku.repository.jdbi.model.game.JdbiBoardRunModel
 import gomoku.repository.jdbi.model.game.JdbiBoardWinModel
 import gomoku.repository.jdbi.model.game.JdbiGameAndVariantModel
 import gomoku.repository.jdbi.model.game.JdbiVariantModel
-import gomoku.repository.jdbi.model.idempotencyKey.JdbiIdempotencyKey
 import gomoku.repository.jdbi.model.lobby.JdbiLobbyModel
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.Clock
-import java.util.*
 
 class JdbiGameRepository(
     private val handle: Handle
@@ -227,34 +223,6 @@ class JdbiGameRepository(
             .bind("lobbyId", lobbyId.value)
             .bind("userId", userId.value)
             .execute() == 1
-
-    override fun isIdempotencyKeyUsed(idempotencyKey: UUID, gameId: Id): Boolean {
-        handle.createUpdate("delete from dbo.idempotencykeys where expires_at < :expiresAt")
-            .bind("expiresAt", Clock.systemUTC().instant().epochSecond)
-            .execute()
-
-        return handle.createQuery("select count(*) from dbo.idempotencykeys where idempotency_key = :idempotencyKey and game_id = :gameId and expires_at > :expiresAt")
-            .bind("idempotencyKey", idempotencyKey)
-            .bind("gameId", gameId.value)
-            .bind("expiresAt", Clock.systemUTC().instant().epochSecond)
-            .mapTo<Int>()
-            .single() > 0
-    }
-
-    override fun markIdempotencyKeyAsUsed(idempotencyKey: UUID, gameId: Id) {
-        handle.createUpdate("insert into dbo.idempotencykeys (idempotency_key, expires_at, game_id) values (:idempotencyKey, :expiresAt, :gameId)")
-            .bind("idempotencyKey", idempotencyKey)
-            .bind("expiresAt", Clock.systemUTC().instant().epochSecond + 3600)
-            .bind("gameId", gameId.value)
-            .execute()
-    }
-
-    override fun getIdempotencyKeyInfo(idempotencyKey: UUID): IdempotencyKey? {
-        return handle.createQuery("select * from dbo.idempotencykeys where idempotency_key = :idempotencyKey")
-            .bind("idempotencyKey", idempotencyKey)
-            .mapTo<JdbiIdempotencyKey>()
-            .singleOrNull()?.toDomainModel()
-    }
 
     /**
      * Converts a board to a json string to be stored in the database, depending on the type of board.

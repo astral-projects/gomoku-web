@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class LobbysController(
+class LobbyController(
     private val lobbyService: GamesService
 ) {
     /**

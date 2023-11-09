@@ -4,9 +4,7 @@ import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomainConfig
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor
-import gomoku.http.pipeline.interceptors.IdempotencyKeyInterceptor
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
-import gomoku.http.pipeline.resolvers.IdempotencyKeyArgumentResolver
 import gomoku.repository.jdbi.configureWithAppRequirements
 import gomoku.utils.get
 import kotlinx.datetime.Clock
@@ -54,19 +52,15 @@ class GomokuApplication {
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
-    val idempotencyKeyInterceptor: IdempotencyKeyInterceptor,
     val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
-    val idempotencyKeyArgumentResolver: IdempotencyKeyArgumentResolver
 ) : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authenticationInterceptor)
-        registry.addInterceptor(idempotencyKeyInterceptor)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
-        resolvers.add(idempotencyKeyArgumentResolver)
     }
 }
 

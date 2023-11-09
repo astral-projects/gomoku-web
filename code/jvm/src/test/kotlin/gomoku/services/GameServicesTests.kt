@@ -9,7 +9,6 @@ import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.variant.FreestyleVariant
 import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.config.VariantConfig
-import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
@@ -35,7 +34,6 @@ import kotlin.test.fail
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class GameServicesTests {
     init {
@@ -184,14 +182,8 @@ class GameServicesTests {
         val gameService = createGamesService(TestClock())
         val gameId = createRandomGame(gameService, user, user2) ?: fail("Unexpected null game")
 
-        val idempotencyKey = IdempotencyKey(
-            idempotencyKey = TestDataGenerator.newTestIdempotencyKey(),
-            expirationDate = TestClock().now() + 60.seconds,
-            gameId = gameId
-        )
-
         // then: make a move
-        val g = gameService.makeMove(gameId, user.id, Square(Column('a').get(), Row(1).get()), idempotencyKey)
+        val g = gameService.makeMove(gameId, user.id, Square(Column('a').get(), Row(1).get()))
         assertTrue(g is Success)
         when (g) {
             is Failure -> fail("Unexpected $g")
@@ -201,7 +193,7 @@ class GameServicesTests {
         }
 
         // then: make a move with the same user
-        val g2 = gameService.makeMove(gameId, user.id, Square(Column('b').get(), Row(1).get()), idempotencyKey)
+        val g2 = gameService.makeMove(gameId, user.id, Square(Column('b').get(), Row(1).get()))
         assertTrue(g2 is Failure)
         when (g2) {
             is Failure -> {

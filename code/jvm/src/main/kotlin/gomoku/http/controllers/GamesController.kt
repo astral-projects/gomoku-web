@@ -7,7 +7,6 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.errors.MakeMoveError
-import gomoku.domain.idempotencyKey.IdempotencyKey
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
@@ -188,7 +187,6 @@ class GamesController(
         @Valid @RequestBody
         move: MoveInputModel,
         user: AuthenticatedUser,
-        idempotencyKey: IdempotencyKey
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.makeMove(id)
@@ -201,7 +199,7 @@ class GamesController(
                     is Success -> {
                         val square = Square(gettingColumnResult.value, gettingRowResult.value)
                         val gameMakeMoveResult =
-                            gamesService.makeMove(gameIdResult.value, userId, square, idempotencyKey)
+                            gamesService.makeMove(gameIdResult.value, userId, square)
                         when (gameMakeMoveResult) {
                             is Success -> ResponseEntity.ok(GameMoveOutputModel(id))
                             is Failure -> when (gameMakeMoveResult.value) {
@@ -255,10 +253,6 @@ class GamesController(
                                         instance = instance
                                     )
                                 }
-
-                                GameMakeMoveError.IdempotencyKeyAlreadyUsed -> TODO()
-                                GameMakeMoveError.IdempotencyKeyExpired -> TODO()
-                                GameMakeMoveError.IdempotencyKeyNotFound -> TODO()
                             }
                         }
                     }

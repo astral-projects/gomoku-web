@@ -73,14 +73,3 @@ create table dbo.Games
     constraint created_is_valid check (created_at > 0),
     constraint updated_is_valid check (updated_at > 0)
 );
-
-create table dbo.IdempotencyKeys
-(
-    idempotency_key uuid primary key,
-    -- expires_at is 30 seconds from now by default
-    expires_at      bigint not null default extract(epoch from now() + interval '1 hour'),
-    game_id         int    references dbo.Games (id) on delete cascade on update cascade,
-    constraint expires_at_is_valid check (expires_at > 0)
-);
-
-select * from dbo.idempotencykeys where idempotency_key = 'b7192d33-83cb-4157-913f-cd4ad757491f' and game_id = 1 and expires_at > extract(epoch from now());
