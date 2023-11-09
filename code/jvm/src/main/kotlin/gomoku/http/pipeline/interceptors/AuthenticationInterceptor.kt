@@ -23,7 +23,8 @@ class AuthenticationInterceptor(
     private val authorizationHeaderProcessor: RequestTokenProcessor
 ) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        if (handler is HandlerMethod && handler.hasMethodAnnotation(RequiresAuthentication::class.java)) {
+        logger.info("TestInterceptor")
+        if (handler is HandlerMethod && handler.methodParameters.any { it.parameterType == AuthenticatedUser::class.java }) {
             logger.info("Handler method requires authentication")
             // process token in authentication schema
             val authUser = authorizationHeaderProcessor

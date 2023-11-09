@@ -277,7 +277,7 @@ class UsersController(
      * @return ResponseEntity containing the paginated result of user statistics or an error response.
      */
     @GetMapping(Uris.Users.STATS_BY_NAME)
-    @NotTested
+    @RequiresAuthentication
     fun getUserStatsByName(
         user: AuthenticatedUser,
         @Valid
@@ -292,17 +292,16 @@ class UsersController(
         return when (val limitResult = PositiveValue(limit)) {
             is Failure -> Problem.invalidLimit(instance)
             is Success -> {
-                when (Username(userName)) {
+                when (val username = Username(userName)) {
                     is Success -> {
                         val paginatedResult =
                             userService.getUserStatsByStartingName(
-                                Username(userName).get(),
+                                username.get(),
                                 limitResult.value
                             )
                         ResponseEntity.ok(paginatedResult)
                     }
-
-                    is Failure -> Problem.invalidUsernameLength(Uris.Users.byId(1))
+                    is Failure -> Problem.invalidUsernameLength(Uris.Users.byId(user.user.id.value))
                 }
             }
         }
