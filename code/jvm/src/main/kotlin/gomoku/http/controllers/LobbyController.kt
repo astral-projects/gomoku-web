@@ -30,7 +30,7 @@ class LobbyController(
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
-    @GetMapping(Uris.Games.GET_IS_IN_LOBBY)
+    @GetMapping(Uris.Lobby.GET_IS_IN_LOBBY)
     @RequiresAuthentication
     @NotTested
     fun waitingInLobby(
@@ -41,7 +41,7 @@ class LobbyController(
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
+        val instance = Uris.Lobby.isInLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val result = lobbyService.waitForGame(lobbyIdResult.value, user.user.id)) {
@@ -71,14 +71,14 @@ class LobbyController(
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
-    @DeleteMapping(Uris.Games.EXIT_LOBBY)
+    @DeleteMapping(Uris.Lobby.EXIT_LOBBY)
     @NotTested
     fun exitLobby(
         @PathVariable id: Int,
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
+        val instance = Uris.Lobby.exitLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val lobbyDeleteResult = lobbyService.exitLobby(lobbyIdResult.value, userId)) {

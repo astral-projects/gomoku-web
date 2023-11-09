@@ -1,6 +1,5 @@
 package gomoku.services.game
 
-import gomoku.domain.SystemInfo
 import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
@@ -144,19 +143,6 @@ class GamesService(
                 true -> success(true)
             }
         }
-
-    /**
-     * Makes a move in the game with the given id by a user.
-     *
-     * **Returns an error**, when:
-     * - The game is not found;
-     * - The user does not belong to the game;
-     * - The variant is not found.
-     * - The move is not valid;
-     *
-     * Note, depending on the board type, the game points are updated accordingly.
-     */
-    fun getSystemInfo(): SystemInfo = SystemInfo
 
     /**
      * Makes a move in the game, passing the user id and the move.

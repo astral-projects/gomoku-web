@@ -1,6 +1,5 @@
 package gomoku.http.controllers
 
-import gomoku.domain.SystemInfo
 import gomoku.domain.components.Id
 import gomoku.domain.components.IdError
 import gomoku.domain.game.board.moves.move.Square
@@ -15,7 +14,6 @@ import gomoku.http.model.game.GameExitOutputModel
 import gomoku.http.model.game.GameMoveOutputModel
 import gomoku.http.model.game.GameOutputModel
 import gomoku.http.model.game.MoveInputModel
-import gomoku.http.model.game.SystemInfoOutputModel
 import gomoku.http.model.game.VariantInputModel
 import gomoku.services.game.FindGameSuccess
 import gomoku.services.game.GameCreationError
@@ -166,17 +164,6 @@ class GamesController(
                 }
             }
         }
-    }
-
-    /**
-     * Retrieves the system information.
-     */
-    @GetMapping(Uris.Games.GET_SYSTEM_INFO)
-    @RequiresAuthentication
-    @NotTested
-    fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
-        val systemInfo: SystemInfo = gamesService.getSystemInfo()
-        return ResponseEntity.ok(SystemInfoOutputModel.serializeFrom(systemInfo))
     }
 
     /**
