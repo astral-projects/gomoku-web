@@ -35,36 +35,3 @@ inner join dbo.Statistics as stats
 on users.id = stats.user_id
 offset :offset
 limit :limit;
-
-
-
-SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won,
-       RANK() OVER (ORDER BY stats.points DESC) as rank,
-       users.id, users.username, users.email
-FROM dbo.Statistics AS stats
-         INNER JOIN dbo.Users AS users ON stats.user_id = users.id
-WHERE users.username LIKE "user"
-ORDER BY stats.points DESC
-OFFSET 0
-    LIMIT 20;
-
-SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won,
-       RANK() OVER (ORDER BY stats.points DESC) as rank,
-       users.id, users.username, users.email
-FROM dbo.Statistics AS stats
-         INNER JOIN dbo.Users AS users ON stats.user_id = users.id
-WHERE users.username ILIKE 'user'
-ORDER BY stats.points DESC
-OFFSET 0
-    LIMIT 10;
-
-
-SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won,
-       RANK() OVER (ORDER BY stats.points DESC) as rank,
-       users.id, users.username, users.email
-FROM dbo.Statistics AS stats
-         INNER JOIN dbo.Users AS users ON stats.user_id = users.id
-WHERE POSITION('user' IN users.username) > 0
-ORDER BY stats.points DESC
-OFFSET 0
-    LIMIT 20;
