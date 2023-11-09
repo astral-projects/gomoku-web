@@ -25,7 +25,7 @@ data class Problem(
     val status: Int,
     val detail: String? = null,
     val instance: URI? = null,
-    val data: Map<String, Any>? = null
+    val data: Map<String, Any>? = null,
 ) {
     fun toResponse() = ResponseEntity
         .status(status)
@@ -41,7 +41,6 @@ data class Problem(
         val invalidRequestContent = URI("${BASE_URL}invalid-request-content")
         private val insecurePassword = URI("${BASE_URL}insecure-password")
         private val gameNotFound = URI("${BASE_URL}game-not-found")
-        private val userAlreadyInLobby = URI("${BASE_URL}user-already-in-lobby")
         private val userIsNotTheHost = URI("${BASE_URL}user-is-not-the-host")
         private val userNotInGame = URI("${BASE_URL}user-not-in-game")
         private val invalidMove = URI("${BASE_URL}invalid-move")
@@ -70,10 +69,6 @@ data class Problem(
         private val invalidRow = URI("${BASE_URL}invalid-row")
         private val invalidColumn = URI("${BASE_URL}invalid-column")
         private val gameInsertFailure = URI("${BASE_URL}game-insert-failure")
-        private val gameDeleteFailure = URI("${BASE_URL}game-delete-failure")
-        private val lobbyInsertFailure = URI("${BASE_URL}lobby-insert-failure")
-        private val gameUpdateFailure = URI("${BASE_URL}game-update-failure")
-        private val lobbyDeleteFailure = URI("${BASE_URL}lobby-delete-failure")
         private val emptyUsername = URI("${BASE_URL}empty-username")
 
         private fun invalidId(idType: String, instance: URI): ResponseEntity<*> = Problem(
@@ -106,18 +101,6 @@ data class Problem(
             data = mapOf(
                 "userId" to userId.value,
                 "gameId" to gameId.value
-            )
-        ).toResponse()
-
-        fun userAlreadyInLobby(userId: Id, lobbyId: Id, instance: URI): ResponseEntity<*> = Problem(
-            type = userAlreadyInLobby,
-            title = "User already in lobby",
-            status = 400,
-            detail = "The user with id ${userId.value} is already in a lobby",
-            instance = instance,
-            data = mapOf(
-                "userId" to userId.value,
-                "lobbyId" to lobbyId.value
             )
         ).toResponse()
 
@@ -160,14 +143,6 @@ data class Problem(
             instance = instance
         ).toResponse()
 
-        fun lobbyInsertFailure(instance: URI): ResponseEntity<*> = Problem(
-            type = lobbyInsertFailure,
-            title = "Error creating lobby",
-            status = 409,
-            detail = "The lobby could not be created try again later",
-            instance = instance
-        ).toResponse()
-
         fun userIsNotTheHost(userId: Id, gameId: Id, instance: URI) = Problem(
             type = userIsNotTheHost,
             title = "User is not the host",
@@ -196,29 +171,20 @@ data class Problem(
             instance = instance
         ).toResponse()
 
-        fun lobbyNotFound(lobbyId: Id, instance: URI): ResponseEntity<*> = Problem(
-            type = lobbyNotFound,
-            title = "Requested lobby was not found",
-            status = 404,
-            detail = "The lobby with id <${lobbyId.value}> was not found",
-            instance = instance
-        ).toResponse()
-
-        fun lobbyDeleteFailure(lobbyId: Id, instance: URI): ResponseEntity<*> = Problem(
-            type = lobbyDeleteFailure,
-            title = "Lobby delete failure",
-            status = 409,
-            detail = "The lobby with id <${lobbyId.value}> could not be deleted",
-            instance = instance
-        ).toResponse()
-
-        fun gameDeleteFailure(instance: URI): ResponseEntity<*> = Problem(
-            type = gameDeleteFailure,
-            title = "Game delete failure",
-            status = 409,
-            detail = "The game could not be deleted",
-            instance = instance
-        ).toResponse()
+        fun lobbyNotFound(lobbyId: Id? = null, instance: URI): ResponseEntity<*> {
+            val detail = if (lobbyId == null) {
+                "The lobby was not found"
+            } else {
+                "The lobby with id <${lobbyId.value}> was not found"
+            }
+            return Problem(
+                type = lobbyNotFound,
+                title = "Requested lobby was not found",
+                status = 404,
+                detail = detail,
+                instance = instance
+            ).toResponse()
+        }
 
         fun blankUsername(instance: URI): ResponseEntity<*> = Problem(
             type = blankUsername,
@@ -332,7 +298,7 @@ data class Problem(
             detail = "The email is invalid because it does not match the email format",
             instance = instance,
             data = mapOf(
-                "regex" to Email.emailFormat
+                "regex" to Email.EMAIL_FORMAT
             )
         ).toResponse()
 
@@ -357,14 +323,6 @@ data class Problem(
                 "userId" to userId.value,
                 "gameId" to gameId.value
             )
-        ).toResponse()
-
-        fun gameUpdateFailure(gameId: Id, instance: URI): ResponseEntity<*> = Problem(
-            type = gameUpdateFailure,
-            title = "Game update failure",
-            status = 409,
-            detail = "The game with id <${gameId.value}> could not be updated",
-            instance = instance
         ).toResponse()
 
         fun notYourTurn(gameId: Id, player: Player, instance: URI): ResponseEntity<*> = Problem(

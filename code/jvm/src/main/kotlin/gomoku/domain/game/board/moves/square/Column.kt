@@ -7,7 +7,7 @@ import gomoku.utils.Failure
 import gomoku.utils.Success
 
 /**
- * Component that represents a column in the board.
+ * Component that represents a column in a board.
  */
 class Column private constructor(val letter: Char) : Component, Indexable {
 

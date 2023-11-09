@@ -160,7 +160,10 @@ class UsersController(
      * @param authenticatedUser the authenticated user.
      */
     @PostMapping(Uris.Users.LOGOUT)
-    fun logout(authenticatedUser: AuthenticatedUser): ResponseEntity<*> {
+    @RequiresAuthentication
+    fun logout(
+        authenticatedUser: AuthenticatedUser,
+    ): ResponseEntity<*> {
         val instance = Uris.Users.logout()
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
             is Success -> ResponseEntity.ok(UserLogoutOutputModel())
@@ -175,7 +178,10 @@ class UsersController(
      * @param authenticatedUser the authenticated user.
      */
     @GetMapping(Uris.Users.HOME)
-    fun getUserHome(authenticatedUser: AuthenticatedUser): ResponseEntity<UserOutputModel> =
+    @RequiresAuthentication
+    fun getUserHome(
+        authenticatedUser: AuthenticatedUser,
+    ): ResponseEntity<UserOutputModel> =
         ResponseEntity.ok(UserOutputModel.serializeFrom(authenticatedUser.user))
 
     /**
@@ -244,7 +250,7 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @PathVariable
-        id: Int
+        id: Int,
     ): ResponseEntity<*> {
         val instance = Uris.Users.byIdStats(id)
         return when (val idResult = Id(id)) {
@@ -262,8 +268,11 @@ class UsersController(
      * @param user the authenticated user.
      */
     @PutMapping(Uris.Users.EDIT_BY_ID)
+    @RequiresAuthentication
     @NotTested
-    fun editUser(user: AuthenticatedUser): ResponseEntity<User> {
+    fun editUser(
+        user: AuthenticatedUser,
+    ): ResponseEntity<User> {
         TODO("Not yet implemented")
     }
 }

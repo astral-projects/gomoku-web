@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -49,7 +50,9 @@ class GamesController(
      */
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
-    fun getGameById(@PathVariable id: Int): ResponseEntity<*> {
+    fun getGameById(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
         val instance = Uris.Games.byId(id)
         return when (val gameIdResult = Id(id)) {
             is Failure -> Problem.invalidGameId(instance)
@@ -71,7 +74,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PostMapping(Uris.Games.FIND_GAME)
-    @NotTested
+    @RequiresAuthentication
     fun findGame(
         @Valid @RequestBody
         variant: VariantInputModel,
@@ -86,10 +89,9 @@ class GamesController(
 
             is Success -> when (val gameCreationResult = gamesService.findGame(variantIdResult.value, userId)) {
                 is Success -> when (gameCreationResult.value) {
-                    is FindGameSuccess.LobbyCreated ->
-                        ResponseEntity
-                            .status(HttpStatus.CREATED)
-                            .body(gameCreationResult.value)
+                    is FindGameSuccess.LobbyCreated -> ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(gameCreationResult.value)
 
                     is FindGameSuccess.GameMatch -> ResponseEntity.ok(gameCreationResult.value)
                     is FindGameSuccess.StillInLobby -> ResponseEntity.ok(gameCreationResult.value)
@@ -102,7 +104,7 @@ class GamesController(
                         instance = instance
                     )
 
-                    is GameCreationError.UserAlreadyLeaveTheLobby -> Problem.userNotInLobby(
+                    is GameCreationError.UserAlreadyLeftTheLobby -> Problem.userNotInLobby(
                         userId = userId,
                         instance = instance,
                         lobbyId = gameCreationResult.value.lobbyId
@@ -113,8 +115,13 @@ class GamesController(
                         instance = instance
                     )
 
-                    GameCreationError.GameInsertFailure -> Problem.gameInsertFailure(instance)
-                    GameCreationError.LobbyInsertFailure -> Problem.lobbyInsertFailure(instance)
+                    GameCreationError.LobbyNotFound -> Problem.lobbyNotFound(
+                        instance = instance
+                    )
+
+                    GameCreationError.GameInsertionError -> Problem.gameInsertFailure(
+                        instance = instance
+                    )
                 }
             }
         }
@@ -126,6 +133,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
+    @RequiresAuthentication
     @NotTested
     fun deleteById(
         @PathVariable id: Int,
@@ -154,8 +162,6 @@ class GamesController(
                         gameId = gameIdResult.value,
                         instance = instance
                     )
-
-                    GameDeleteError.GameDeleteFailure -> Problem.gameDeleteFailure(instance)
                 }
             }
         }
@@ -165,6 +171,7 @@ class GamesController(
      * Retrieves the system information.
      */
     @GetMapping(Uris.Games.GET_SYSTEM_INFO)
+    @RequiresAuthentication
     @NotTested
     fun getSystemInfo(): ResponseEntity<SystemInfoOutputModel> {
         val systemInfo: SystemInfo = gamesService.getSystemInfo()
@@ -177,7 +184,8 @@ class GamesController(
      * @param move the move to be made.
      * @param user the authenticated user.
      */
-    @PostMapping(Uris.Games.MAKE_MOVE)
+    @PutMapping(Uris.Games.MAKE_MOVE)
+    @RequiresAuthentication
     @NotTested
     fun makeMove(
         @Valid
@@ -186,7 +194,7 @@ class GamesController(
         id: Int,
         @Valid @RequestBody
         move: MoveInputModel,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.makeMove(id)
@@ -209,18 +217,7 @@ class GamesController(
                                     instance = instance
                                 )
 
-                                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.userDoesntBelongToThisGame(
-                                    userId = userId,
-                                    gameId = gameIdResult.value,
-                                    instance = instance
-                                )
-
                                 GameMakeMoveError.GameNotFound -> Problem.gameNotFound(
-                                    gameId = gameIdResult.value,
-                                    instance = instance
-                                )
-
-                                GameMakeMoveError.GameUpdateFailure -> Problem.gameUpdateFailure(
                                     gameId = gameIdResult.value,
                                     instance = instance
                                 )
@@ -267,6 +264,7 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PostMapping(Uris.Games.EXIT_GAME)
+    @RequiresAuthentication
     @NotTested
     fun exitGame(
         @Valid

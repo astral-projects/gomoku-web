@@ -21,22 +21,22 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class LobbyController(
-    private val lobbyService: GamesService
+class LobbysController(
+    private val lobbyService: GamesService,
 ) {
+
     /**
      * Waits for a game in the lobby with the given id.
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
     @GetMapping(Uris.Games.GET_IS_IN_LOBBY)
+    @RequiresAuthentication
     @NotTested
     fun waitingInLobby(
-        @Valid
-        @Range(min = 1)
-        @PathVariable
-        id: Int,
-        user: AuthenticatedUser
+        @Valid @Range(min = 1)
+        @PathVariable id: Int,
+        user: AuthenticatedUser,
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.exitGame(id)
@@ -83,11 +83,6 @@ class LobbyController(
                 is Success -> ResponseEntity.ok(LobbyExitOutputModel(lobbyIdResult.value.value))
                 is Failure -> when (lobbyDeleteResult.value) {
                     LobbyDeleteError.LobbyNotFound -> Problem.lobbyNotFound(
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
-
-                    LobbyDeleteError.LobbyDeleteFailure -> Problem.lobbyDeleteFailure(
                         lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
