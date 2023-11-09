@@ -51,7 +51,7 @@ class GamesController(
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(
-        @PathVariable id: Int,
+        @PathVariable id: Int
     ): ResponseEntity<*> {
         val instance = Uris.Games.byId(id)
         return when (val gameIdResult = Id(id)) {
@@ -89,9 +89,10 @@ class GamesController(
 
             is Success -> when (val gameCreationResult = gamesService.findGame(variantIdResult.value, userId)) {
                 is Success -> when (gameCreationResult.value) {
-                    is FindGameSuccess.LobbyCreated -> ResponseEntity
-                        .status(HttpStatus.CREATED)
-                        .body(gameCreationResult.value)
+                    is FindGameSuccess.LobbyCreated ->
+                        ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(gameCreationResult.value)
 
                     is FindGameSuccess.GameMatch -> ResponseEntity.ok(gameCreationResult.value)
                     is FindGameSuccess.StillInLobby -> ResponseEntity.ok(gameCreationResult.value)
@@ -250,6 +251,8 @@ class GamesController(
                                         instance = instance
                                     )
                                 }
+
+                                GameMakeMoveError.UserDoesNotBelongToThisGame -> TODO()
                             }
                         }
                     }

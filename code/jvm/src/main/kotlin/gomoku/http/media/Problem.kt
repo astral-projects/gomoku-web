@@ -25,7 +25,7 @@ data class Problem(
     val status: Int,
     val detail: String? = null,
     val instance: URI? = null,
-    val data: Map<String, Any>? = null,
+    val data: Map<String, Any>? = null
 ) {
     fun toResponse() = ResponseEntity
         .status(status)

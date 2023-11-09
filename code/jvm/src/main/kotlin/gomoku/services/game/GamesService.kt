@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service
 class GamesService(
     val transactionManager: TransactionManager,
     private val clock: Clock,
-    private val variants: List<Variant>,
+    private val variants: List<Variant>
 ) {
 
     /**
@@ -294,7 +294,7 @@ class GamesService(
         gamesRepository: GamesRepository,
         gamePoints: GamePoints,
         userId: Id,
-        game: Game,
+        game: Game
     ): Boolean = when (game.board) {
         is BoardWin -> {
             gamesRepository.updatePoints(

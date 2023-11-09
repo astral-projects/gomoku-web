@@ -162,7 +162,7 @@ class UsersController(
     @PostMapping(Uris.Users.LOGOUT)
     @RequiresAuthentication
     fun logout(
-        authenticatedUser: AuthenticatedUser,
+        authenticatedUser: AuthenticatedUser
     ): ResponseEntity<*> {
         val instance = Uris.Users.logout()
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
@@ -180,7 +180,7 @@ class UsersController(
     @GetMapping(Uris.Users.HOME)
     @RequiresAuthentication
     fun getUserHome(
-        authenticatedUser: AuthenticatedUser,
+        authenticatedUser: AuthenticatedUser
     ): ResponseEntity<UserOutputModel> =
         ResponseEntity.ok(UserOutputModel.serializeFrom(authenticatedUser.user))
 
@@ -250,7 +250,7 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @PathVariable
-        id: Int,
+        id: Int
     ): ResponseEntity<*> {
         val instance = Uris.Users.byIdStats(id)
         return when (val idResult = Id(id)) {
@@ -271,7 +271,7 @@ class UsersController(
     @RequiresAuthentication
     @NotTested
     fun editUser(
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<User> {
         TODO("Not yet implemented")
     }

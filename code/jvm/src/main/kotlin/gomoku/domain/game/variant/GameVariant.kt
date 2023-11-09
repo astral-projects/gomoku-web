@@ -16,5 +16,5 @@ data class GameVariant(
     val id: Id,
     val name: VariantName,
     val openingRule: OpeningRule,
-    val boardSize: BoardSize,
+    val boardSize: BoardSize
 )

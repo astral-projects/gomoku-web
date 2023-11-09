@@ -11,7 +11,7 @@ import gomoku.domain.user.components.Username
  * @property email The email of the user.
  * @property passwordValidation The information that can be used to validate the password of the user.
  */
-data class User (
+data class User(
     val id: Id,
     val username: Username,
     val email: Email,

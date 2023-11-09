@@ -66,15 +66,16 @@ class FreestyleVariant : Variant {
     override fun checkWin(board: Board, square: Square): Boolean {
         return try {
             requireNotNull(board.turn)
-            if (board.turn.timeLeftInSec.value <= 0)
+            if (board.turn.timeLeftInSec.value <= 0) {
                 return true
+            }
             val backSlash = square.row.toIndex() == square.col.toIndex()
             val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
             val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
             places.count { it.col == square.col } >= WINNING_PIECES ||
-                    places.count { it.row == square.row } >= WINNING_PIECES ||
-                    places.count { backSlash } >= WINNING_PIECES ||
-                    places.count { slash } >= WINNING_PIECES
+                places.count { it.row == square.row } >= WINNING_PIECES ||
+                places.count { backSlash } >= WINNING_PIECES ||
+                places.count { slash } >= WINNING_PIECES
         } catch (ex: IllegalArgumentException) {
             // only way found to use smart cast
             false

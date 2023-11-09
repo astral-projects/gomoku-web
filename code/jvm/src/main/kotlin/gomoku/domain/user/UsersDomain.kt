@@ -45,8 +45,8 @@ class UsersDomain(
     ): Boolean {
         val now = clock.now()
         return token.createdAt <= now &&
-                (now - token.createdAt) <= config.tokenTtl &&
-                (now - token.lastUsedAt) <= config.tokenRollingTtl
+            (now - token.createdAt) <= config.tokenTtl &&
+            (now - token.lastUsedAt) <= config.tokenRollingTtl
     }
 
     fun getTokenExpiration(token: Token): Instant {
