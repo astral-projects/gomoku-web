@@ -11,6 +11,7 @@ object Uris {
     object Users {
         const val REGISTER = "$PREFIX/users"
         const val TOKEN = "$PREFIX/users/token"
+        const val STATS_BY_NAME = "$PREFIX/users/stats/search"
         const val STATS = "$PREFIX/users/stats"
         const val STATS_BY_ID = "$PREFIX/users/{id}/stats"
         const val GET_BY_ID = "$PREFIX/users/{id}"

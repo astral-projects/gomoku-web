@@ -5,6 +5,7 @@ import gomoku.domain.components.PositiveValue
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
+import gomoku.domain.user.components.Username
 import gomoku.repository.jdbi.JdbiTestConfiguration.jdbi
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.services.user.UsersService
@@ -18,6 +19,7 @@ import gomoku.utils.get
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -337,6 +339,45 @@ class UserServiceTests {
         // then: the statistics is paginated
         assertEquals(nrOfUsers, ranking.items.size)
         assertEquals(limit, ranking.itemsPerPage)
+    }
+
+    @Test
+    fun `can retrieve the ranking info of one or more users by spcified username`(){
+        // given: a user service
+        val testClock = TestClock()
+        val userService = createUsersService(testClock)
+
+        // when: creating 10 users
+        val nrOfUsers = 20
+        repeat(nrOfUsers) {
+            val username = if(it<nrOfUsers/2) newTestUserName() else Username("joaos$it").get()
+            val email = newTestEmail()
+            val password = newTestPassword()
+            val createUserResult = userService.createUser(username, email, password)
+
+            // then: the creation is successful
+            when (createUserResult) {
+                is Failure -> fail("Unexpected $createUserResult")
+                is Success -> assertTrue(createUserResult.value.value > 0)
+            }
+        }
+
+        // when: retrieving the users statistic information
+        val limit = nrOfUsers
+        val ranking = userService.getUserStatsByStartingName(
+            Username("joaos").get(),
+            limit = PositiveValue(limit).get()
+        )
+        assertEquals(nrOfUsers/2,ranking.totalItems)
+
+
+        // when: retrieving the users statistic information
+        val ranking2 = userService.getUserStatsByStartingName(
+            Username("user-").get(),
+            limit = PositiveValue(limit).get()
+        )
+        assertEquals(nrOfUsers/2,ranking2.totalItems)
+        assertNotNull(ranking.items.find { it.username.value=="joaos11" })
     }
 
     companion object {

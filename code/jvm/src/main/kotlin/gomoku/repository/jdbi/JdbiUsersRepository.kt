@@ -167,6 +167,30 @@ class JdbiUsersRepository(
             .mapTo<JdbiUserAndStatsModel>()
             .singleOrNull()?.toDomainModel()
 
+    override fun  getUserStatsByStartingName(username: Username, limit: PositiveValue): PaginatedResult<UserStatsInfo> {
+        val totalItems2 = handle.createQuery("select count(*) from dbo.Statistics")
+            .mapTo<Int>()
+            .single()
+
+        val result = handle.createQuery(
+            """
+            SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won, 
+                   RANK() OVER (ORDER BY stats.points DESC) as rank, 
+                   users.id, users.username, users.email
+            FROM dbo.Statistics AS stats
+            INNER JOIN dbo.Users AS users ON stats.user_id = users.id
+            WHERE users.username LIKE :username
+            ORDER BY stats.points DESC
+            LIMIT :limit;
+            """.trimIndent()
+        )
+            .bind("username", "%${username.value}%")
+            .bind("limit", limit.value)
+            .mapTo<JdbiUserAndStatsModel>()
+            .map { it.toDomainModel() }
+        return PaginatedResult.create(items=result.toList(), limit= limit.value)
+    }
+
     override fun editUser(userId: Id): User? {
         TODO("Not yet implemented")
     }

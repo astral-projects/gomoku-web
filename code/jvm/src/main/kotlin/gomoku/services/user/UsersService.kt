@@ -14,6 +14,7 @@ import gomoku.domain.user.components.Username
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.NotTested
 import gomoku.utils.failure
+import gomoku.utils.get
 import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
@@ -110,6 +111,17 @@ class UsersService(
         transactionManager.run {
             it.usersRepository.getUserStats(userId)
         }
+
+    @NotTested
+    fun  getUserStatsByStartingName(
+        username: Username,
+        limit: PositiveValue
+    ): PaginatedResult<UserStatsInfo> =
+        transactionManager.run {
+            val userRepository = it.usersRepository
+            userRepository. getUserStatsByStartingName(username, limit)
+        }
+
 
     @NotTested
     fun editUser(user: User): User {

@@ -95,6 +95,15 @@ interface UsersRepository {
     fun getUserStats(userId: Id): UserStatsInfo?
 
     /**
+     * Finds the score of the name requests.
+     * @return the score of the name requested.
+     */
+    fun getUserStatsByStartingName(
+        username: Username,
+        limit: PositiveValue
+    ): PaginatedResult<UserStatsInfo>
+
+    /**
      * Edits information in a user.
      * @param userId the id of the user to edit.
      * @return the edited user or null if no such user exists.

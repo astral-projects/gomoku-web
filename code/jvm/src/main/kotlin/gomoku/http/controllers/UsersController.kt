@@ -27,6 +27,7 @@ import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
+import gomoku.utils.get
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
 import org.springframework.http.HttpStatus
@@ -255,6 +256,51 @@ class UsersController(
             }
         }
     }
+
+    /**
+     * Retrieves user statistics by username.
+     *
+     * This endpoint allows the retrieval of user statistics based on a specified username.
+     * The provided username is used to filter and retrieve user statistics for users
+     * whose names either match or start with the specified substring.
+     *
+     * @param user The authenticated user making the request.
+     * @param limit The maximum number of user statistics results to be returned (default is 10).
+     * @param userName The username or substring to filter user statistics by.
+     * @return ResponseEntity containing the paginated result of user statistics or an error response.
+     */
+    @GetMapping(Uris.Users.STATS_BY_NAME)
+    @NotTested
+    fun getUserStatsByName(
+        user: AuthenticatedUser,
+        @Valid
+        @Range(min = 1)
+        @RequestParam(name = "limit", defaultValue = "10")
+        limit: Int,
+        @Valid
+        @RequestParam(name = "username")
+        userName: String,
+    ): ResponseEntity<*> {
+        val instance = Uris.Users.stats()
+        return when (val limitResult = PositiveValue(limit)) {
+            is Failure -> Problem.invalidLimit(instance)
+            is Success -> {
+                when (Username(userName)) {
+                    is Success -> {
+                        val paginatedResult =
+                            userService.getUserStatsByStartingName(
+                                Username(userName).get(),
+                                limitResult.value
+                            )
+                        ResponseEntity.ok(paginatedResult)
+                    }
+
+                    is Failure -> Problem.invalidUsernameLength(Uris.Users.byId(1))
+                }
+            }
+        }
+    }
+
 
     /**
      * Edits user data.
