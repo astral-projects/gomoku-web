@@ -252,7 +252,11 @@ class GamesController(
                                     )
                                 }
 
-                                GameMakeMoveError.UserDoesNotBelongToThisGame -> TODO()
+                                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.userDoesntBelongToThisGame(
+                                    userId = userId,
+                                    gameId = gameIdResult.value,
+                                    instance = instance
+                                )
                             }
                         }
                     }
