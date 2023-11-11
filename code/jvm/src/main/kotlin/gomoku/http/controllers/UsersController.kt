@@ -144,7 +144,7 @@ class UsersController(
                             is Failure -> when (tokenCreationResult.value) {
                                 TokenCreationError.PasswordIsWrong -> Problem.passwordIsWrong(instance)
 
-                                TokenCreationError.UsernameNotExists -> Problem.usernameAlreadyExists(
+                                TokenCreationError.UsernameNotExists -> Problem.usernameDoesNotExist(
                                     username = usernameResult.value,
                                     instance = instance
                                 )
@@ -286,7 +286,7 @@ class UsersController(
         limit: Int,
         @Valid
         @RequestParam(name = "username")
-        userName: String,
+        userName: String
     ): ResponseEntity<*> {
         val instance = Uris.Users.stats()
         return when (val limitResult = PositiveValue(limit)) {
@@ -306,7 +306,6 @@ class UsersController(
             }
         }
     }
-
 
     /**
      * Edits user data.

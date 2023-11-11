@@ -19,7 +19,6 @@ import gomoku.utils.get
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -342,7 +341,7 @@ class UserServiceTests {
     }
 
     @Test
-    fun `can retrieve the ranking info of one or more users by spcified username`(){
+    fun `can retrieve the ranking info of one or more users by spcified username`() {
         // given: a user service
         val testClock = TestClock()
         val userService = createUsersService(testClock)
@@ -350,7 +349,7 @@ class UserServiceTests {
         // when: creating 10 users
         val nrOfUsers = 20
         repeat(nrOfUsers) {
-            val username = if(it<nrOfUsers/2) newTestUserName() else Username("joaos$it").get()
+            val username = if (it < nrOfUsers / 2) newTestUserName() else Username("joaos$it").get()
             val email = newTestEmail()
             val password = newTestPassword()
             val createUserResult = userService.createUser(username, email, password)
@@ -368,16 +367,15 @@ class UserServiceTests {
             Username("joaos").get(),
             limit = PositiveValue(limit).get()
         )
-        assertEquals(nrOfUsers/2,ranking.totalItems)
-
+        assertEquals(nrOfUsers / 2, ranking.totalItems)
 
         // when: retrieving the users statistic information
         val ranking2 = userService.getUserStatsByStartingName(
             Username("user-").get(),
             limit = PositiveValue(limit).get()
         )
-        assertEquals(nrOfUsers/2,ranking2.totalItems)
-        assertNotNull(ranking.items.find { it.username.value=="joaos11" })
+        assertEquals(nrOfUsers / 2, ranking2.totalItems)
+        assertNotNull(ranking.items.find { it.username.value == "joaos11" })
     }
 
     companion object {

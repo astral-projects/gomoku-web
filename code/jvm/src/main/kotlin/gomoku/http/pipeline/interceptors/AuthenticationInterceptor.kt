@@ -1,7 +1,6 @@
 package gomoku.http.pipeline.interceptors
 
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.http.controllers.RequiresAuthentication
 import gomoku.http.pipeline.RequestTokenProcessor
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor.Companion.NAME_WWW_AUTHENTICATE_HEADER
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver

@@ -70,6 +70,7 @@ data class Problem(
         private val invalidColumn = URI("${BASE_URL}invalid-column")
         private val gameInsertFailure = URI("${BASE_URL}game-insert-failure")
         private val emptyUsername = URI("${BASE_URL}empty-username")
+        private val usernameDoesNotExists = URI("${BASE_URL}username-doesnt-exists")
 
         private fun invalidId(idType: String, instance: URI): ResponseEntity<*> = Problem(
             type = invalidId,
@@ -387,6 +388,14 @@ data class Problem(
             title = "User doesn't belong to any game or lobby",
             status = 403,
             detail = "The user with id <${userId.value}> doesn't belong to any game or lobby",
+            instance = instance
+        ).toResponse()
+
+        fun usernameDoesNotExist(username: Username, instance: URI): ResponseEntity<*> = Problem(
+            type = userNotFound,
+            title = "User not found",
+            status = 404,
+            detail = "The user with username <${username.value}> was not found",
             instance = instance
         ).toResponse()
     }
