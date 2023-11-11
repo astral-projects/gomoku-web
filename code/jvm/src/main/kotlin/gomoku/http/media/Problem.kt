@@ -35,7 +35,7 @@ data class Problem(
 
     companion object {
 
-        private const val BASE_URL = "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/"
+        private const val BASE_URL = "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/"
         const val MEDIA_TYPE = "application/problem+json"
 
         val invalidRequestContent = URI("${BASE_URL}invalid-request-content")
@@ -392,10 +392,10 @@ data class Problem(
         ).toResponse()
 
         fun usernameDoesNotExist(username: Username, instance: URI): ResponseEntity<*> = Problem(
-            type = userNotFound,
-            title = "User not found",
+            type = usernameDoesNotExists,
+            title = "Username doesn't exist",
             status = 404,
-            detail = "The user with username <${username.value}> was not found",
+            detail = "The user with username <${username.value}> does not exist",
             instance = instance
         ).toResponse()
     }
