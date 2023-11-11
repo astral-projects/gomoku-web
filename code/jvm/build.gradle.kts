@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.1.4"
     id("io.spring.dependency-management") version "1.1.3"
-    kotlin("jvm") version "1.8.22"
+    kotlin("jvm") version "1.9.10"
     kotlin("plugin.spring") version "1.8.22"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.0"
 }
@@ -57,6 +57,7 @@ dependencies {
     // to use WebTestClient on tests
     testImplementation("org.springframework.boot:spring-boot-starter-webflux:3.0.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -92,4 +93,8 @@ task<Exec>("dbTestsDown") {
 tasks.named("check") {
     dependsOn("dbTestsWait")
     finalizedBy("dbTestsDown")
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    languageVersion = "1.9"
 }

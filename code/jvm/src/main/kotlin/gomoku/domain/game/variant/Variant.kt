@@ -35,14 +35,6 @@ interface Variant {
     fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult
 
     /**
-     * Check if the game is won based on the last move made.
-     * @param board The game board that is currently being played.
-     * @param square The square where the last move was made.
-     * @return true if the game is won, false otherwise.
-     */
-    fun checkWin(board: Board, square: Square): Boolean
-
-    /**
      * Gets the initial game board for this variant.
      * @return The initial game board.
      */

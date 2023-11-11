@@ -22,7 +22,7 @@ interface GamesRepository {
     fun getGameById(gameId: Id): Game?
 
     /**
-     * Inserts a list of variants.
+     * Inserts a list of variants. If a variant with the same name already exists, it will be skipped.
      * @param variants the list of [VariantConfig]s to insert.
      * @return true if the variants were inserted successfully, false otherwise.
      */
@@ -53,7 +53,7 @@ interface GamesRepository {
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id, board: Board): Id?
 
     /**
-     * Deletes a game.
+     * Deletes a game, only if the user requesting the deletion is the host of the game and the game is not in progress.
      * @param gameId the id of the game to delete.
      * @param userId the id of the user requesting the deletion.
      * @return true if the game was deleted successfully, false otherwise.
@@ -91,14 +91,6 @@ interface GamesRepository {
     fun findIfUserIsInGame(userId: Id): Game?
 
     /**
-     * Asserts if a user is playing a given game.
-     * @param userId the id of the user to search for.
-     * @param gameId the id of the game to search for.
-     * @return the game with the given id if the user is in the game, or null if no such game exists.
-     */
-    fun userBelongsToTheGame(userId: Id, gameId: Id): Game?
-
-    /**
      * Updates the board of a given game.
      * @param gameId the id of the game to update.
      * @param board the new board to update the game with.
@@ -117,7 +109,7 @@ interface GamesRepository {
      * Allows a user to exit a game and marks the game as finished.
      * @param gameId the id of the game to search for.
      * @param userId the id of the user to search for.
-     * @return the id of the game that was exited, or null if no such game exists.
+     * @return the id of user that still belongs to the game, or null if no such user exists.
      */
     fun exitGame(gameId: Id, userId: Id): Id?
 
@@ -144,19 +136,20 @@ interface GamesRepository {
         loserId: Id,
         winnerPoints: NonNegativeValue,
         loserPoints: NonNegativeValue,
-        shouldCountAsGameWin: Boolean
+        shouldCountAsGameWin: Boolean,
     ): Boolean
 
     /**
-     * Asserts if a user is waiting in a lobby or if is already in a game to start.
-     * @param lobbyId the id of the lobby to search for.
-     * @param userId the id of the user to search for.
+     * Works as a polling mechanism to check if a game is ready to start.
+     * Host can use this method to check if a guest has joined the lobby.
+     * @param lobbyId the id of the lobby the host is waiting in.
+     * @param userId the id of the host.
      * @return id of the game if the game is ready to start, null otherwise.
      */
     fun waitForGame(lobbyId: Id, userId: Id): Id?
 
     /**
-     * Deletes a lobby.
+     * Deletes a lobby, only if the user requesting the deletion is the host of the lobby.
      * @param lobbyId the id of the lobby to delete.
      * @param userId the id of the user requesting the deletion.
      * @return true if the lobby was deleted successfully, false otherwise.

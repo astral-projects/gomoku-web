@@ -12,6 +12,7 @@ import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Move
+import gomoku.domain.game.board.moves.Moves
 import gomoku.domain.game.board.moves.move.Piece
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.errors.BoardMakeMoveResult
@@ -30,8 +31,8 @@ private const val WINNING_PIECES = 5
 private const val WINNER_POINTS = 300
 private const val LOSER_POINTS = 100
 private const val DRAW_POINTS = 150
-private const val FORFEITER_POINTS = 0
 private const val WINNER_ON_FORFEIT_OR_TIMER_POINTS = 400
+private const val FORFEITER_POINTS = 0
 private const val MAX_TURN_TIME_IN_SEC = 60
 
 /**
@@ -53,32 +54,13 @@ class FreestyleVariant : Variant {
                 }
                 if (square in board.grid) return Failure(MakeMoveError.PositionTaken(square))
                 if (board.turn == null) return Failure(MakeMoveError.NotYourTurn(Player.B))
-                val moves = board.grid + Move(square, Piece(board.turn.player))
+                val updatedMoves = board.grid + Move(square, Piece(board.turn.player))
                 return when {
-                    checkWin(board, square) -> Success(BoardWin(moves, board.turn.player))
-                    moves.size == config.boardSize.size * config.boardSize.size -> Success(BoardDraw(moves))
-                    else -> Success(BoardRun(moves, board.turn.other()))
+                    checkWin(board, square) -> Success(BoardWin(updatedMoves, board.turn.player))
+                    checkDraw(updatedMoves) -> Success(BoardDraw(updatedMoves))
+                    else -> Success(BoardRun(updatedMoves, board.turn.other()))
                 }
             }
-        }
-    }
-
-    override fun checkWin(board: Board, square: Square): Boolean {
-        return try {
-            requireNotNull(board.turn)
-            if (board.turn.timeLeftInSec.value <= 0) {
-                return true
-            }
-            val backSlash = square.row.toIndex() == square.col.toIndex()
-            val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
-            val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
-            places.count { it.col == square.col } >= WINNING_PIECES ||
-                places.count { it.row == square.row } >= WINNING_PIECES ||
-                places.count { backSlash } >= WINNING_PIECES ||
-                places.count { slash } >= WINNING_PIECES
-        } catch (ex: IllegalArgumentException) {
-            // only way found to use smart cast
-            false
         }
     }
 
@@ -101,4 +83,37 @@ class FreestyleVariant : Variant {
 
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(MAX_TURN_TIME_IN_SEC).get()
+
+    /**
+     * Checks if the game is a draw, according to this variant rules.
+     * @param updatedMoves The updated moves of the game.
+     * @return true if the game is a draw, false otherwise.
+     */
+    private fun checkDraw(updatedMoves: Moves): Boolean =
+        updatedMoves.size == config.boardSize.size * config.boardSize.size
+
+    /**
+     * Checks if the game is a win, according to this variant rules.
+     * @param board The game board.
+     * @param square The square where the move is being made to.
+     * @return true if the game is a win, false otherwise.
+     */
+    private fun checkWin(board: Board, square: Square): Boolean {
+        return try {
+            requireNotNull(board.turn)
+            if (board.turn.timeLeftInSec.value <= 0) {
+                return true
+            }
+            val backSlash = square.row.toIndex() == square.col.toIndex()
+            val slash = square.row.toIndex() + square.col.toIndex() == config.boardSize.size - 1
+            val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
+            places.count { it.col == square.col } >= WINNING_PIECES ||
+                    places.count { it.row == square.row } >= WINNING_PIECES ||
+                    places.count { backSlash } >= WINNING_PIECES ||
+                    places.count { slash } >= WINNING_PIECES
+        } catch (ex: IllegalArgumentException) {
+            // only way found to use smart cast
+            false
+        }
+    }
 }

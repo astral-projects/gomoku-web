@@ -5,14 +5,14 @@ import gomoku.domain.user.User
 import gomoku.utils.Either
 
 sealed class UserCreationError {
-    object UsernameAlreadyExists : UserCreationError()
-    object EmailAlreadyExists : UserCreationError()
+    data object UsernameAlreadyExists : UserCreationError()
+    data object EmailAlreadyExists : UserCreationError()
 }
 
 typealias UserCreationResult = Either<UserCreationError, Id>
 
 sealed class GettingUserError {
-    object UserNotFound : GettingUserError()
+    data object UserNotFound : GettingUserError()
 }
 
 typealias GettingUserResult = Either<GettingUserError, User>

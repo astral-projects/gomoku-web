@@ -6,7 +6,6 @@ import gomoku.domain.components.PasswordError
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.UsernameError
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.domain.user.User
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
@@ -27,7 +26,6 @@ import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
-import gomoku.utils.get
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
 import org.springframework.http.HttpStatus
@@ -35,14 +33,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class UsersController(
-    private val userService: UsersService
+    private val userService: UsersService,
 ) {
 
     /**
@@ -114,7 +111,7 @@ class UsersController(
     @PostMapping(Uris.Users.TOKEN)
     fun createToken(
         @RequestBody
-        input: UserCreateTokenInputModel
+        input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val instance = Uris.Users.login()
         return when (val usernameResult = Username(input.username)) {
@@ -163,7 +160,7 @@ class UsersController(
     @PostMapping(Uris.Users.LOGOUT)
     @RequiresAuthentication
     fun logout(
-        authenticatedUser: AuthenticatedUser
+        authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<*> {
         val instance = Uris.Users.logout()
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
@@ -181,7 +178,7 @@ class UsersController(
     @GetMapping(Uris.Users.HOME)
     @RequiresAuthentication
     fun getUserHome(
-        authenticatedUser: AuthenticatedUser
+        authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<UserOutputModel> =
         ResponseEntity.ok(UserOutputModel.serializeFrom(authenticatedUser.user))
 
@@ -194,7 +191,7 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @PathVariable
-        id: Int
+        id: Int,
     ): ResponseEntity<*> {
         val instance = Uris.Users.byId(id)
         return when (val userIdResult = Id(id)) {
@@ -225,7 +222,7 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @RequestParam(name = "limit", defaultValue = "10")
-        limit: Int
+        limit: Int,
     ): ResponseEntity<*> {
         val instance = Uris.Users.stats()
         return when (val offsetResult = NonNegativeValue(offset)) {
@@ -251,7 +248,7 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @PathVariable
-        id: Int
+        id: Int,
     ): ResponseEntity<*> {
         val instance = Uris.Users.byIdStats(id)
         return when (val idResult = Id(id)) {
@@ -281,42 +278,39 @@ class UsersController(
     fun getUserStatsByName(
         user: AuthenticatedUser,
         @Valid
+        @Range(min = 0)
+        @RequestParam(name = "offset", defaultValue = "0")
+        offset: Int,
+        @Valid
         @Range(min = 1)
         @RequestParam(name = "limit", defaultValue = "10")
         limit: Int,
         @Valid
         @RequestParam(name = "username")
-        userName: String
+        userName: String,
     ): ResponseEntity<*> {
         val instance = Uris.Users.stats()
         return when (val limitResult = PositiveValue(limit)) {
             is Failure -> Problem.invalidLimit(instance)
-            is Success -> {
-                when (val username = Username(userName)) {
+            is Success -> when (val offsetResult = NonNegativeValue(offset)) {
+                is Failure -> Problem.invalidOffset(instance)
+                is Success -> when (val usernameResult = Username(userName)) {
+                    is Failure -> when (usernameResult.value) {
+                        UsernameError.BlankUsername -> Problem.blankUsername(instance)
+                        UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
+                        UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
+                    }
+
                     is Success -> {
-                        val paginatedResult =
-                            userService.getUserStatsByStartingName(
-                                username.get(),
-                                limitResult.value
-                            )
+                        val paginatedResult = userService.getUserStatsByUsername(
+                            offset = offsetResult.value,
+                            limit = limitResult.value,
+                            username = usernameResult.value
+                        )
                         ResponseEntity.ok(paginatedResult)
                     }
-                    is Failure -> Problem.invalidUsernameLength(Uris.Users.byId(user.user.id.value))
                 }
             }
         }
-    }
-
-    /**
-     * Edits user data.
-     * @param user the authenticated user.
-     */
-    @PutMapping(Uris.Users.EDIT_BY_ID)
-    @RequiresAuthentication
-    @NotTested
-    fun editUser(
-        user: AuthenticatedUser
-    ): ResponseEntity<User> {
-        TODO("Not yet implemented")
     }
 }

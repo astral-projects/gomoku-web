@@ -12,7 +12,6 @@ import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
 import gomoku.repository.transaction.TransactionManager
-import gomoku.utils.NotTested
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
@@ -22,7 +21,7 @@ import org.springframework.stereotype.Service
 class UsersService(
     private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
-    private val clock: Clock
+    private val clock: Clock,
 ) {
 
     fun createUser(username: Username, email: Email, password: Password): UserCreationResult {
@@ -105,24 +104,18 @@ class UsersService(
             it.usersRepository.getUsersStats(offset, limit)
         }
 
-    @NotTested
     fun getUserStats(userId: Id): UserStatsInfo? =
         transactionManager.run {
             it.usersRepository.getUserStats(userId)
         }
 
-    @NotTested
-    fun getUserStatsByStartingName(
+    fun getUserStatsByUsername(
         username: Username,
-        limit: PositiveValue
+        limit: PositiveValue,
+        offset: NonNegativeValue,
     ): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
             val userRepository = it.usersRepository
-            userRepository.getUserStatsByStartingName(username, limit)
+            userRepository.getUserStatsByUsername(username, limit, offset)
         }
-
-    @NotTested
-    fun editUser(user: User): User {
-        TODO("Not yet implemented")
-    }
 }

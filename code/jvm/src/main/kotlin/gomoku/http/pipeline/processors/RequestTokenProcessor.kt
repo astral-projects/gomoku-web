@@ -1,4 +1,4 @@
-package gomoku.http.pipeline
+package gomoku.http.pipeline.processors
 
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.services.user.UsersService

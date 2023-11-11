@@ -9,14 +9,14 @@ data class TokenExternalInfo(
 )
 
 sealed class TokenCreationError {
-    object PasswordIsWrong : TokenCreationError()
-    object UsernameNotExists : TokenCreationError()
+    data object PasswordIsWrong : TokenCreationError()
+    data object UsernameNotExists : TokenCreationError()
 }
 
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
 
 sealed class TokenRevocationError {
-    object TokenIsInvalid : TokenRevocationError()
+    data object TokenIsInvalid : TokenRevocationError()
 }
 
 typealias TokenRevocationResult = Either<TokenRevocationError, Boolean>

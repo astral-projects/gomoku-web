@@ -1,8 +1,8 @@
 package gomoku.http.pipeline.interceptors
 
 import gomoku.domain.user.AuthenticatedUser
-import gomoku.http.pipeline.RequestTokenProcessor
 import gomoku.http.pipeline.interceptors.AuthenticationInterceptor.Companion.NAME_WWW_AUTHENTICATE_HEADER
+import gomoku.http.pipeline.processors.RequestTokenProcessor
 import gomoku.http.pipeline.resolvers.AuthenticatedUserArgumentResolver
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

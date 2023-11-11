@@ -8,7 +8,6 @@ import gomoku.domain.components.Id
  * @param id The id of the game created or the lobby created.
  * @param message A message describing the result.
  */
-
 sealed class FindGameSuccess(val id: Id, val message: String) {
     class GameMatch(gameId: Id) : FindGameSuccess(
         gameId,

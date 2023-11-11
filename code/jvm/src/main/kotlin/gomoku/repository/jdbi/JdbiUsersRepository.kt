@@ -23,7 +23,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.slf4j.LoggerFactory
 
 class JdbiUsersRepository(
-    private val handle: Handle
+    private val handle: Handle,
 ) : UsersRepository {
 
     override fun getUserByUsername(username: Username): User? =
@@ -167,8 +167,20 @@ class JdbiUsersRepository(
             .mapTo<JdbiUserAndStatsModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun getUserStatsByStartingName(username: Username, limit: PositiveValue): PaginatedResult<UserStatsInfo> {
-        handle.createQuery("select count(*) from dbo.Statistics")
+    override fun getUserStatsByUsername(
+        username: Username,
+        limit: PositiveValue,
+        offset: NonNegativeValue,
+    ): PaginatedResult<UserStatsInfo> {
+        val usernameFormat = "%${username.value}%"
+        val totalItems = handle.createQuery(
+            """select count(*)
+               from dbo.Statistics as stats
+               inner join dbo.Users as users on stats.user_id = users.id
+               where users.username like :username;
+            """.trimIndent()
+        )
+            .bind("username", usernameFormat)
             .mapTo<Int>()
             .single()
 
@@ -181,18 +193,16 @@ class JdbiUsersRepository(
             INNER JOIN dbo.Users AS users ON stats.user_id = users.id
             WHERE users.username LIKE :username
             ORDER BY stats.points DESC
+            OFFSET :offset
             LIMIT :limit;
             """.trimIndent()
         )
-            .bind("username", "%${username.value}%")
+            .bind("username", usernameFormat)
             .bind("limit", limit.value)
+            .bind("offset", offset.value)
             .mapTo<JdbiUserAndStatsModel>()
             .map { it.toDomainModel() }
-        return PaginatedResult.create(items = result.toList(), limit = limit.value)
-    }
-
-    override fun editUser(userId: Id): User? {
-        TODO("Not yet implemented")
+        return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
     }
 
     companion object {

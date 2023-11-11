@@ -31,9 +31,9 @@ import kotlin.math.ceil
  * @param totalItems the total number of items that are available for the original list of items.
  * @param currentPage the current page number.
  * @param itemsPerPage the maximum number of items per page.
- * @param totalPages the total number of pages that can be created from the original list of items, using
+ * @param totalPages the total number of pages that can be created from the original list of items, with
+ * [itemsPerPage] items per page.
  * @param items the items that are part of the current page.
- * the [itemsPerPage] as the maximum number of items per page.
  */
 data class PaginatedResult<T>(
     val totalItems: Int,
@@ -59,7 +59,12 @@ data class PaginatedResult<T>(
             require(offset >= 0) { "offset must be a positive number or zero" }
             require(limit > 0) { "limit must be a positive number" }
             val filteredItems = items.drop(offset).take(limit)
-            return create(filteredItems, items.size, offset, limit)
+            return create(
+                filteredItems = filteredItems,
+                totalItems = items.size,
+                offset = offset,
+                limit = limit
+            )
         }
 
         /**
@@ -78,7 +83,14 @@ data class PaginatedResult<T>(
             require(limit > 0) { "limit must be a positive number" }
             val currentPage = (offset / limit) + 1
             val totalPages = if (totalItems == 0) 1 else ceil(totalItems / limit.toDouble()).toInt()
-            return PaginatedResult(totalItems, currentPage, limit, totalPages, filteredItems)
+            val itemsPerPage = if (totalItems - offset < limit) totalItems - offset else limit
+            return PaginatedResult(
+                totalItems = totalItems,
+                currentPage = currentPage,
+                itemsPerPage = itemsPerPage,
+                totalPages = totalPages,
+                items = filteredItems
+            )
         }
     }
 }

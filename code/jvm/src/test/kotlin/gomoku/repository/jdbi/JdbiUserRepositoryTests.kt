@@ -6,23 +6,30 @@ import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
+import gomoku.domain.user.components.Username
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.TestClock
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.newTokenValidationData
+import gomoku.utils.TestDataGenerator.randomTo
 import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.RepeatedTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+// Config
+private const val NR_OF_TEST_ITERATIONS = 3
+
+@RequiresDatabaseConnection
 class JdbiUserRepositoryTests {
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can create and retrieve user`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
@@ -64,7 +71,7 @@ class JdbiUserRepositoryTests {
         handle.rollback()
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can create, validate and update tokens`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
@@ -116,7 +123,7 @@ class JdbiUserRepositoryTests {
         handle.rollback()
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can revoke tokens`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
@@ -158,7 +165,7 @@ class JdbiUserRepositoryTests {
         handle.rollback()
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can retrieve user statistic information`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
@@ -184,7 +191,7 @@ class JdbiUserRepositoryTests {
         handle.rollback()
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `retrieves all users paginated statistic information`() = runWithHandle { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
@@ -238,6 +245,57 @@ class JdbiUserRepositoryTests {
         // then:
         assertEquals(2, secondPageUsersRanking.currentPage)
         assertEquals(limitValue, secondPageUsersRanking.itemsPerPage)
+
+        handle.rollback()
+    }
+
+    @RepeatedTest(10)
+    fun `can retrieve user stats by username query`() = runWithHandle { handle ->
+        // given: a UsersRepository
+        val repo = JdbiUsersRepository(handle)
+
+        // when: storing several users with similar usernames
+        val nrOfUsers = 11 randomTo 30
+        val queryFormat = "notARegularName"
+        repeat(nrOfUsers) {
+            val username = if (it % 2 == 0) {
+                Username("$queryFormat-$it").get()
+            } else {
+                newTestUserName()
+            }
+            val email = newTestEmail()
+            val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
+            repo.storeUser(username, email, passwordValidationInfo)
+        }
+
+        // and: retrieving the users by username query
+        val username = Username(queryFormat).get()
+        val userStatsByUsername = repo.getUserStatsByUsername(
+            username = username,
+            offset = NonNegativeValue(0).get(),
+            limit = PositiveValue(nrOfUsers).get()
+        )
+
+        // and: calculating the expected number of users
+        val actualNrOfUsers = if (nrOfUsers % 2 == 0) {
+            nrOfUsers / 2
+        } else {
+            nrOfUsers / 2 + 1
+        }
+
+        // then: the users statistic information is paginated
+        assertEquals(1, userStatsByUsername.currentPage)
+        assertEquals(actualNrOfUsers, userStatsByUsername.itemsPerPage)
+        assertEquals(actualNrOfUsers, userStatsByUsername.totalItems)
+
+        // when: comparing with user information
+        // then: the users statistic information is correct
+        repeat(actualNrOfUsers) {
+            val retrievedUserByUsername: User? = repo.getUserByUsername(userStatsByUsername.items[it].username)
+            assertNotNull(retrievedUserByUsername)
+            assertEquals(userStatsByUsername.items[it].username, retrievedUserByUsername.username)
+            assertEquals(userStatsByUsername.items[it].email, retrievedUserByUsername.email)
+        }
 
         handle.rollback()
     }

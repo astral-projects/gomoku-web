@@ -25,7 +25,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
 class JdbiGameRepository(
-    private val handle: Handle
+    private val handle: Handle,
 ) : GamesRepository {
 
     override fun getGameById(gameId: Id): Game? =
@@ -87,28 +87,17 @@ class JdbiGameRepository(
 
     override fun findIfUserIsInGame(userId: Id): Game? =
         handle.createQuery(
-            """SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id  WHERE
-                g.state != :state AND (g.host_id = :userId OR g.guest_id = :userId);"""
+            """select g.*, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.GameVariants as gv on g.variant_id = gv.id where
+                g.state != :state and (g.host_id = :userId or g.guest_id = :userId);""".trimIndent()
         )
             .bind("userId", userId.value)
             .bind("state", GameState.FINISHED.name)
             .mapTo<JdbiGameAndVariantModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun userBelongsToTheGame(userId: Id, gameId: Id): Game? =
-        handle.createQuery(
-            "SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
-                "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND (g.host_id = :userId OR g.guest_id = :userId)"
-        )
-            .bind("gameId", gameId.value)
-            .bind("userId", userId.value)
-            .mapTo<JdbiGameAndVariantModel>()
-            .singleOrNull()?.toDomainModel()
-
     override fun userIsTheHost(gameId: Id, userId: Id): Game? =
         handle.createQuery(
-            "SELECT g.*, gv.name, gv.opening_rule, gv.board_size FROM dbo.Games AS g " +
-                "JOIN dbo.GameVariants AS gv ON g.variant_id = gv.id WHERE g.id = :gameId AND g.host_id = :userId"
+            """select g.*, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.GameVariants as gv on g.variant_id = gv.id where g.id = :gameId and g.host_id = :userId""".trimIndent()
         )
             .bind("gameId", gameId.value)
             .bind("userId", userId.value)
@@ -120,7 +109,7 @@ class JdbiGameRepository(
         loserId: Id,
         winnerPoints: NonNegativeValue,
         loserPoints: NonNegativeValue,
-        shouldCountAsGameWin: Boolean
+        shouldCountAsGameWin: Boolean,
     ): Boolean =
         handle.createUpdate(
             """
@@ -139,7 +128,7 @@ class JdbiGameRepository(
                 END,
             games_drawn = games_drawn + :gamesDrawnIncrement
         WHERE user_id IN (:winnerId, :loserId)
-        """
+        """.trimIndent()
         )
             .bind("winnerId", winnerId.value)
             .bind("loserId", loserId.value)
@@ -172,17 +161,19 @@ class JdbiGameRepository(
         handle.createQuery(
             """
             UPDATE dbo.Games 
-            SET state = 'FINISHED'
-            WHERE id = :id AND (host_id = :userId OR guest_id = :userId) AND state = 'IN_PROGRESS'
+            SET state = :gameFinished
+            WHERE id = :id AND (host_id = :userId OR guest_id = :userId) AND state = :gameInProgress
             RETURNING 
                 CASE
                     WHEN host_id != :userId THEN host_id
                     WHEN guest_id != :userId THEN guest_id
                 END as id
-            """
+            """.trimIndent()
         )
             .bind("id", gameId.value)
             .bind("userId", userId.value)
+            .bind("gameFinished", GameState.FINISHED.name)
+            .bind("gameInProgress", GameState.IN_PROGRESS.name)
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
@@ -228,7 +219,9 @@ class JdbiGameRepository(
      * Converts a board to a json string to be stored in the database, depending on the type of board.
      * @param board the board to be converted.
      * @return the json string representing the board.
+     * @throws IllegalStateException if the board is of type [BoardRun] and the turn is null.
      */
+    @Throws(IllegalStateException::class)
     private fun convertBoardToJdbiModelInJson(board: Board): String {
         val jdbiBoardModel = when (board) {
             is BoardWin -> JdbiBoardWinModel(grid = board.grid, winner = board.winner)

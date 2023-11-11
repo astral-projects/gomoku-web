@@ -157,7 +157,7 @@ class GamesController(
                         instance = instance
                     )
 
-                    GameDeleteError.GameIsInprogress -> Problem.gameIsInProgress(
+                    GameDeleteError.GameIsInProgress -> Problem.gameIsInProgress(
                         gameId = gameIdResult.value,
                         instance = instance
                     )
@@ -279,7 +279,7 @@ class GamesController(
                         instance = instance
                     )
 
-                    GameUpdateError.UserDoesntBelongToThisGame -> Problem.userDoesntBelongToThisGame(
+                    GameUpdateError.UserNotInGame -> Problem.userDoesntBelongToThisGame(
                         userId = userId,
                         gameId = gameIdResult.value,
                         instance = instance
