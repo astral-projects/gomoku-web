@@ -21,6 +21,9 @@ class Username private constructor(val value: String) : Component {
             value.length !in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH -> Failure(UsernameError.InvalidLength)
             else -> Success(Username(value))
         }
+
+        val minLength = MIN_USERNAME_LENGTH
+        val maxLength = MAX_USERNAME_LENGTH
     }
 
     override fun equals(other: Any?): Boolean {

@@ -12,7 +12,6 @@ import gomoku.domain.user.User
 import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
-import gomoku.utils.NotTested
 import kotlinx.datetime.Instant
 
 /**
@@ -24,7 +23,7 @@ interface UsersRepository {
      * Stores a user in the database.
      * @param username the username of the user to store.
      * @param email the email of the user to store.
-     * @param passwordValidation the object that can be used to validate the user in the future.
+     * @param passwordValidation the object that can validate this user's password in the future.
      * @return the id of the created user.
      */
     fun storeUser(username: Username, email: Email, passwordValidation: PasswordValidationInfo): Id
@@ -90,24 +89,20 @@ interface UsersRepository {
     /**
      * Retrieves single user statistic information.
      * @param userId the id of the user to retrieve.
-     * @return the user or null if no such user exists.
+     * @return the user statistic information or null if no such user exists.
      */
     fun getUserStats(userId: Id): UserStatsInfo?
 
     /**
-     * Finds the score of the name requests.
-     * @return the score of the name requested.
+     * Retrieves users' statistics information by username query.
+     * @param username the username to search for.
+     * @param limit the maximum number of results to return.
+     * @param offset the offset to start the result from.
+     * @return the user's statistic information in a paginated result.
      */
-    fun getUserStatsByStartingName(
+    fun getUserStatsByUsername(
         username: Username,
-        limit: PositiveValue
+        limit: PositiveValue,
+        offset: NonNegativeValue,
     ): PaginatedResult<UserStatsInfo>
-
-    /**
-     * Edits information in a user.
-     * @param userId the id of the user to edit.
-     * @return the edited user or null if no such user exists.
-     */
-    @NotTested
-    fun editUser(userId: Id): User?
 }

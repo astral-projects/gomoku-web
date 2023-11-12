@@ -3,65 +3,61 @@ package gomoku.services.game
 import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.errors.MakeMoveError
-import gomoku.domain.game.variant.GameVariant
 import gomoku.utils.Either
 
 sealed class GameCreationError {
     class UserAlreadyInGame(val gameId: Id) : GameCreationError()
-    object VariantNotFound : GameCreationError()
+    data object VariantNotFound : GameCreationError()
     class UserAlreadyLeftTheLobby(val lobbyId: Id) : GameCreationError()
-    object GameInsertionError : GameCreationError()
-    object LobbyNotFound : GameCreationError()
+    data object GameInsertionError : GameCreationError()
+    data object LobbyNotFound : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, FindGameSuccess>
 
 sealed class GettingGameError {
-    object GameNotFound : GettingGameError()
+    data object GameNotFound : GettingGameError()
 }
 
 typealias GettingGameResult = Either<GettingGameError, Game>
 
 sealed class GameDeleteError {
-    object UserIsNotTheHost : GameDeleteError()
-    object GameIsInprogress : GameDeleteError()
-    object GameNotFound : GameDeleteError()
+    data object UserIsNotTheHost : GameDeleteError()
+    data object GameIsInProgress : GameDeleteError()
+    data object GameNotFound : GameDeleteError()
 }
 
 typealias GameDeleteResult = Either<GameDeleteError, Boolean>
 
 sealed class GameUpdateError {
-    object UserDoesntBelongToThisGame : GameUpdateError()
-    object GameNotFound : GameUpdateError()
-    object GameAlreadyFinished : GameUpdateError()
-    object VariantNotFound : GameUpdateError()
+    data object UserNotInGame : GameUpdateError()
+    data object GameNotFound : GameUpdateError()
+    data object GameAlreadyFinished : GameUpdateError()
+    data object VariantNotFound : GameUpdateError()
 }
 
 typealias GameUpdateResult = Either<GameUpdateError, Boolean>
 
 sealed class GameMakeMoveError {
     class MoveNotValid(val error: MakeMoveError) : GameMakeMoveError()
-    object UserNotInGame : GameMakeMoveError()
-    object UserDoesNotBelongToThisGame : GameMakeMoveError()
-    object GameNotFound : GameMakeMoveError()
-    object VariantNotFound : GameMakeMoveError()
+    data object UserNotInGame : GameMakeMoveError()
+    data object UserDoesNotBelongToThisGame : GameMakeMoveError()
+    data object GameNotFound : GameMakeMoveError()
+    data object VariantNotFound : GameMakeMoveError()
 }
 
+typealias MakeMoveResult = Either<MakeMoveError, Game>
 typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
 
 sealed class GameWaitError {
-    object UserNotInAnyGameOrLobby : GameWaitError()
-    object UserNotInLobby : GameWaitError()
+    data object UserNotInAnyGameOrLobby : GameWaitError()
+    data object UserNotInLobby : GameWaitError()
 }
 
 typealias GameWaitResult = Either<GameWaitError, WaitForGameSuccess>
 
 sealed class LobbyDeleteError {
-    object LobbyNotFound : LobbyDeleteError()
+    data object LobbyNotFound : LobbyDeleteError()
 }
-typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>
 
-sealed class GetVariantsError {
-    object VariantsEmpty : GetVariantsError()
-}
-typealias GetVariantsResult = Either<GetVariantsError, List<GameVariant>>
+typealias LobbyDeleteResult = Either<LobbyDeleteError, Boolean>

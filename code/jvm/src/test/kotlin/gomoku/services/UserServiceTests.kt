@@ -8,18 +8,27 @@ import gomoku.domain.user.UsersDomainConfig
 import gomoku.domain.user.components.Username
 import gomoku.repository.jdbi.JdbiTestConfiguration.jdbi
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
+import gomoku.services.user.GettingUserError
+import gomoku.services.user.TokenCreationError
+import gomoku.services.user.TokenRevocationError
+import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
+import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.Success
 import gomoku.utils.TestClock
+import gomoku.utils.TestDataGenerator.newRandomString
 import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestPassword
 import gomoku.utils.TestDataGenerator.newTestUserName
+import gomoku.utils.TestDataGenerator.randomTo
 import gomoku.utils.get
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.RepeatedTest
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -29,9 +38,52 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+// Config
+private const val NR_OF_TEST_ITERATIONS = 3
+
+@RequiresDatabaseConnection
 class UserServiceTests {
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
+    fun `cannot retrieve a user by the wrong username or email`() {
+        // given: a user service
+        val testClock = TestClock()
+        val userService = createUsersService(testClock)
+
+        // when: creating a user
+        val username = newTestUserName()
+        val email = newTestEmail()
+        val password = newTestPassword()
+        val createUserResult = userService.createUser(username, email, password)
+
+        // then: the creation is successful
+        when (createUserResult) {
+            is Failure -> fail("Unexpected $createUserResult")
+            is Success -> assertTrue(createUserResult.value.value > 0)
+        }
+
+        // when: creating a user with the same username
+        val emailB = newTestEmail()
+        val passwordB = newTestPassword()
+
+        // then: the creation is not successful
+        when (val userCreationResult = userService.createUser(username, emailB, passwordB)) {
+            is Failure -> assertIs<UserCreationError.UsernameAlreadyExists>(userCreationResult.value)
+            is Success -> fail("Unexpected $createUserResult")
+        }
+
+        // when: creating a user with the same email
+        val usernameC = newTestUserName()
+        val passwordC = newTestPassword()
+
+        // then: the creation is not successful
+        when (val userCreationResult = userService.createUser(usernameC, email, passwordC)) {
+            is Failure -> assertIs<UserCreationError.EmailAlreadyExists>(userCreationResult.value)
+            is Success -> fail("Unexpected $createUserResult")
+        }
+    }
+
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can create user, token, and retrieve by token`() {
         // given: a user service
         val testClock = TestClock()
@@ -73,7 +125,7 @@ class UserServiceTests {
         assertEquals(email, user.email)
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can retrieve user by id`() {
         // given: a user service
         val testClock = TestClock()
@@ -105,9 +157,18 @@ class UserServiceTests {
         val user = gettingUserResult.value
         assertEquals(username, user.username)
         assertEquals(email, user.email)
+
+        // when: searching for a user that does not exist
+        val gettingUserResultB = userService.getUserById(newTestId())
+
+        // then: the user is not found
+        when (gettingUserResultB) {
+            is Failure -> assertIs<GettingUserError.UserNotFound>(gettingUserResultB.value)
+            is Success -> fail("Unexpected $gettingUserResultB")
+        }
     }
 
-    @Test
+    @RepeatedTest(10)
     fun `can use token during rolling period but not after absolute TTL`() {
         // given: a user service
         val testClock = TestClock()
@@ -147,7 +208,46 @@ class UserServiceTests {
         assertTrue((testClock.now() - startInstant) > tokenTtl)
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
+    fun `cannot create token when user credentials are invalid`() {
+        // given: a user service
+        val testClock = TestClock()
+        val userService = createUsersService(testClock)
+
+        // when: creating a user
+        val username = newTestUserName()
+        val email = newTestEmail()
+        val password = newTestPassword()
+        val createUserResult = userService.createUser(username, email, password)
+
+        // then: the creation is successful
+        when (createUserResult) {
+            is Failure -> fail("Unexpected $createUserResult")
+            is Success -> assertTrue(createUserResult.value.value > 0)
+        }
+
+        // when: creating a token with the wrong username
+        val wrongUsername = newTestUserName()
+        val createTokenResultB = userService.createToken(wrongUsername, password)
+
+        // then: the creation is not successful
+        when (createTokenResultB) {
+            is Failure -> assertIs<TokenCreationError.UsernameNotExists>(createTokenResultB.value)
+            is Success -> fail("Unexpected $createTokenResultB")
+        }
+
+        // when: creating a token with the wrong password
+        val wrongPassword = newTestPassword()
+        val createTokenResult = userService.createToken(username, wrongPassword)
+
+        // then: the creation is not successful
+        when (createTokenResult) {
+            is Failure -> assertIs<TokenCreationError.PasswordIsWrong>(createTokenResult.value)
+            is Success -> fail("Unexpected $createTokenResult")
+        }
+    }
+
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can limit the number of tokens`() {
         // given: a user service
         val testClock = TestClock()
@@ -193,7 +293,12 @@ class UserServiceTests {
             is Success -> createTokenResult.value
         }
 
-        // then: newToken is valid
+        // when: retrieving the user by an invalid token
+        // then: the user is not found
+        assertNull(userService.getUserByToken("hardcoded-string"))
+
+        // when: retrieving the user by the new token
+        // then: the user is found
         assertNotNull(userService.getUserByToken(newToken.tokenValue))
 
         // and: the first token (the least recently used) is not valid
@@ -205,7 +310,7 @@ class UserServiceTests {
         }
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can limit the number of tokens even if multiple tokens are used at the same time`() {
         // given: a user service
         val testClock = TestClock()
@@ -263,7 +368,7 @@ class UserServiceTests {
         )
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can logout`() {
         // given: a user service
         val testClock = TestClock()
@@ -297,7 +402,16 @@ class UserServiceTests {
         // then: token usage is successful
         assertNotNull(maybeUser)
 
-        // when: revoking the token
+        // when: revoking the token with an invalid token
+        val invalidRevokeResult = userService.revokeToken("hardcoded-string")
+
+        // then: the token is not revoked
+        when (invalidRevokeResult) {
+            is Failure -> assertIs<TokenRevocationError.TokenIsInvalid>(invalidRevokeResult.value)
+            is Success -> fail("Unexpected $invalidRevokeResult")
+        }
+
+        // when: revoking the valid token
         userService.revokeToken(token.tokenValue)
 
         // and: retrieving the user by the revoked token
@@ -307,13 +421,13 @@ class UserServiceTests {
         assertNull(maybeUser)
     }
 
-    @Test
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can retrieve users ranking information`() {
         // given: a user service
         val testClock = TestClock()
         val userService = createUsersService(testClock)
 
-        // when: creating 10 users
+        // when: creating x users
         val nrOfUsers = 10
         repeat(nrOfUsers) {
             val username = newTestUserName()
@@ -340,16 +454,61 @@ class UserServiceTests {
         assertEquals(limit, ranking.itemsPerPage)
     }
 
-    @Test
-    fun `can retrieve the ranking info of one or more users by spcified username`() {
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
+    fun `can retrieve a user stats info by id`() {
         // given: a user service
         val testClock = TestClock()
         val userService = createUsersService(testClock)
 
-        // when: creating 10 users
-        val nrOfUsers = 20
+        // when: creating a user
+        val username = newTestUserName()
+        val email = newTestEmail()
+        val password = newTestPassword()
+        val createUserResult = userService.createUser(username, email, password)
+
+        // then: the creation is successful
+        when (createUserResult) {
+            is Failure -> fail("Unexpected $createUserResult")
+            is Success -> assertTrue(createUserResult.value.value > 0)
+        }
+
+        // and: retrieving the user by id
+        val userId = createUserResult.value
+        val gettingUserResult = userService.getUserStats(userId)
+
+        // then: the user is found
+        when (gettingUserResult) {
+            null -> fail("Unexpected $gettingUserResult")
+            else -> assertEquals(gettingUserResult.id, userId)
+        }
+
+        // and: has the expected information
+        assertEquals(username, gettingUserResult.username)
+        assertEquals(email, gettingUserResult.email)
+        assertEquals(0, gettingUserResult.points.value)
+        assertEquals(0, gettingUserResult.gamesPlayed.value)
+        assertEquals(0, gettingUserResult.wins.value)
+        assertEquals(0, gettingUserResult.draws.value)
+        assertEquals(0, gettingUserResult.losses.value)
+
+    }
+
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
+    fun `can retrieve user stats info by username`() {
+        // given: a user service
+        val testClock = TestClock()
+        val userService = createUsersService(testClock)
+
+        // when: creating x users
+        val nrOfUsers = 10 randomTo 41
+        val usernameFormat = newRandomString(Username.minLength, Username.maxLength)
         repeat(nrOfUsers) {
-            val username = if (it < nrOfUsers / 2) newTestUserName() else Username("joaos$it").get()
+            val username =
+                if (it % 2 == 0) {
+                    Username("$usernameFormat$it").get()
+                } else {
+                    newTestUserName()
+                }
             val email = newTestEmail()
             val password = newTestPassword()
             val createUserResult = userService.createUser(username, email, password)
@@ -361,21 +520,57 @@ class UserServiceTests {
             }
         }
 
-        // when: retrieving the users statistic information
+        // when: retrieving users statistic information by username format defined above
         val limit = nrOfUsers
-        val ranking = userService.getUserStatsByStartingName(
-            Username("joaos").get(),
-            limit = PositiveValue(limit).get()
+        val ranking = userService.getUserStatsByUsername(
+            username = Username(usernameFormat).get(),
+            limit = PositiveValue(limit).get(),
+            offset = NonNegativeValue(0).get()
         )
-        assertEquals(nrOfUsers / 2, ranking.totalItems)
 
-        // when: retrieving the users statistic information
-        val ranking2 = userService.getUserStatsByStartingName(
-            Username("user-").get(),
-            limit = PositiveValue(limit).get()
+        val actualUsers = if (nrOfUsers % 2 == 0) {
+            nrOfUsers / 2
+        } else {
+            nrOfUsers / 2 + 1
+        }
+
+        // then: the statistics is paginated and the number of users is the expected one
+        assertEquals(actualUsers, ranking.totalItems)
+        assertEquals(actualUsers, ranking.itemsPerPage)
+
+        // when: offset is not 0
+        val offset = 2
+        val rankingWithOffset = userService.getUserStatsByUsername(
+            username = Username(usernameFormat).get(),
+            limit = PositiveValue(limit).get(),
+            offset = NonNegativeValue(offset).get()
         )
-        assertEquals(nrOfUsers / 2, ranking2.totalItems)
-        assertNotNull(ranking.items.find { it.username.value == "joaos11" })
+
+        // then: the statistics is paginated and first offset users are skipped
+        assertEquals(actualUsers, rankingWithOffset.totalItems)
+        assertEquals(actualUsers - offset, rankingWithOffset.itemsPerPage)
+
+        // when: creating another user with a unique username
+        val usernameToQuery = newTestUserName()
+        val email = newTestEmail()
+        val password = newTestPassword()
+        val createUserResult = userService.createUser(usernameToQuery, email, password)
+
+        // then: the creation is successful
+        when (createUserResult) {
+            is Failure -> fail("Unexpected $createUserResult")
+            is Success -> assertTrue(createUserResult.value.value > 0)
+        }
+
+        // when: retrieving users statistic information by the previously created username
+        val singleRanking = userService.getUserStatsByUsername(
+            username = usernameToQuery,
+            limit = PositiveValue(limit).get(),
+            offset = NonNegativeValue(0).get()
+        )
+
+        // then: the statistics is paginated and the number of users is the expected one
+        assertEquals(1, singleRanking.totalItems)
     }
 
     companion object {
@@ -384,7 +579,7 @@ class UserServiceTests {
             testClock: TestClock,
             tokenTtl: Duration = 30.days,
             tokenRollingTtl: Duration = 30.minutes,
-            maxTokensPerUser: Int = 3
+            maxTokensPerUser: Int = 3,
         ) = UsersService(
             JdbiTransactionManager(jdbi),
             UsersDomain(

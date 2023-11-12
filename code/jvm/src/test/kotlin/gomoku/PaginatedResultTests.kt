@@ -10,6 +10,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class PaginatedResultTests {
+
     @Test
     fun `Create a simple paginated result with hardcoded values and no offset`() {
         val items = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -62,6 +63,41 @@ class PaginatedResultTests {
                 currentPage = if (offset == 0) 1 else ceil(offset / limit.toDouble()).toInt(),
                 itemsPerPage = limit,
                 totalPages = expectedPages
+            )
+        assertEquals(expected, paginatedResult)
+    }
+
+    @Test
+    fun `Total items per age are less than the limit`() {
+        val items = List(10) { it }
+        val limit = 20
+        val paginatedResult = PaginatedResult.create(items, limit = limit)
+        assertTrue(paginatedResult.items.isNotEmpty())
+        val expected =
+            PaginatedResult(
+                items = items,
+                totalItems = items.size,
+                currentPage = 1,
+                itemsPerPage = items.size, // should not be the limit because there are less items than the limit
+                totalPages = 1
+            )
+        assertEquals(expected, paginatedResult)
+    }
+
+    @Test
+    fun `Total items per page are less than limit with offset different than zero`() {
+        val items = List(10) { it }
+        val offset = 5
+        val limit = 20
+        val paginatedResult = PaginatedResult.create(items, offset, limit)
+        assertTrue(paginatedResult.items.isNotEmpty())
+        val expected =
+            PaginatedResult(
+                items = items.drop(offset),
+                totalItems = items.size,
+                currentPage = 1,
+                itemsPerPage = items.size - offset,
+                totalPages = 1
             )
         assertEquals(expected, paginatedResult)
     }
