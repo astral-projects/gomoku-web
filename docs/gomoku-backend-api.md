@@ -86,10 +86,10 @@ The API provides the following operations/resources related to the `User` entity
 - `POST /users/token 📦` - authenticates a user; See [User Login](#user-login) for more information;
 - `POST /users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
 - `GET /users/home 🔒` - returns logged-in user's information;
-- `GET /users/{id}` - returns the user with the given id;
+- `GET /users/{id}` - returns the user with the given id; See [Get User](#get-user-by-id) for more information;
 - `GET /users/stats 📖` - returns the users statistic information by ranking; See [Pagination](#pagination) for more
   information.
-- `GET /users/stats/{id}` - returns the user statistic information with the given id.
+- `GET /users/{id}/stats` - returns the user statistic information with the given id. See [Get User Stats](#get-user-stats) for more information.
 
 ### Game
 
@@ -103,14 +103,16 @@ The API provides the following operations/resources related to the `Game` entity
 - `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id; See [Game Move](#game-move) for more
   information;
 - `POST /games/{id}/exit 🔒` - exits the game with the given id.
-- `GET /games/lobby/{id} 🔒` - Checks the status of the lobby with the given ID, returning whether the user is still waiting in the lobby or has already entered a game.
+- `GET /games/lobby/{id} 🔒` - Checks the status of the lobby with the given ID, returning whether the user is still
+  waiting in the lobby or has already entered a game.
 - `DELETE /games/lobby/{id} 🔒` - deletes the lobby with the given id.
 
 ### Responses
 
 Information about the responses:
 
-- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also if someone report a bug in the future, this header can be used to identify the request.
+- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also if
+  someone report a bug in the future, this header can be used to identify the request.
 
 ## Usage Examples
 
@@ -132,7 +134,8 @@ Information about the responses:
   }
   ```
 - The API then:
-    - **On Success** - creates a new user with the provided credentials and returns a `201 Created` response with the **user id**
+    - **On Success** - creates a new user with the provided credentials and returns a `201 Created` response with the *
+      *user id**
       in the response body.
 
       Example:
@@ -212,7 +215,7 @@ Information about the responses:
          "message": "User was logged out successfully."
       }
       ```
-      
+
     - **On Failure Example** - returns a `401 Unauthorized` response with a message in the response body.
 
       ```json
@@ -224,9 +227,101 @@ Information about the responses:
         "instance": "/api/users/logout"
       }
       ```
-      
+
 - To log in again, the client application should request a new token to the API.
 
+### Get User By Id
+
+- The client application makes a `GET` request to the `users/{id}` resource, with the user id in the request path;
+    - The Api then:
+        - **On Success** 
+          - returns a `200 OK` response with the user information in the response body. The response body
+            contains the following properties:
+              - `id` - the user's id;
+              - `username` - the user's username;
+              - `email` - the user's email;
+
+            Example:
+            ```json
+            {
+              "id": 42,
+              "username": "user example",
+              "email": "user1@example.com"
+            }
+              ```
+        - **On Failure** 
+          - returns a `400 Bad Request` if the id is not valid. Response with a message in the response body.
+            
+            Example:
+              ```json
+                {
+                  "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/invalid-id",
+                  "title": "Invalid user id",
+                  "status": 400,
+                  "detail": "The user id must be a positive integer",
+                  "instance": "/api/users/-1",
+                  "data": null
+                }
+              ```
+          - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the response body.
+            
+            Example:
+            ```json
+              {
+                  "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
+                  "title": "User not found",
+                  "status": 404,
+                  "detail": "The user with id <90> was not found",
+                  "instance": "/api/users/90",
+                  "data": null
+              }
+            ```
+
+### Get User Stats
+
+- The client application makes a `GET` request to the `users` resource, with the id in the path.
+  The response should be in body.
+  - The API then:
+  - **On Success** - returns a `200 OK` response with the user statistic information in the response body. The
+    response body
+    contains the following properties:
+      - `id` - the user's id;
+      - `username` - the user's username;
+      - `email` - the user's email;
+      - `points` - the user's points;
+      - `rank` - the user's rank;
+      - `gamesPlayed` - the user's games played;
+      - `wins` - the user's wins;
+      - `draws` - the user's draws;
+      - `losses` - the user's losses;
+
+    Example:
+    ```json
+    {
+        "id": 1,
+        "username": "user1",
+        "email": "user1@example.com",
+        "points": 1000,
+        "rank": 1,
+        "gamesPlayed": 10,
+        "wins": 5,
+        "draws": 0,
+        "losses": 5
+    }
+    ```
+  - **On Failure** - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the response body.
+    
+    Example:
+    ```json
+    {
+        "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
+        "title": "User not found",
+        "status": 404,
+        "detail": "The user with id <9> was not found",
+        "instance": "/api/users/9/stats",
+        "data": null
+    }
+    ```
 ### Game Creation
 
 - The client application makes a `POST` request to the `games` resource, with the variant id in the request
@@ -284,15 +379,15 @@ Information about the responses:
 
 - The client application makes a `POST` request to the `games/{id}/move` resource, with the move information in the
   request body. The request body should be a JSON object with the following properties:
-  - `col` - the column of the square where player will play (must be between `a` and `z`);
-  - `row` - the row of the square where player will play (must be minimum `1`).
-    Example:
-    ```json
-    {
-      "col": "a",
-      "row": 11
-    }
-    ```
+    - `col` - the column of the square where player will play (must be between `a` and `z`);
+    - `row` - the row of the square where player will play (must be minimum `1`).
+      Example:
+      ```json
+      {
+        "col": "a",
+        "row": 11
+      }
+      ```
 
 - The API then:
     - **On Success** - makes the move and returns a `200 OK` response with a message in the response body.
