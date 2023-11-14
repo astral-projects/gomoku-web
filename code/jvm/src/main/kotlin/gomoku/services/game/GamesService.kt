@@ -19,7 +19,9 @@ import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.sql.Connection.TRANSACTION_SERIALIZABLE
 
 @Service
 class GamesService(
@@ -36,10 +38,12 @@ class GamesService(
      */
     private val gameVariantMap: Map<Id, Variant> by lazy {
         transactionManager.run { transaction ->
+            logger.info("Inserting variants into the database")
             val variantsConfig: List<VariantConfig> = variants.map { it.config }
             transaction.gamesRepository.insertVariants(variantsConfig)
             val gameVariants: List<GameVariant> = transaction.gamesRepository.getVariants()
             if (gameVariants.isEmpty()) {
+                logger.error("No variants found in the database")
                 throw NoVariantImplementationFoundException("No variants found in the database")
             }
             // only return variants received in the constructor even if
@@ -52,6 +56,7 @@ class GamesService(
 
     init {
         if (variants.isEmpty()) {
+            logger.error("No variants implementations found in the code")
             throw NoVariantImplementationFoundException("No variants implementations found in the code")
         }
         // force initialization
@@ -93,6 +98,7 @@ class GamesService(
      */
     fun findGame(variantId: Id, userId: Id): GameCreationResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
@@ -102,9 +108,11 @@ class GamesService(
             }
             val game = gamesRepository.findIfUserIsInGame(userId)
             if (game == null) {
-                val lobby = gamesRepository.isMatchmaking(variantId, userId)
+                val lobby = gamesRepository.isMatchmaking(variantId)
                 if (lobby != null) {
+                    logger.info("Host '$userId' was waiting for a game in lobby(id='${lobby.lobbyId}, variantId='$variantId')")
                     if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
+                        logger.info("Deleted user '$userId' from lobby(id='${lobby.lobbyId}')")
                         failure(GameCreationError.UserAlreadyLeftTheLobby(lobby.lobbyId))
                     } else {
                         val gameId = gamesRepository.createGame(
@@ -116,13 +124,19 @@ class GamesService(
                         )
                         when (gameId) {
                             null -> failure(GameCreationError.GameInsertionError)
-                            else -> success(FindGameSuccess.GameMatch(gameId))
+                            else -> {
+                                logger.info("Created game(id='$gameId') for guest '$userId' and host '${lobby.userId}'")
+                                success(FindGameSuccess.GameMatch(gameId))
+                            }
                         }
                     }
                 } else {
                     when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
                         null -> failure(GameCreationError.LobbyNotFound)
-                        else -> success(FindGameSuccess.LobbyCreated(lobbyId))
+                        else -> {
+                            logger.info("Created lobby(id='$lobbyId') for user '$userId'")
+                            success(FindGameSuccess.LobbyCreated(lobbyId))
+                        }
                     }
                 }
             } else {
@@ -330,4 +344,8 @@ class GamesService(
      */
     private fun getOtherPlayer(game: Game, userId: Id) =
         if (game.hostId == userId) game.guestId else game.hostId
+
+    companion object {
+        val logger = LoggerFactory.getLogger(GamesService::class.java)
+    }
 }

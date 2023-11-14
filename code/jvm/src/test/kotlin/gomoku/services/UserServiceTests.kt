@@ -14,9 +14,11 @@ import gomoku.services.user.TokenRevocationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
+import gomoku.utils.IntrusiveTests
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.Success
 import gomoku.utils.TestClock
+import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
 import gomoku.utils.TestDataGenerator.newRandomString
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestId
@@ -38,10 +40,8 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-// Config
-private const val NR_OF_TEST_ITERATIONS = 3
-
 @RequiresDatabaseConnection
+@IntrusiveTests
 class UserServiceTests {
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)

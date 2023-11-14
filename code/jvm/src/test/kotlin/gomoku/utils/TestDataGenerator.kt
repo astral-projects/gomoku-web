@@ -8,6 +8,9 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.random.Random
 
+/*
+ * Centralizes the generation of test data.
+ */
 object TestDataGenerator {
 
     /**
@@ -49,4 +52,5 @@ object TestDataGenerator {
      * Generates a random number between this [Int] and [end] (inclusive).
      */
     infix fun Int.randomTo(end: Int) = (this..end).random()
+
 }

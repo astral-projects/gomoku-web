@@ -30,7 +30,7 @@ class JdbiGameRepository(
 
     override fun getGameById(gameId: Id): Game? =
         handle.createQuery(
-            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id for update"
+            "select g.id, g.state, g.variant_id as variant_id, g.board, g.created_at, g.updated_at, g.host_id, g.guest_id, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.Gamevariants as gv on g.variant_id = gv.id where g.id = :id"
         )
             .bind("id", gameId.value)
             .mapTo<JdbiGameAndVariantModel>()
@@ -146,10 +146,10 @@ class JdbiGameRepository(
         }
         return handle.createUpdate(
             """
-        UPDATE dbo.Games 
-        SET board = :board::jsonb, updated_at = extract(epoch from now()), state = :state 
-        WHERE id = :gameId;
-    """
+            UPDATE dbo.Games 
+            SET board = :board::jsonb, updated_at = extract(epoch from now()), state = :state 
+            WHERE id = :gameId;
+            """.trimIndent()
         )
             .bind("gameId", gameId.value)
             .bind("state", gameState.name)
@@ -177,10 +177,9 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun isMatchmaking(variantId: Id, userId: Id): Lobby? =
-        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :host_id FOR UPDATE")
+    override fun isMatchmaking(variantId: Id): Lobby? =
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id order by created_at desc limit 1")
             .bind("variant_id", variantId.value)
-            .bind("host_id", userId.value)
             .mapTo<JdbiLobbyModel>()
             .singleOrNull()?.toDomainModel()
 
@@ -210,7 +209,7 @@ class JdbiGameRepository(
             .singleOrNull()?.toDomainModel()
 
     override fun deleteLobby(lobbyId: Id, userId: Id): Boolean =
-        handle.createUpdate("Delete FROM dbo.Lobbies WHERE id = :lobbyId AND host_id = :userId")
+        handle.createUpdate("DELETE FROM dbo.Lobbies WHERE id = :lobbyId AND host_id = :userId")
             .bind("lobbyId", lobbyId.value)
             .bind("userId", userId.value)
             .execute() == 1
@@ -228,7 +227,9 @@ class JdbiGameRepository(
             is BoardDraw -> JdbiBoardDrawModel(grid = board.grid)
             is BoardRun -> JdbiBoardRunModel(
                 grid = board.grid,
-                turn = board.turn ?: throw IllegalStateException("BoardRun must have a turn")
+                turn = board.turn ?: throw IllegalStateException(
+                    "${BoardRun::class.java.simpleName} must have a turn"
+                )
             )
         }
         val mapper = jacksonObjectMapper()

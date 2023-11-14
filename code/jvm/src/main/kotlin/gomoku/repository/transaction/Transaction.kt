@@ -13,6 +13,12 @@ interface Transaction {
     // other repository types
 
     /**
+     * Sets the isolation level of the transaction.
+     * @param level the isolation level to set.
+     */
+    fun setIsolationLevel(level: Int)
+
+    /**
      * Rollbacks the transaction.
      */
     fun rollback()

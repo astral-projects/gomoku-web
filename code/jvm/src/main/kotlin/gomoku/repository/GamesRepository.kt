@@ -76,12 +76,11 @@ interface GamesRepository {
     fun deleteUserFromLobby(lobbyId: Id): Boolean
 
     /**
-     * Asserts if a user is in a lobby already waiting for a game with the given variant.
+     * Asserts if a user is in a lobby already waiting for a game to start.
      * @param variantId the id of the variant to search for.
-     * @param userId the id of the user to search for.
-     * @return the lobby where the host is waiting for a game with the given variant, or null if no such lobby exists.
+     * @return the lobby where the host is waiting for a game with the given variant for the longest time, or null if no such lobby exists.
      */
-    fun isMatchmaking(variantId: Id, userId: Id): Lobby?
+    fun isMatchmaking(variantId: Id): Lobby?
 
     /**
      * Asserts if a user is in a game already.

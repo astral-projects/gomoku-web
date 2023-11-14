@@ -1,4 +1,4 @@
-package gomoku.repository
+package gomoku.utils
 
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
@@ -22,15 +22,14 @@ import gomoku.domain.game.variant.config.BoardSize
 import gomoku.domain.game.variant.config.OpeningRule
 import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.domain.game.variant.config.VariantName
-import gomoku.utils.Failure
-import gomoku.utils.Success
-import gomoku.utils.get
 
 /**
  * Variant used for testing purposes.
  * Enables to test the game variant logic without the need to play the whole game.
  * - **To draw**: make two valid moves in the same row (horizontal).
  * - **To win**: the board must have three valid moves.
+ *
+ * It is not mark as **@Component** because it is not to be used in production.
  */
 class TestVariant : Variant {
     override val config = VariantConfig(

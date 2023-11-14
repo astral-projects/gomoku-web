@@ -12,15 +12,26 @@ import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.board.play
 import gomoku.domain.game.variant.config.VariantName
 import gomoku.domain.user.PasswordValidationInfo
-import gomoku.repository.TestVariant
 import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandleAndRollback
+import gomoku.utils.IntrusiveTests
+import gomoku.utils.MultiThreadTestHelper
 import gomoku.utils.RequiresDatabaseConnection
+import gomoku.utils.TestConfiguration.NR_OF_STRESS_TEST_ITERATIONS
+import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
+import gomoku.utils.TestConfiguration.stressTestTimeoutDuration
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.newTokenValidationData
+import gomoku.utils.TestDataGenerator.randomTo
+import gomoku.utils.TestVariant
 import gomoku.utils.get
+import org.jdbi.v3.core.transaction.TransactionIsolationLevel
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -29,45 +40,40 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-// Config
-private const val NR_OF_TEST_ITERATIONS = 3
-
 @RequiresDatabaseConnection
 class JdbiGameRepositoryTests {
 
     private val lobbyId = newTestId()
 
+    companion object {
+        private val testVariant = TestVariant()
+
+        private lateinit var variantId: Id
+
+        @JvmStatic
+        @BeforeAll
+        fun loadTestVariant(): Unit = runWithHandle { handle ->
+            val repoGames = JdbiGameRepository(handle)
+            repoGames.insertVariants(listOf(testVariant.config))
+            variantId = repoGames.getVariantByName(VariantName.TEST)
+            // then: variant is valid
+            assertNotNull(variantId)
+            val gameVariants = repoGames.getVariants()
+            assertEquals(variantId, gameVariants.find { it.name == VariantName.TEST }?.id)
+        }
+    }
+
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can create a game, do inner verifications and user exiting the game`() = runWithHandle { handle ->
+    fun `can create a game, do inner verifications and user exiting the game`() = runWithHandleAndRollback { handle ->
         // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a user to be the host
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: creating a user to be the guest
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
-
-        // and: choosing a variant and a board
-        val variant = TestVariant()
-        val board = variant.initialBoard()
-
-        // and: adding that variant to the database
-        repoGames.insertVariants(listOf(variant.config))
-
-        // and: getting the variant by name since its unique
-        val variantId = repoGames.getVariantByName(VariantName.TEST)
-
-        // then: variant is valid
-        assertNotNull(variantId)
-        assertEquals(variantId, repoGames.getVariants().find { it.name == VariantName.TEST }?.id)
+        val guestId = createRandomUser(repoUsers)
 
         // when: creating a game
         val createdGameId = repoGames.createGame(
@@ -75,7 +81,7 @@ class JdbiGameRepositoryTests {
             hostId = hostId,
             guestId = guestId,
             lobbyId = lobbyId,
-            board = board
+            board = testVariant.initialBoard()
         )
 
         // then: creation is successful
@@ -133,34 +139,16 @@ class JdbiGameRepositoryTests {
 
         // then: the game is not found
         assertNull(gameAfterDeleted)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `user enters a lobby`() = runWithHandle { handle ->
+    fun `user enters a lobby`() = runWithHandleAndRollback { handle ->
         // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a host
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val host = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
-
-        // and: choosing a variant and a board
-        val variant = TestVariant()
-
-        // and: adding that variant to the database
-        repoGames.insertVariants(listOf(variant.config))
-
-        // and: getting the variant by name since its unique
-        val variantId = repoGames.getVariantByName(VariantName.TEST)
-
-        // then: variant is valid
-        assertNotNull(variantId)
-        assertEquals(variantId, repoGames.getVariants().find { v -> v.name == VariantName.TEST }?.id)
+        val host = createRandomUser(repoUsers)
 
         // when: adding the user in the lobby
         val lobbyId = repoGames.addUserToLobby(variantId, host)
@@ -184,31 +172,16 @@ class JdbiGameRepositoryTests {
 
         // then: user is not waiting in the lobby
         assertNull(userInLobbyAfterDeleted)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `users join and leave lobbies`() = runWithHandle { handle ->
+    fun `users join and leave lobbies`() = runWithHandleAndRollback { handle ->
         // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
-        // and: choosing a variant and a board
-        val variant = TestVariant()
-
-        // and: adding that variant to the database
-        repoGames.insertVariants(listOf(variant.config))
-
-        // then: variant is valid
-        val variantId = repoGames.getVariantByName(VariantName.TEST)
-        assertEquals(variantId, repoGames.getVariants().find { v -> v.name == VariantName.TEST }?.id)
-
         // when: creating a host
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: adding the host in the lobby
         val lobbyId = repoGames.addUserToLobby(variantId, hostId)
@@ -217,13 +190,10 @@ class JdbiGameRepositoryTests {
         assertNotNull(lobbyId)
 
         // when: creating a guest
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
+        val guestId = createRandomUser(repoUsers)
 
         // when: checking if another user is waiting in the lobby
-        val matchMakingLobby = repoGames.isMatchmaking(variantId, guestId)
+        val matchMakingLobby = repoGames.isMatchmaking(variantId)
 
         // then:
         assertNotNull(matchMakingLobby)
@@ -236,43 +206,22 @@ class JdbiGameRepositoryTests {
 
         // then:
         assertTrue(isUserDeleted)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `creating and updating games`() = runWithHandle { handle ->
+    fun `creating and updating games`() = runWithHandleAndRollback { handle ->
         // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a host waiting for a game
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: creating a guest waiting for a game
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
-
-        // and: choosing a variant and a board
-        val variant = TestVariant()
-        val board = variant.initialBoard()
-
-        // and: adding that variant to the database
-        repoGames.insertVariants(listOf(variant.config))
-
-        // when getting the variant by name since its unique
-        val variantId = repoGames.getVariantByName(VariantName.TEST)
-
-        // then: variant is valid
-        assertNotNull(variantId)
-        assertEquals(variantId, repoGames.getVariants().find { v -> v.name == VariantName.TEST }?.id)
+        val guestId = createRandomUser(repoUsers)
 
         // when: creating a game
+        val board = testVariant.initialBoard()
         val createdGameId = repoGames.createGame(variantId, hostId, guestId, lobbyId, board)
         val createdGameId2 = repoGames.createGame(variantId, hostId, guestId, Id(lobbyId.value - 1).get(), board)
 
@@ -296,7 +245,7 @@ class JdbiGameRepositoryTests {
 
         // when: updating game 1 with a new board
         val move = Square(Column('a').get(), Row(1).get())
-        val newBoard = board.play(variant, move).get()
+        val newBoard = board.play(testVariant, move).get()
         assertNotNull(newBoard)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 
@@ -335,27 +284,19 @@ class JdbiGameRepositoryTests {
         // then: both games are deleted
         assertNull(repoGames.getGameById(game1.id))
         assertNull(repoGames.getGameById(game2.id))
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can update game points on a win-lose match`() = runWithHandle { handle ->
-        // given a game and users repository
+    fun `can update game points on a win-lose match`() = runWithHandleAndRollback { handle ->
+        // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a host waiting for a game
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: creating a guest waiting for a game
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
+        val guestId = createRandomUser(repoUsers)
 
         // when: getting the current user stats
         val hostStats = repoUsers.getUserStats(hostId)
@@ -398,27 +339,19 @@ class JdbiGameRepositoryTests {
         assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value).get())
         assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value).get())
         assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value + 1).get())
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can update game points on a draw`() = runWithHandle { handle ->
-        // given a game and users repository
+    fun `can update game points on a draw`() = runWithHandleAndRollback { handle ->
+        // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a host waiting for a game
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: creating a guest waiting for a game
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
+        val guestId = createRandomUser(repoUsers)
 
         // when: getting the current user stats
         val hostStats = repoUsers.getUserStats(hostId)
@@ -461,41 +394,19 @@ class JdbiGameRepositoryTests {
         assertEquals(guestStatsAfterUpdate.wins, NonNegativeValue(guestStats.wins.value).get())
         assertEquals(guestStatsAfterUpdate.draws, NonNegativeValue(guestStats.draws.value + 1).get())
         assertEquals(guestStatsAfterUpdate.losses, NonNegativeValue(guestStats.losses.value).get())
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can wait for a game and delete a lobby`() = runWithHandle { handle ->
-        // given a game and users repository
+    fun `can wait for a game and delete a lobby`() = runWithHandleAndRollback { handle ->
+        // given: a game and users repository
         val repoGames = JdbiGameRepository(handle)
         val repoUsers = JdbiUsersRepository(handle)
 
         // when: creating a host waiting for a game
-        val username1 = newTestUserName()
-        val email1 = newTestEmail()
-        val passwordValidationInfo1 = PasswordValidationInfo(newTokenValidationData())
-        val hostId = repoUsers.storeUser(username1, email1, passwordValidationInfo1)
+        val hostId = createRandomUser(repoUsers)
 
         // and: creating a guest waiting for a game
-        val username2 = newTestUserName()
-        val email2 = newTestEmail()
-        val passwordValidationInfo2 = PasswordValidationInfo(newTokenValidationData())
-        val guestId = repoUsers.storeUser(username2, email2, passwordValidationInfo2)
-
-        // and: choosing a variant and a board
-        val variant = TestVariant()
-        val board = variant.initialBoard()
-
-        // and: adding that variant to the database
-        repoGames.insertVariants(listOf(variant.config))
-
-        // when getting the variant by name since its unique
-        val variantId = repoGames.getVariantByName(VariantName.TEST)
-
-        // then: variant is valid
-        assertNotNull(variantId)
-        assertEquals(variantId, repoGames.getVariants().find { v -> v.name == VariantName.TEST }?.id)
+        val guestId = createRandomUser(repoUsers)
 
         // when: when adding the host in the lobby
         val lobbyId = repoGames.addUserToLobby(variantId, hostId)
@@ -516,7 +427,13 @@ class JdbiGameRepositoryTests {
         assertNull(gameId)
 
         // when: a game is created
-        val createdGameId = repoGames.createGame(variantId, hostId, guestId, lobbyId, board)
+        val createdGameId = repoGames.createGame(
+            variantId = variantId,
+            hostId = hostId,
+            guestId = guestId,
+            lobbyId = lobbyId,
+            board = testVariant.initialBoard()
+        )
 
         // then: the game is created successfully
         assertNotNull(createdGameId)
@@ -540,4 +457,146 @@ class JdbiGameRepositoryTests {
         // then: the lobby is deleted
         assertTrue(isLobbyDeletedByHost)
     }
+
+    @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
+    @IntrusiveTests
+    fun `stress test simulating several users joining lobbies and creating games with serializable level`() {
+        stress_test_simulating_several_users_joining_lobbies_and_creating_games(TransactionIsolationLevel.SERIALIZABLE)
+    }
+
+    @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
+    @IntrusiveTests
+    fun `without serializable level, there's no retry mechanism and the test fails`() {
+        // TODO("it should not be working..")
+        stress_test_simulating_several_users_joining_lobbies_and_creating_games(TransactionIsolationLevel.READ_COMMITTED)
+    }
+
+    private fun stress_test_simulating_several_users_joining_lobbies_and_creating_games(
+        isolationLevel: TransactionIsolationLevel,
+    ) {
+        // given: a multi-thread test helper and a set of threads
+        val testDuration = stressTestTimeoutDuration
+        val nrOfThreads = 10 randomTo 23
+        val testHelper = MultiThreadTestHelper(testDuration)
+
+        // and: a set of atomic counters
+        val lobbiesCreated = AtomicInteger(0)
+        val gamesCreated = AtomicInteger(0)
+        val usersCreated = AtomicInteger(0)
+
+        // and: a map of users in games (thread id -> repetion id)
+        val usersInGames = ConcurrentHashMap<Int, Int>()
+        val threadsIdsList = List(nrOfThreads) { it to -1 }
+        usersInGames.putAll(threadsIdsList)
+
+        // when: several users join lobbies and create games
+        testHelper.createAndStartMultipleThreads(nrOfThreads) { threadId, isTestFinished ->
+            // given: a transactional handle
+            runWithHandle(isolationLevel) { handle ->
+                // and: a repetion id
+                var repetionId = 0
+                while (!isTestFinished()) {
+                    // and: a game and users repository
+                    val repoGames = JdbiGameRepository(handle)
+                    val repoUsers = JdbiUsersRepository(handle)
+                    // when: a random user is created
+                    val userId = createRandomUser(repoUsers)
+                        .also { usersCreated.incrementAndGet() }
+                    // and: the user tries to find a game
+                    val lobby = repoGames.isMatchmaking(variantId)
+                    if (lobby != null) {
+                        val hostId = lobby.userId
+                        // then: the user joins the lobby and creates a game
+                        repoGames.createGame(
+                            variantId = variantId,
+                            hostId = hostId,
+                            guestId = userId,
+                            lobbyId = lobby.lobbyId,
+                            board = testVariant.initialBoard()
+                        ).also { gamesCreated.incrementAndGet() }
+                        val previousRepetion = usersInGames[threadId]
+                        requireNotNull(previousRepetion)
+                        // and: the user was added in fifo order
+                        if (previousRepetion >= repetionId) {
+                            throw AssertionError(
+                                "Repetion id is not in fifo order: " +
+                                        "previous repetion id: $previousRepetion, " +
+                                        "current repetion id: $repetionId"
+                            )
+                        }
+                        usersInGames[threadId] = repetionId++
+                        // and: the lobby is deleted
+                        repoGames.deleteLobby(lobby.lobbyId, hostId)
+                    } else {
+                        // then: the user creates a lobby
+                        repoGames.addUserToLobby(variantId, userId)
+                            .also {
+                                lobbiesCreated.incrementAndGet()
+                            }
+                    }
+                }
+            }
+        }
+
+        // and: all launched threads are joined
+        testHelper.join()
+
+        // TODO("remove")
+        println("Users created: ${usersCreated.get()}")
+        println("Games created: ${gamesCreated.get()}")
+        println("Lobbies created: ${lobbiesCreated.get()}")
+        println(usersInGames)
+        println("=".repeat(50))
+
+        // when: an error margin is defined
+        val errorMargin = 0.05f
+
+        // then: the number of games created by a thread is not too different from the others,
+        // which means that the hosts are being added in fifo order
+        val values = usersInGames.values.toList()
+        val maxGamesCreatedByAThread = values.maxOrNull()
+        assertNotNull(maxGamesCreatedByAThread)
+        val minGamesCreatedByAThread = values.minOrNull()
+        assertNotNull(minGamesCreatedByAThread)
+        val lobbies = lobbiesCreated.get()
+        val users = usersCreated.get()
+        val games = gamesCreated.get()
+        val errorFormat = formatError(errorMargin)
+        val inversedErrorFormat = formatError(1 - errorMargin)
+        assertTrue(
+            (maxGamesCreatedByAThread - minGamesCreatedByAThread) <= errorMargin * (lobbies / nrOfThreads),
+            "The difference between the maximum and minimum number of games created by a thread is greater than $errorFormat of the total number of lobbies created"
+        )
+        assertTrue(
+            lobbies >= (users / 2) * (1 - errorMargin),
+            "The number of lobbies created is less than $inversedErrorFormat of half the total number of users created"
+        )
+        assertTrue(
+            games >= (users / 2) * (1 - errorMargin),
+            "The number of games created is less than $inversedErrorFormat of half the total number of users created"
+        )
+        assertTrue(
+            games >= lobbies * (1 - errorMargin),
+            "The number of games created is less than $inversedErrorFormat of the total number of lobbies created"
+        )
+    }
+
+
+    /**
+     * Creates and stores a random user.
+     * @param repoUsers the users repository to use.
+     * @return the id of the created user.
+     */
+    private fun createRandomUser(repoUsers: JdbiUsersRepository): Id {
+        val username = newTestUserName()
+        val email = newTestEmail()
+        val passwordValidationInfo = PasswordValidationInfo(newTokenValidationData())
+        return repoUsers.storeUser(username, email, passwordValidationInfo)
+    }
+
+    /**
+     * Creates a string with the error margin in percentage. E.g. 0.05f -> "5%".
+     * @param errorMargin the error margin to be converted.
+     */
+    private fun formatError(errorMargin: Float): String = "${errorMargin * 100}%"
 }

@@ -79,6 +79,10 @@ The conceptual model has the following restrictions:
     - The `host_id` and `guest_id` attributes reference the same user;
     - The `lobby_id` attribute has to be unique;
 
+- `Lobby` entity:
+    - The `created_at` attribute represents the seconds since
+      the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
+
 ### Physical Model
 
 The physical model of the database is available in [create-schema.sql](../src/sql/create-schema.sql).
@@ -341,11 +345,10 @@ To ensure the application's thread safety and data consistency, several measures
 - **Immutable Objects**: The domain classes are designed as immutable objects. Once these objects are created, they
   cannot be modified. This immutability guarantees data consistency and helps maintain atomic operations.
 
-- **Row Locking**: Row-level locks are used in certain database operations. For example, the `isMatchmaking` operation,
-  which checks if a user is in a lobby waiting for a match, utilizes the `FOR UPDATE` clause. This specific row lock
-  ensures that the selected row is locked until the transaction is committed. As a result, it guarantees that the user
-  is not matched with another user concurrently. Importantly, this row-level locking does not block other users from
-  being matched with different users simultaneously.
+- **Isolation Levels**: The database transactions are configured to use the `SERIALIZABLE` isolation level, which
+  ensures that the transactions are executed in a way that is indistinguishable from serial execution. This means that
+  the transactions are executed one after the other, preventing concurrency problems such as dirty reads, non-repeatable
+  reads and phantom reads.
 
 These measures collectively contribute to the application's thread safety and data integrity, ensuring that operations
 are executed consistently and in a reliable way.

@@ -49,10 +49,12 @@ create table dbo.GameVariants
 create table dbo.Lobbies
 (
     id         int generated always as identity,
-    -- variant_id and host_id could be unique individually, but then
-    -- we would need to catch the exception in the code
+    -- host_id is not unique to allow multiple lobbies with the same host
     host_id    int references dbo.Users (id) on delete cascade on update cascade,
+    -- variant_id is not unique to allow multiple lobbies with the same variant
     variant_id int references dbo.GameVariants (id) on delete cascade on update cascade,
+    created_at int not null default extract(epoch from now()),
+    constraint created_at_is_valid check (created_at > 0),
     primary key (id, host_id)
 );
 

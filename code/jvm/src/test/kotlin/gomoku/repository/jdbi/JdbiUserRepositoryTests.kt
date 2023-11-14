@@ -7,9 +7,10 @@ import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
 import gomoku.domain.user.User
 import gomoku.domain.user.components.Username
-import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandle
+import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandleAndRollback
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.TestClock
+import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.newTokenValidationData
@@ -23,14 +24,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-// Config
-private const val NR_OF_TEST_ITERATIONS = 3
-
 @RequiresDatabaseConnection
 class JdbiUserRepositoryTests {
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can create and retrieve user`() = runWithHandle { handle ->
+    fun `can create and retrieve user`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -67,12 +65,10 @@ class JdbiUserRepositoryTests {
 
         // then: response is false
         assertFalse(anotherUserIsStoredByEmail)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can create, validate and update tokens`() = runWithHandle { handle ->
+    fun `can create, validate and update tokens`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
         // and: a test clock
@@ -119,12 +115,10 @@ class JdbiUserRepositoryTests {
         val userAndTokenAfterUpdate = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         val (_, retrievedTokenAfterUpdate) = userAndTokenAfterUpdate ?: fail("token and associated user must exist")
         assertEquals(tokenLastUsedInstant, retrievedTokenAfterUpdate.lastUsedAt)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can revoke tokens`() = runWithHandle { handle ->
+    fun `can revoke tokens`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
         // and: a test clock
@@ -161,12 +155,10 @@ class JdbiUserRepositoryTests {
         // then: token is not found
         val userAndTokenAfterRevoke = repo.getTokenByTokenValidationInfo(testTokenValidationInfo)
         assertNull(userAndTokenAfterRevoke)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `can retrieve user statistic information`() = runWithHandle { handle ->
+    fun `can retrieve user statistic information`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -187,12 +179,10 @@ class JdbiUserRepositoryTests {
         assertEquals(0, userRankingInfo.wins.value)
         assertEquals(0, userRankingInfo.losses.value)
         assertEquals(0, userRankingInfo.points.value)
-
-        handle.rollback()
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `retrieves all users paginated statistic information`() = runWithHandle { handle ->
+    fun `retrieves all users paginated statistic information`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -245,12 +235,10 @@ class JdbiUserRepositoryTests {
         // then:
         assertEquals(2, secondPageUsersRanking.currentPage)
         assertEquals(limitValue, secondPageUsersRanking.itemsPerPage)
-
-        handle.rollback()
     }
 
-    @RepeatedTest(10)
-    fun `can retrieve user stats by username query`() = runWithHandle { handle ->
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
+    fun `can retrieve user stats by username query`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -296,7 +284,5 @@ class JdbiUserRepositoryTests {
             assertEquals(userStatsByUsername.items[it].username, retrievedUserByUsername.username)
             assertEquals(userStatsByUsername.items[it].email, retrievedUserByUsername.email)
         }
-
-        handle.rollback()
     }
 }

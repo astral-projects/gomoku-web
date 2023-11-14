@@ -17,7 +17,6 @@ import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.User
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
-import gomoku.repository.TestVariant
 import gomoku.repository.jdbi.JdbiTestConfiguration
 import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.repository.transaction.TransactionManager
@@ -35,18 +34,27 @@ import gomoku.services.game.WaitForGameSuccess
 import gomoku.services.user.UsersService
 import gomoku.utils.Either
 import gomoku.utils.Failure
+import gomoku.utils.IntrusiveTests
+import gomoku.utils.MultiThreadTestHelper
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.Success
 import gomoku.utils.TestClock
+import gomoku.utils.TestConfiguration.NR_OF_STRESS_TEST_ITERATIONS
+import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
+import gomoku.utils.TestConfiguration.stressTestTimeoutDuration
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestPassword
 import gomoku.utils.TestDataGenerator.newTestUserName
+import gomoku.utils.TestDataGenerator.randomTo
+import gomoku.utils.TestVariant
 import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.RepeatedTest
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -55,10 +63,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
-// Config
-private const val NR_OF_TEST_ITERATIONS = 3
-
 @RequiresDatabaseConnection
+@IntrusiveTests
 class GameServicesTests {
 
     init {
@@ -344,7 +350,7 @@ class GameServicesTests {
             is Success -> fail("Unexpected $moveMadeByAUserThatDoesNotBelongToTheGame")
         }
 
-        // when: a user makes a move outside of the board
+        // when: a user makes a move outside the board
         val moveOutsideOfBoard = gamesService.makeMove(
             gameId = gameId,
             userId = host.id,
@@ -580,7 +586,7 @@ class GameServicesTests {
         val testClock = TestClock()
         val gamesService = createGamesService(testClock)
 
-        // and: a users service
+        // and: a user service
         val usersService = createUsersService(testClock)
 
         // when: checking the variant points
@@ -658,7 +664,7 @@ class GameServicesTests {
         val testClock = TestClock()
         val gamesService = createGamesService(testClock)
 
-        // and: a users service
+        // and: a user service
         val usersService = createUsersService(testClock)
 
         // when: checking the variant points
@@ -731,7 +737,7 @@ class GameServicesTests {
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `variant points are correctly distributed in win game`() {
+    fun `variant points are correctly distributed in a win game`() {
         // given: two users
         val host = createRandomUser()
         val guest = createRandomUser()
@@ -773,7 +779,7 @@ class GameServicesTests {
 
         // when: the host makes a move, followed by the guest, and so on
         // The host wins because, according to the test variant rules,
-        // the first player to reach 3 total valid moves wins
+        // the first player to reach 3 <total> valid moves wins
         makeMoves(
             gamesService = gamesService,
             gameId = gameId,
@@ -854,6 +860,104 @@ class GameServicesTests {
         }
     }
 
+    @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
+    fun `stress test simulating several users joining lobbies and creating games`() {
+        // given: a game service
+        val gamesService = createGamesService(TestClock())
+
+        // and: a multi-thread test helper and a set of threads
+        val testDuration = stressTestTimeoutDuration
+        val nrOfThreads = 15 randomTo 24
+        val testHelper = MultiThreadTestHelper(testDuration)
+
+        // and: a set of atomic counters
+        val lobbiesCreated = AtomicInteger(0)
+        val gamesCreated = AtomicInteger(0)
+        val usersCreated = AtomicInteger(0)
+        val stillInLobby = AtomicInteger(0)
+        val failures = AtomicInteger(0)
+
+        // and: a map of users in games (thread id -> repetion id)
+        val usersInGames = ConcurrentHashMap<Int, Int>()
+        val threadsIdsList = List(nrOfThreads) { it to -1 }
+        usersInGames.putAll(threadsIdsList)
+
+        // when: several users join lobbies and create games
+        testHelper.createAndStartMultipleThreads(nrOfThreads) { threadId, isTestFinished ->
+            var repetionId = 0
+            while (!isTestFinished()) {
+                // and: a random user
+                val userId = createRandomUser().also { usersCreated.incrementAndGet() }
+                // and: the user tries to find a game
+                when (val gameCreationResult = gamesService.findGame(testVariantId, userId.id)) {
+                    is Failure -> failures.incrementAndGet()
+                    is Success -> when (gameCreationResult.value) {
+                        // then: the user creates a lobby
+                        is FindGameSuccess.LobbyCreated -> lobbiesCreated.incrementAndGet()
+                        // or: the user creates a game
+                        is FindGameSuccess.GameMatch -> {
+                            val previousRepetion = usersInGames[threadId]
+                            requireNotNull(previousRepetion)
+                            // and: the user was added in fifo order
+                            if (previousRepetion >= repetionId) {
+                                throw AssertionError(
+                                    "Repetion id is not in fifo order: " +
+                                            "previous repetion id: $previousRepetion, " +
+                                            "current repetion id: $repetionId"
+                                )
+                            }
+                            usersInGames[threadId] = repetionId++
+                            gamesCreated.incrementAndGet()
+                        }
+                        // or: the user is still in a lobby, waiting for a game
+                        is FindGameSuccess.StillInLobby -> stillInLobby.incrementAndGet()
+                    }
+                }
+            }
+        }
+
+        // and: all launched threads are joined
+        testHelper.join()
+
+        println("Users created: ${usersCreated.get()}")
+        println("Games created: ${gamesCreated.get()}")
+        println("Lobbies created: ${lobbiesCreated.get()}")
+        println("Still in lobby: ${stillInLobby.get()}")
+        println("Failures: ${failures.get()}")
+
+        // when: an error margin is defined
+        val errorMargin = 0.05f
+
+        // then: the number of games created by a thread is not too different from the others,
+        // which means that the hosts are being added in fifo order
+        val values = usersInGames.values.toList()
+        val maxGamesCreatedByAThread = values.maxOrNull()
+        assertNotNull(maxGamesCreatedByAThread)
+        val minGamesCreatedByAThread = values.minOrNull()
+        assertNotNull(minGamesCreatedByAThread)
+        val lobbies = lobbiesCreated.get()
+        val users = usersCreated.get()
+        val games = gamesCreated.get()
+        val errorFormat = formatError(errorMargin)
+        val inversedErrorFormat = formatError(1 - errorMargin)
+        assertTrue(
+            (maxGamesCreatedByAThread - minGamesCreatedByAThread) <= errorMargin * (lobbies / nrOfThreads),
+            "The difference between the maximum and minimum number of games created by a thread is greater than $errorFormat of the total number of lobbies created"
+        )
+        kotlin.test.assertTrue(
+            lobbies >= (users / 2) * (1 - errorMargin),
+            "The number of lobbies created is less than $inversedErrorFormat of half the total number of users created"
+        )
+        kotlin.test.assertTrue(
+            games >= (users / 2) * (1 - errorMargin),
+            "The number of games created is less than $inversedErrorFormat of half the total number of users created"
+        )
+        kotlin.test.assertTrue(
+            games >= lobbies * (1 - errorMargin),
+            "The number of games created is less than $inversedErrorFormat of the total number of lobbies created"
+        )
+    }
+
     /**
      * Creates a random game with the given variant and users or fails the test.
      * @param gameService the game service to use.
@@ -863,10 +967,10 @@ class GameServicesTests {
      * @return the id of the created game.
      */
     private fun createRandomGame(gameService: GamesService, variantId: Id, host: User, guest: User): Id {
-        val gameCreationResult = gameService.findGame(variantId, host.id)
-        val gameCreationResult2 = gameService.findGame(variantId, guest.id)
-        return if (gameCreationResult is Success && gameCreationResult2 is Success)
-            gameCreationResult2.value.id else null
+        val hostGameCreationResult = gameService.findGame(variantId, host.id)
+        val guestGameCreationResult = gameService.findGame(variantId, guest.id)
+        return if (hostGameCreationResult is Success && guestGameCreationResult is Success)
+            guestGameCreationResult.value.id else null
             ?: fail("Unexpected null game")
     }
 
@@ -904,7 +1008,7 @@ class GameServicesTests {
      * @param host the host of the game.
      * @param guest the guest of the game.
      */
-    fun makeMoves(
+    private fun makeMoves(
         gamesService: GamesService,
         gameId: Id,
         squares: List<Square>,
@@ -979,5 +1083,11 @@ class GameServicesTests {
             clock = testClock,
             variants = variants
         )
+
+        /**
+         * Creates a string with the error margin in percentage. E.g. 0.05f -> "5%".
+         * @param errorMargin the error margin to be converted.
+         */
+        private fun formatError(errorMargin: Float): String = "${errorMargin * 100}%"
     }
 }
