@@ -6,5 +6,10 @@ package gomoku.repository.jdbi.model
  */
 @FunctionalInterface
 fun interface JdbiModel<R> {
+
+    /**
+     * Converts the database model into the corresponding domain model.
+     * @return The domain model.
+     */
     fun toDomainModel(): R
 }

@@ -32,7 +32,6 @@ class LobbyController(
      */
     @GetMapping(Uris.Lobby.GET_IS_IN_LOBBY)
     @RequiresAuthentication
-    @NotTested
     fun waitingInLobby(
         @Valid
         @Range(min = 1)

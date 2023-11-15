@@ -2,7 +2,7 @@ package gomoku.services.game
 
 import gomoku.domain.components.Id
 import gomoku.domain.game.Game
-import gomoku.domain.game.errors.MakeMoveError
+import gomoku.domain.game.board.errors.MakeMoveError
 import gomoku.utils.Either
 
 sealed class GameCreationError {

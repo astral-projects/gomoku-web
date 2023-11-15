@@ -1,8 +1,8 @@
 package gomoku.domain.game.board
 
+import gomoku.domain.game.board.errors.BoardMakeMoveResult
 import gomoku.domain.game.board.moves.Moves
 import gomoku.domain.game.board.moves.move.Square
-import gomoku.domain.game.errors.BoardMakeMoveResult
 import gomoku.domain.game.variant.Variant
 
 /**

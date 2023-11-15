@@ -1,8 +1,8 @@
 package gomoku.domain.user.components
 
 import gomoku.domain.components.Component
+import gomoku.domain.components.EmailError
 import gomoku.domain.components.GettingEmailResult
-import gomoku.domain.components.InvalidEmailError
 import gomoku.utils.Failure
 import gomoku.utils.Success
 
@@ -18,7 +18,7 @@ class Email private constructor(
 
         operator fun invoke(value: String): GettingEmailResult = when {
             value.matches(EMAIL_FORMAT.toRegex()) -> Success(Email(value))
-            else -> Failure(InvalidEmailError.InvalidEmail)
+            else -> Failure(EmailError.InvalidEmail)
         }
     }
 

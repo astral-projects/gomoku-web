@@ -9,7 +9,6 @@ import java.net.URI
 object Uris {
 
     const val PREFIX = "/api"
-    const val HOME = PREFIX
 
     /**
      * Associated with Users controller.
@@ -17,18 +16,20 @@ object Uris {
     object Users {
         const val REGISTER = "$PREFIX/users"
         const val TOKEN = "$PREFIX/users/token"
-        const val STATS_BY_NAME = "$PREFIX/users/stats/search"
+        const val STATS_BY_TERM = "$PREFIX/users/stats/search"
         const val STATS = "$PREFIX/users/stats"
         const val STATS_BY_ID = "$PREFIX/users/{id}/stats"
         const val GET_BY_ID = "$PREFIX/users/{id}"
-        const val EDIT_BY_ID = "$PREFIX/users/{id}"
         const val HOME = "$PREFIX/users/home"
         const val LOGOUT = "$PREFIX/users/logout"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun byIdStats(id: Int) = UriTemplate(STATS_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
-        fun stats(): URI = URI(STATS)
+        fun stats(offset: Int, limit: Int): URI = URI("$STATS?offset=$offset&limit=$limit")
+        fun statsByTerm(term: String, offset: Int, limit: Int): URI =
+            URI("$STATS_BY_TERM?term=$term&offset=$offset&limit=$limit")
+
         fun register(): URI = URI(REGISTER)
         fun logout(): URI = URI(LOGOUT)
     }
@@ -57,7 +58,6 @@ object Uris {
     object Lobby {
         const val GET_IS_IN_LOBBY = "$PREFIX/lobby/{id}"
         const val EXIT_LOBBY = "$PREFIX/lobby/{id}"
-
         fun isInLobby(id: Int) = UriTemplate(GET_IS_IN_LOBBY).expand(id)
         fun exitLobby(id: Int) = UriTemplate(EXIT_LOBBY).expand(id)
     }

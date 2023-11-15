@@ -1,11 +1,16 @@
 package gomoku.http.controllers
 
+import gomoku.domain.PaginatedResult
+import gomoku.domain.components.EmailError
 import gomoku.domain.components.Id
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PasswordError
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
+import gomoku.domain.components.TermError
 import gomoku.domain.components.UsernameError
 import gomoku.domain.user.AuthenticatedUser
+import gomoku.domain.user.UserStatsInfo
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
@@ -24,9 +29,9 @@ import gomoku.services.user.TokenRevocationError
 import gomoku.services.user.UserCreationError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
-import gomoku.utils.NotTested
 import gomoku.utils.Success
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Range
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -42,24 +47,33 @@ class UsersController(
     private val userService: UsersService,
 ) {
 
+    companion object {
+        const val HEADER_LOCATION_NAME = "Location"
+        const val DEFAULT_OFFSET = "0"
+        const val DEFAULT_LIMIT = "10"
+    }
+
     /**
      * Creates a new user.
      * @param input the user input with registration data.
+     * @return A [ResponseEntity] containing the [IdOutputModel] result of the user or an
      */
     @PostMapping(Uris.Users.REGISTER)
     fun createUser(
         @RequestBody
-        input: UserCreateInputModel
+        input: UserCreateInputModel,
     ): ResponseEntity<*> {
         val instance = Uris.Users.register()
         return when (val emailResult = Email(input.email)) {
-            is Failure -> Problem.invalidEmail(instance)
+            is Failure -> when (emailResult.value) {
+                EmailError.InvalidEmail -> Problem.invalidEmail(instance)
+            }
+
             is Success -> {
                 when (val usernameResult = Username(input.username)) {
                     is Failure -> when (usernameResult.value) {
-                        UsernameError.BlankUsername -> Problem.blankUsername(instance)
+                        UsernameError.UsernameBlank -> Problem.blankUsername(instance)
                         UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
-                        UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
                     }
 
                     is Success -> {
@@ -67,7 +81,6 @@ class UsersController(
                             is Failure -> when (passwordResult.value) {
                                 PasswordError.PasswordNotSafe -> Problem.insecurePassword(instance)
                                 PasswordError.PasswordBlank -> Problem.blankPassword(instance)
-                                PasswordError.PasswordIsEmpty -> Problem.emptyPassword(instance)
                             }
 
                             is Success -> {
@@ -79,7 +92,7 @@ class UsersController(
                                 when (result) {
                                     is Success -> ResponseEntity.status(HttpStatus.CREATED)
                                         .header(
-                                            "Location",
+                                            HEADER_LOCATION_NAME,
                                             Uris.Users.byId(result.value.value).toASCIIString()
                                         )
                                         .body(IdOutputModel.serializeFrom(result.value))
@@ -106,7 +119,9 @@ class UsersController(
 
     /**
      * Creates a new token for the user.
-     * @param input the user input with username and password.
+     * @param input the user input model with login data.
+     * @return A [ResponseEntity] containing the [UserTokenCreateOutputModel] result of the user or an
+     * appropriate [Problem] response.
      */
     @PostMapping(Uris.Users.TOKEN)
     fun createToken(
@@ -116,9 +131,8 @@ class UsersController(
         val instance = Uris.Users.login()
         return when (val usernameResult = Username(input.username)) {
             is Failure -> when (usernameResult.value) {
-                UsernameError.BlankUsername -> Problem.blankUsername(instance)
+                UsernameError.UsernameBlank -> Problem.blankUsername(instance)
                 UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
-                UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
             }
 
             is Success -> {
@@ -126,7 +140,6 @@ class UsersController(
                     is Failure -> when (passwordResult.value) {
                         PasswordError.PasswordNotSafe -> Problem.insecurePassword(instance)
                         PasswordError.PasswordBlank -> Problem.blankPassword(instance)
-                        PasswordError.PasswordIsEmpty -> Problem.emptyPassword(instance)
                     }
 
                     is Success -> {
@@ -139,7 +152,7 @@ class UsersController(
                                 ResponseEntity.ok(UserTokenCreateOutputModel(tokenCreationResult.value.tokenValue))
 
                             is Failure -> when (tokenCreationResult.value) {
-                                TokenCreationError.PasswordIsWrong -> Problem.passwordIsWrong(instance)
+                                TokenCreationError.PasswordIsWrong -> Problem.invalidPassword(instance)
 
                                 TokenCreationError.UsernameNotExists -> Problem.usernameDoesNotExist(
                                     username = usernameResult.value,
@@ -154,8 +167,10 @@ class UsersController(
     }
 
     /**
-     * Revokes the token of the user.
+     * Revokes the token of the user, resulting in a logout.
      * @param authenticatedUser the authenticated user.
+     * @return A [ResponseEntity] containing the [UserLogoutOutputModel] result of the user or an
+     * appropriate [Problem] response.
      */
     @PostMapping(Uris.Users.LOGOUT)
     @RequiresAuthentication
@@ -165,6 +180,7 @@ class UsersController(
         val instance = Uris.Users.logout()
         return when (val tokenRevocationResult = userService.revokeToken(authenticatedUser.token)) {
             is Success -> ResponseEntity.ok(UserLogoutOutputModel())
+            // TODO("there's no way to get this error since interceptor does this work, but it's here for completeness sake")
             is Failure -> when (tokenRevocationResult.value) {
                 TokenRevocationError.TokenIsInvalid -> Problem.invalidToken(instance)
             }
@@ -174,6 +190,8 @@ class UsersController(
     /**
      * Retrieves user home data.
      * @param authenticatedUser the authenticated user.
+     * @return A [ResponseEntity] containing the [UserOutputModel] result of the user or an
+     * appropriate [Problem] response.
      */
     @GetMapping(Uris.Users.HOME)
     @RequiresAuthentication
@@ -183,8 +201,10 @@ class UsersController(
         ResponseEntity.ok(UserOutputModel.serializeFrom(authenticatedUser.user))
 
     /**
-     * Retrieves users by id.
+     * Retrieves an user by id.
      * @param id the user id.
+     * @return A [ResponseEntity] containing the [UserOutputModel] result of the user or an
+     * appropriate [Problem] response.
      */
     @GetMapping(Uris.Users.GET_BY_ID)
     fun getUserById(
@@ -209,22 +229,24 @@ class UsersController(
     }
 
     /**
-     * Retrieves users stats.
+     * Retrieves users statistic data.
      * @param offset the offset to start from.
      * @param limit the number of users to retrieve.
+     * @return A [ResponseEntity] containing the [PaginatedResult] result of user statistics or an
+     * appropriate [Problem] response.
      */
     @GetMapping(Uris.Users.STATS)
     fun getUsersStats(
         @Valid
         @Range(min = 0)
-        @RequestParam(name = "offset", defaultValue = "0")
+        @RequestParam(name = "offset", defaultValue = DEFAULT_OFFSET)
         offset: Int,
         @Valid
         @Range(min = 1)
-        @RequestParam(name = "limit", defaultValue = "10")
+        @RequestParam(name = "limit", defaultValue = DEFAULT_LIMIT)
         limit: Int,
     ): ResponseEntity<*> {
-        val instance = Uris.Users.stats()
+        val instance = Uris.Users.stats(offset = offset, limit = limit)
         return when (val offsetResult = NonNegativeValue(offset)) {
             is Failure -> Problem.invalidOffset(instance)
             is Success -> when (val limitResult = PositiveValue(limit)) {
@@ -239,11 +261,12 @@ class UsersController(
     }
 
     /**
-     * Retrieves user stats by id.
+     * Retrieves user statistics data by id.
      * @param id the user id.
+     * @return A [ResponseEntity] containing the [UserStatsOutputModel] result of user statistics or an
+     * appropriate [Problem] response.
      */
     @GetMapping(Uris.Users.STATS_BY_ID)
-    @NotTested
     fun getUserStats(
         @Valid
         @Range(min = 1)
@@ -262,50 +285,46 @@ class UsersController(
     }
 
     /**
-     * Retrieves user statistics by username.
-     *
-     * This endpoint allows the retrieval of user statistics based on a specified username.
-     * The provided username is used to filter and retrieve user statistics for users
-     * whose names either match or start with the specified substring.
-     *
+     * Retrieves user statistics by username. Normally used for search queries.
      * @param user The authenticated user making the request.
-     * @param limit The maximum number of user statistics results to be returned (default is 10).
+     * @param offset The optional offset to start from (default is **0**).
+     * @param limit The optional maximum number of user statistics results to be returned (default is **10**).
      * @param userName The username or substring to filter user statistics by.
-     * @return ResponseEntity containing the paginated result of user statistics or an error response.
+     * @return A [ResponseEntity] containing the [PaginatedResult] result of user statistics or an
+     * appropriate [Problem] response.
      */
-    @GetMapping(Uris.Users.STATS_BY_NAME)
+    @GetMapping(Uris.Users.STATS_BY_TERM)
     @RequiresAuthentication
-    fun getUserStatsByName(
+    fun getUserStatsByTerm(
         user: AuthenticatedUser,
         @Valid
         @Range(min = 0)
-        @RequestParam(name = "offset", defaultValue = "0")
+        @RequestParam(name = "offset", defaultValue = DEFAULT_OFFSET)
         offset: Int,
         @Valid
         @Range(min = 1)
-        @RequestParam(name = "limit", defaultValue = "10")
+        @RequestParam(name = "limit", defaultValue = DEFAULT_LIMIT)
         limit: Int,
         @Valid
-        @RequestParam(name = "username")
-        userName: String,
+        @NotBlank
+        @RequestParam(name = "term")
+        term: String,
     ): ResponseEntity<*> {
-        val instance = Uris.Users.stats()
+        val instance = Uris.Users.statsByTerm(term = term, offset = offset, limit = limit)
         return when (val limitResult = PositiveValue(limit)) {
             is Failure -> Problem.invalidLimit(instance)
             is Success -> when (val offsetResult = NonNegativeValue(offset)) {
                 is Failure -> Problem.invalidOffset(instance)
-                is Success -> when (val usernameResult = Username(userName)) {
-                    is Failure -> when (usernameResult.value) {
-                        UsernameError.BlankUsername -> Problem.blankUsername(instance)
-                        UsernameError.InvalidLength -> Problem.invalidUsernameLength(instance)
-                        UsernameError.EmptyUsername -> Problem.emptyUsername(instance)
+                is Success -> when (val termResult = Term(term)) {
+                    is Failure -> when (termResult.value) {
+                        TermError.InvalidLength -> Problem.invalidTermLength(instance)
                     }
 
                     is Success -> {
-                        val paginatedResult = userService.getUserStatsByUsername(
+                        val paginatedResult: PaginatedResult<UserStatsInfo> = userService.getUserStatsByTerm(
+                            term = termResult.value,
                             offset = offsetResult.value,
                             limit = limitResult.value,
-                            username = usernameResult.value
                         )
                         ResponseEntity.ok(paginatedResult)
                     }

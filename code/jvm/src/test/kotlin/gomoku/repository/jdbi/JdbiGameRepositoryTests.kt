@@ -155,11 +155,12 @@ class JdbiGameRepositoryTests {
 
         // then: a lobby is created
         assertNotNull(lobbyId)
-        val isUserInLobby = repoGames.checkIfUserIsInLobby(host)
-        assertNotNull(isUserInLobby)
-        assertEquals(lobbyId, isUserInLobby.lobbyId)
-        assertEquals(host, isUserInLobby.userId)
-        assertEquals(variantId, isUserInLobby.variantId)
+        val userLobbies = repoGames.getUserLobbies(host)
+        assertTrue(userLobbies.isNotEmpty())
+        val lobby = userLobbies.first()
+        assertEquals(lobbyId, lobby.lobbyId)
+        assertEquals(host, lobby.userId)
+        assertEquals(variantId, lobby.variantId)
 
         // when: deleting the user from the lobby
         val isUserDeleted = repoGames.deleteUserFromLobby(lobbyId)
@@ -168,7 +169,7 @@ class JdbiGameRepositoryTests {
         assertTrue(isUserDeleted)
 
         // when: checking if the user is waiting in the lobby again
-        val userInLobbyAfterDeleted = repoGames.checkIfUserIsInLobby(host)
+        val userInLobbyAfterDeleted = repoGames.getUserLobbies(host)
 
         // then: user is not waiting in the lobby
         assertNull(userInLobbyAfterDeleted)
@@ -415,7 +416,7 @@ class JdbiGameRepositoryTests {
         assertNotNull(lobbyId)
 
         // when: the user is waiting in the lobby
-        val isUserInLobby = repoGames.checkIfUserIsInLobby(hostId)
+        val isUserInLobby = repoGames.getUserLobbies(hostId)
 
         // then: the user is in the lobby
         assertNotNull(isUserInLobby)

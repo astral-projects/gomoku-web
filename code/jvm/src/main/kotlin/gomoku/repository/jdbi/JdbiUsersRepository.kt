@@ -5,6 +5,7 @@ import gomoku.domain.UserAndToken
 import gomoku.domain.components.Id
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
@@ -167,20 +168,20 @@ class JdbiUsersRepository(
             .mapTo<JdbiUserAndStatsModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun getUserStatsByUsername(
-        username: Username,
-        limit: PositiveValue,
+    override fun getUserStatsByTerm(
+        term: Term,
         offset: NonNegativeValue,
+        limit: PositiveValue,
     ): PaginatedResult<UserStatsInfo> {
-        val usernameFormat = "%${username.value}%"
+        val termSQLFormat = "%${term.value}%"
         val totalItems = handle.createQuery(
             """select count(*)
                from dbo.Statistics as stats
                inner join dbo.Users as users on stats.user_id = users.id
-               where users.username like :username;
+               where users.username like :term;
             """.trimIndent()
         )
-            .bind("username", usernameFormat)
+            .bind("term", termSQLFormat)
             .mapTo<Int>()
             .single()
 
@@ -191,13 +192,13 @@ class JdbiUsersRepository(
                    users.id, users.username, users.email
             FROM dbo.Statistics AS stats
             INNER JOIN dbo.Users AS users ON stats.user_id = users.id
-            WHERE users.username LIKE :username
+            WHERE users.username LIKE :term
             ORDER BY stats.points DESC
             OFFSET :offset
             LIMIT :limit;
             """.trimIndent()
         )
-            .bind("username", usernameFormat)
+            .bind("term", termSQLFormat)
             .bind("limit", limit.value)
             .bind("offset", offset.value)
             .mapTo<JdbiUserAndStatsModel>()

@@ -2,10 +2,10 @@ package gomoku.http.controllers
 
 import gomoku.domain.components.Id
 import gomoku.domain.components.IdError
+import gomoku.domain.game.board.errors.MakeMoveError
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
-import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GamesController(
-    private val gamesService: GamesService
+    private val gamesService: GamesService,
 ) {
 
     /**
@@ -49,7 +49,7 @@ class GamesController(
     @GetMapping(Uris.Games.GET_BY_ID)
     @NotTested
     fun getGameById(
-        @PathVariable id: Int
+        @PathVariable id: Int,
     ): ResponseEntity<*> {
         val instance = Uris.Games.byId(id)
         return when (val gameIdResult = Id(id)) {
@@ -76,7 +76,7 @@ class GamesController(
     fun findGame(
         @Valid @RequestBody
         variant: VariantInputModel,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.findGame()
@@ -92,8 +92,13 @@ class GamesController(
                             .status(HttpStatus.CREATED)
                             .body(gameCreationResult.value)
 
-                    is FindGameSuccess.GameMatch -> ResponseEntity.ok(gameCreationResult.value)
-                    is FindGameSuccess.StillInLobby -> ResponseEntity.ok(gameCreationResult.value)
+                    is FindGameSuccess.GameMatch ->
+                        ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(gameCreationResult.value)
+
+                    is FindGameSuccess.StillInLobby ->
+                        ResponseEntity.ok(gameCreationResult.value)
                 }
 
                 is Failure -> when (gameCreationResult.value) {
@@ -136,7 +141,7 @@ class GamesController(
     @NotTested
     fun deleteById(
         @PathVariable id: Int,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.deleteById(id)
@@ -182,7 +187,7 @@ class GamesController(
         id: Int,
         @Valid @RequestBody
         move: MoveInputModel,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.makeMove(id)
@@ -265,7 +270,7 @@ class GamesController(
         @Range(min = 1)
         @PathVariable
         id: Int,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.exitGame(id)

@@ -21,12 +21,10 @@ class Password private constructor(
         private fun isSafe(value: String) = value.length in MIN_PASSWORD_LENGTH..MAX_PASSWORD_LENGTH
 
         operator fun invoke(value: String): GettingPasswordResult {
-            return if (!isSafe(value)) {
-                Failure(PasswordError.PasswordNotSafe)
-            } else if (value.isBlank()) {
+            return if (value.isBlank()) {
                 Failure(PasswordError.PasswordBlank)
-            } else if (value.isEmpty()) {
-                Failure(PasswordError.PasswordIsEmpty)
+            } else if (!isSafe(value)) {
+                Failure(PasswordError.PasswordNotSafe)
             } else {
                 Success(Password(value))
             }

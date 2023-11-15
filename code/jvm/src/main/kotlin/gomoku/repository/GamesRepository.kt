@@ -98,11 +98,12 @@ interface GamesRepository {
     fun updateGame(gameId: Id, board: Board): Boolean
 
     /**
-     * Asserts if a user is already waiting in a lobby for a game to start.
+     * Retrieves all lobbies where a user is waiting for a game to start, in
+     * descending order of the time they have been waiting.
      * @param userId the id of the user to search for.
-     * @return the lobby where the user is waiting, or null if no such lobby exists.
+     * @return the lobbies where the user is waiting for a game.
      */
-    fun checkIfUserIsInLobby(userId: Id): Lobby?
+    fun getUserLobbies(userId: Id): List<Lobby>
 
     /**
      * Allows a user to exit a game and marks the game as finished.

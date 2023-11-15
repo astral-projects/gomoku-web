@@ -1,4 +1,4 @@
-package gomoku.domain.game.errors
+package gomoku.domain.game.board.errors
 
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.Player

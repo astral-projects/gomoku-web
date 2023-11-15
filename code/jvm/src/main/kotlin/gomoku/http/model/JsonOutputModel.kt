@@ -7,5 +7,11 @@ package gomoku.http.model
  */
 @FunctionalInterface
 fun interface JsonOutputModel<R, S> {
+
+    /**
+     * Transforms a domain class into an output model.
+     * @param domainClass The domain class to transform.
+     * @return The output model.
+     */
     fun serializeFrom(domainClass: R): S
 }

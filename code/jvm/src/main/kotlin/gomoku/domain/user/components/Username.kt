@@ -16,14 +16,13 @@ class Username private constructor(val value: String) : Component {
 
     companion object {
         operator fun invoke(value: String): GettingUsernameResult = when {
-            value.isEmpty() -> Failure(UsernameError.EmptyUsername)
-            value.isBlank() -> Failure(UsernameError.BlankUsername)
+            value.isBlank() -> Failure(UsernameError.UsernameBlank)
             value.length !in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH -> Failure(UsernameError.InvalidLength)
             else -> Success(Username(value))
         }
 
-        val minLength = MIN_USERNAME_LENGTH
-        val maxLength = MAX_USERNAME_LENGTH
+        const val minLength = MIN_USERNAME_LENGTH
+        const val maxLength = MAX_USERNAME_LENGTH
     }
 
     override fun equals(other: Any?): Boolean {

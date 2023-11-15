@@ -72,11 +72,12 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .single()?.toDomainModel()
 
-    override fun checkIfUserIsInLobby(userId: Id): Lobby? =
-        handle.createQuery("select * from dbo.Lobbies where host_id = :userId")
+    override fun getUserLobbies(userId: Id): List<Lobby> =
+        handle.createQuery("select * from dbo.Lobbies where host_id = :userId order by created_at desc")
             .bind("userId", userId.value)
             .mapTo<JdbiLobbyModel>()
-            .singleOrNull()?.toDomainModel()
+            .map { it.toDomainModel() }
+            .toList()
 
     override fun deleteGame(gameId: Id, userId: Id): Boolean =
         handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId and state = :state")
@@ -87,8 +88,10 @@ class JdbiGameRepository(
 
     override fun findIfUserIsInGame(userId: Id): Game? =
         handle.createQuery(
-            """select g.*, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.GameVariants as gv on g.variant_id = gv.id where
-                g.state != :state and (g.host_id = :userId or g.guest_id = :userId);""".trimIndent()
+            """
+                select g.*, gv.name, gv.opening_rule, gv.board_size from dbo.Games as g join dbo.GameVariants as gv on g.variant_id = gv.id where
+                g.state != :state and (g.host_id = :userId or g.guest_id = :userId);
+            """.trimIndent()
         )
             .bind("userId", userId.value)
             .bind("state", GameState.FINISHED.name)

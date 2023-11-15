@@ -20,6 +20,7 @@ import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.sql.Connection.TRANSACTION_SERIALIZABLE
 
@@ -27,6 +28,7 @@ import java.sql.Connection.TRANSACTION_SERIALIZABLE
 class GamesService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
+    @Autowired
     private val variants: List<Variant>,
 ) {
 
@@ -102,9 +104,9 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val waitingLobby = gamesRepository.checkIfUserIsInLobby(userId)
-            if (waitingLobby != null) {
-                return@run success(FindGameSuccess.StillInLobby(waitingLobby.lobbyId))
+            val userLobbies = gamesRepository.getUserLobbies(userId)
+            if (userLobbies.isNotEmpty()) {
+                return@run success(FindGameSuccess.StillInLobby(userLobbies.first().lobbyId))
             }
             val game = gamesRepository.findIfUserIsInGame(userId)
             if (game == null) {
@@ -259,12 +261,14 @@ class GamesService(
     fun waitForGame(lobbyId: Id, userId: Id): GameWaitResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            val lobby = gamesRepository.checkIfUserIsInLobby(userId)
+            val lobbies = gamesRepository.getUserLobbies(userId)
+            val lobby = lobbies.firstOrNull { it.lobbyId == lobbyId }
             if (lobby != null) {
-                if (lobby.lobbyId != lobbyId) {
+                if (lobby.userId != userId) {
                     return@run failure(GameWaitError.UserNotInLobby)
+                } else {
+                    return@run success(WaitForGameSuccess.WaitingInLobby(lobby.lobbyId))
                 }
-                return@run success(WaitForGameSuccess.WaitingInLobby(lobby.lobbyId))
             }
             val gameId = gamesRepository.waitForGame(lobbyId, userId)
                 ?: return@run failure(GameWaitError.UserNotInAnyGameOrLobby)
@@ -282,7 +286,8 @@ class GamesService(
     fun exitLobby(lobbyId: Id, userId: Id): LobbyDeleteResult =
         transactionManager.run { transaction ->
             val gamesRepository = transaction.gamesRepository
-            gamesRepository.checkIfUserIsInLobby(userId)
+            val lobbies = gamesRepository.getUserLobbies(userId)
+            lobbies.firstOrNull { it.lobbyId == lobbyId }
                 ?: return@run failure(LobbyDeleteError.LobbyNotFound)
             when (gamesRepository.deleteLobby(lobbyId, userId)) {
                 false -> failure(LobbyDeleteError.LobbyNotFound)
@@ -346,6 +351,6 @@ class GamesService(
         if (game.hostId == userId) game.guestId else game.hostId
 
     companion object {
-        val logger = LoggerFactory.getLogger(GamesService::class.java)
+        private val logger = LoggerFactory.getLogger(GamesService::class.java)
     }
 }

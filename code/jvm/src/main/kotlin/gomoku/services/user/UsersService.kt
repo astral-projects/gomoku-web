@@ -4,6 +4,7 @@ import gomoku.domain.PaginatedResult
 import gomoku.domain.components.Id
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
 import gomoku.domain.token.Token
 import gomoku.domain.user.User
 import gomoku.domain.user.UserStatsInfo
@@ -15,6 +16,7 @@ import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
@@ -92,8 +94,10 @@ class UsersService(
         return transactionManager.run {
             val usersRepository = it.usersRepository
             if (usersRepository.revokeToken(tokenValidationInfo)) {
+                logger.info("Token revoked")
                 success(true)
             } else {
+                logger.info("Token is invalid")
                 failure(TokenRevocationError.TokenIsInvalid)
             }
         }
@@ -109,13 +113,17 @@ class UsersService(
             it.usersRepository.getUserStats(userId)
         }
 
-    fun getUserStatsByUsername(
-        username: Username,
-        limit: PositiveValue,
+    fun getUserStatsByTerm(
+        term: Term,
         offset: NonNegativeValue,
+        limit: PositiveValue,
     ): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
             val userRepository = it.usersRepository
-            userRepository.getUserStatsByUsername(username, limit, offset)
+            userRepository.getUserStatsByTerm(term, offset, limit)
         }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(UsersService::class.java)
+    }
 }

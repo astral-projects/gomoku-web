@@ -23,6 +23,7 @@ class AuthenticationInterceptor(
 ) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         logger.info("TestInterceptor")
+        // TODO("Should revert to RequiresAuthentication annotation")
         if (handler is HandlerMethod && handler.methodParameters.any { it.parameterType == AuthenticatedUser::class.java }) {
             logger.info("Handler method requires authentication")
             // process token in authentication schema
@@ -47,6 +48,6 @@ class AuthenticationInterceptor(
     companion object {
         private val logger = LoggerFactory.getLogger(AuthenticationInterceptor::class.java)
         const val NAME_AUTHORIZATION_HEADER = "Authorization"
-        private const val NAME_WWW_AUTHENTICATE_HEADER = "WWW-Authenticate"
+        const val NAME_WWW_AUTHENTICATE_HEADER = "WWW-Authenticate"
     }
 }

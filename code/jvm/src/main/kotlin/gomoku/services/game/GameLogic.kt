@@ -5,10 +5,10 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.Player
+import gomoku.domain.game.board.errors.MakeMoveError
 import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.play
-import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.game.variant.Variant
 import gomoku.utils.Failure
 import gomoku.utils.Success

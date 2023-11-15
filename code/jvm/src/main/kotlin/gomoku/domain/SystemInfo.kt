@@ -7,7 +7,7 @@ import java.util.*
 /**
  * Provides information about the system.
  */
-object SystemInfo {
+data object SystemInfo {
     const val GAME_NAME = "Gomoku Royale API"
     const val VERSION = "0.0.1"
     const val DESCRIPTION =

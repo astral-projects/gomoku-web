@@ -5,10 +5,10 @@ import gomoku.domain.components.PositiveValue
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardWin
+import gomoku.domain.game.board.errors.MakeMoveError
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
-import gomoku.domain.game.errors.MakeMoveError
 import gomoku.domain.game.variant.FreestyleVariant
 import gomoku.domain.game.variant.GameVariant
 import gomoku.domain.game.variant.Variant
@@ -68,10 +68,10 @@ import kotlin.time.Duration.Companion.minutes
 class GameServicesTests {
 
     init {
-        gameVariant
+        gameTestVariant
     }
 
-    private val testVariantId = gameVariant.id
+    private val testVariantId = gameTestVariant.id
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `create a game`() {
@@ -1043,16 +1043,21 @@ class GameServicesTests {
     companion object {
         private val transactionManager: TransactionManager = JdbiTransactionManager(JdbiTestConfiguration.jdbi)
         private val testVariant: Variant = TestVariant()
-        private val testVariants: List<Variant> = listOf(testVariant)
-        private val gameVariant: GameVariant =
+        private val variantsList: List<Variant> = listOf(testVariant)
+        val gameTestVariant: GameVariant =
             transactionManager.run { transaction ->
-                val variantsConfig: List<VariantConfig> = testVariants.map { it.config }
+                val variantsConfig: List<VariantConfig> = variantsList.map { it.config }
                 transaction.gamesRepository.insertVariants(variantsConfig)
                 val gameVariants = transaction.gamesRepository.getVariants()
                 require(gameVariants.isNotEmpty()) { "No variants found in the database" }
-                val id = transaction.gamesRepository.getVariantByName(testVariant.config.name)
+                val id = transaction.gamesRepository.getVariantByName(this.testVariant.config.name)
                 requireNotNull(id) { "Test variant not found in the database" }
-                GameVariant(id, testVariant.config.name, testVariant.config.openingRule, testVariant.config.boardSize)
+                GameVariant(
+                    id,
+                    this.testVariant.config.name,
+                    this.testVariant.config.openingRule,
+                    this.testVariant.config.boardSize
+                )
             }
 
         fun createUsersService(
@@ -1077,7 +1082,7 @@ class GameServicesTests {
 
         fun createGamesService(
             testClock: TestClock,
-            variants: List<Variant> = testVariants,
+            variants: List<Variant> = variantsList,
         ) = GamesService(
             transactionManager = JdbiTransactionManager(JdbiTestConfiguration.jdbi),
             clock = testClock,

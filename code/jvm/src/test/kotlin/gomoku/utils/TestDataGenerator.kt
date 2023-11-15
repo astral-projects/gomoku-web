@@ -14,14 +14,16 @@ import kotlin.random.Random
 object TestDataGenerator {
 
     /**
-     * Generates a random [String] using [UUID.randomUUID] coerced by [minLength] and [maxLength].
-     * @param minLength minimum length of the generated string.
+     * Generates a random [String] using [UUID.randomUUID] and then truncates it to the given [maxLength].
      * @param maxLength maximum length of the generated string.
+     * Defaults to **10**.
+     * Must not exceed **36**, since the string is truncated to the length of the UUID.
+     *
      */
-    fun newRandomString(
+    fun newTestString(
         minLength: Int = 0,
-        maxLength: Int = Int.MAX_VALUE,
-    ): String = UUID.randomUUID().toString().substring(minLength, maxLength)
+        maxLength: Int = 10,
+    ): String = UUID.randomUUID().toString().substring(minLength, maxLength.coerceAtMost(36))
 
     /**
      * Generates a random [Id].

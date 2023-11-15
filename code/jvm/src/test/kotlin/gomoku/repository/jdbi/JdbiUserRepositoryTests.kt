@@ -2,6 +2,7 @@ package gomoku.repository.jdbi
 
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
@@ -256,10 +257,10 @@ class JdbiUserRepositoryTests {
             repo.storeUser(username, email, passwordValidationInfo)
         }
 
-        // and: retrieving the users by username query
-        val username = Username(queryFormat).get()
-        val userStatsByUsername = repo.getUserStatsByUsername(
-            username = username,
+        // and: retrieving the users by search term
+        val searchTerm = Term(queryFormat).get()
+        val userStatsByUsername = repo.getUserStatsByTerm(
+            term = searchTerm,
             offset = NonNegativeValue(0).get(),
             limit = PositiveValue(nrOfUsers).get()
         )

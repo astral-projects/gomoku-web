@@ -2,6 +2,7 @@ package gomoku.services
 
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
 import gomoku.domain.token.Sha256TokenEncoder
 import gomoku.domain.user.UsersDomain
 import gomoku.domain.user.UsersDomainConfig
@@ -19,10 +20,10 @@ import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.Success
 import gomoku.utils.TestClock
 import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
-import gomoku.utils.TestDataGenerator.newRandomString
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestString
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.randomTo
 import gomoku.utils.get
@@ -501,7 +502,7 @@ class UserServiceTests {
 
         // when: creating x users
         val nrOfUsers = 10 randomTo 41
-        val usernameFormat = newRandomString(Username.minLength, Username.maxLength)
+        val usernameFormat = newTestString(minLength = Username.minLength, maxLength = Username.maxLength)
         repeat(nrOfUsers) {
             val username =
                 if (it % 2 == 0) {
@@ -522,8 +523,8 @@ class UserServiceTests {
 
         // when: retrieving users statistic information by username format defined above
         val limit = nrOfUsers
-        val ranking = userService.getUserStatsByUsername(
-            username = Username(usernameFormat).get(),
+        val ranking = userService.getUserStatsByTerm(
+            term = Term(usernameFormat).get(),
             limit = PositiveValue(limit).get(),
             offset = NonNegativeValue(0).get()
         )
@@ -540,10 +541,10 @@ class UserServiceTests {
 
         // when: offset is not 0
         val offset = 2
-        val rankingWithOffset = userService.getUserStatsByUsername(
-            username = Username(usernameFormat).get(),
-            limit = PositiveValue(limit).get(),
-            offset = NonNegativeValue(offset).get()
+        val rankingWithOffset = userService.getUserStatsByTerm(
+            term = Term(usernameFormat).get(),
+            offset = NonNegativeValue(offset).get(),
+            limit = PositiveValue(limit).get()
         )
 
         // then: the statistics is paginated and first offset users are skipped
@@ -563,10 +564,10 @@ class UserServiceTests {
         }
 
         // when: retrieving users statistic information by the previously created username
-        val singleRanking = userService.getUserStatsByUsername(
-            username = usernameToQuery,
-            limit = PositiveValue(limit).get(),
-            offset = NonNegativeValue(0).get()
+        val singleRanking = userService.getUserStatsByTerm(
+            term = Term(usernameToQuery.value).get(),
+            offset = NonNegativeValue(0).get(),
+            limit = PositiveValue(limit).get()
         )
 
         // then: the statistics is paginated and the number of users is the expected one

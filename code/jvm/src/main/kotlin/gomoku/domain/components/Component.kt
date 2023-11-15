@@ -6,6 +6,14 @@ package gomoku.domain.components
  * Typically, they are classes with private constructors and a companion object that
  * provides a factory method for creating instances of the class using the **invoke** operator and
  * the **Either** type to represent the result of the operation.
+ *
+ * Such classes shouldn't be:
+ * - data classes because data classes expose their constructor indirectly through the **copy** method.
+ * As such, implementors are advised to override **equals**, **hashCode** and **toString**,
+ * to maintain data container behavior.
+ * - value classes because value classes, annotated with **@JvmInline**, do not allow,
+ * at the time of writing, overriding **equals**, **hashCode** and **toString**.
+ *
  * Example:
  * ```
  * class Username private constructor(val value: String) : Component {
@@ -18,6 +26,7 @@ package gomoku.domain.components
  *          }
  *       }
  *    }
+ *    // override equals, hashCode and toString
  *    // other methods
  * }
  */

@@ -12,13 +12,13 @@ sealed class IdError(open val value: Int) {
 }
 typealias GettingIdResult = Either<IdError, Id>
 
-sealed class InvalidEmailError {
-    object InvalidEmail : InvalidEmailError()
+sealed class EmailError {
+    data object InvalidEmail : EmailError()
 }
-typealias GettingEmailResult = Either<InvalidEmailError, Email>
+typealias GettingEmailResult = Either<EmailError, Email>
 
 sealed class NonNegativeValueError {
-    object InvalidNonNegativeValue : NonNegativeValueError()
+    data object InvalidNonNegativeValue : NonNegativeValueError()
 }
 typealias NonNegativeValueResult = Either<NonNegativeValueError, NonNegativeValue>
 
@@ -28,16 +28,14 @@ sealed class PositiveValueError {
 typealias PositiveValueResult = Either<PositiveValueError, PositiveValue>
 
 sealed class UsernameError {
-    object InvalidLength : UsernameError()
-    object EmptyUsername : UsernameError()
-    object BlankUsername : UsernameError()
+    data object InvalidLength : UsernameError()
+    data object UsernameBlank : UsernameError()
 }
 typealias GettingUsernameResult = Either<UsernameError, Username>
 
 sealed class PasswordError {
-    object PasswordNotSafe : PasswordError()
-    object PasswordBlank : PasswordError()
-    object PasswordIsEmpty : PasswordError()
+    data object PasswordNotSafe : PasswordError()
+    data object PasswordBlank : PasswordError()
 }
 typealias GettingPasswordResult = Either<PasswordError, Password>
 
@@ -50,3 +48,8 @@ sealed class ColumnError {
     data class InvalidColumn(val value: Char) : ColumnError()
 }
 typealias GettingColumnResult = Either<ColumnError, Column>
+
+sealed class TermError {
+    data object InvalidLength : TermError()
+}
+typealias GettingTermResult = Either<TermError, Term>

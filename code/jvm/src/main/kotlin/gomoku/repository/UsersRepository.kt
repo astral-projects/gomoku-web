@@ -5,6 +5,7 @@ import gomoku.domain.UserAndToken
 import gomoku.domain.components.Id
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
+import gomoku.domain.components.Term
 import gomoku.domain.token.Token
 import gomoku.domain.token.TokenValidationInfo
 import gomoku.domain.user.PasswordValidationInfo
@@ -94,15 +95,15 @@ interface UsersRepository {
     fun getUserStats(userId: Id): UserStatsInfo?
 
     /**
-     * Retrieves users' statistics information by username query.
-     * @param username the username to search for.
+     * Retrieves users' statistics information by a search term.
+     * @param term the term to search for.
      * @param limit the maximum number of results to return.
      * @param offset the offset to start the result from.
      * @return the user's statistic information in a paginated result.
      */
-    fun getUserStatsByUsername(
-        username: Username,
-        limit: PositiveValue,
+    fun getUserStatsByTerm(
+        term: Term,
         offset: NonNegativeValue,
+        limit: PositiveValue,
     ): PaginatedResult<UserStatsInfo>
 }
