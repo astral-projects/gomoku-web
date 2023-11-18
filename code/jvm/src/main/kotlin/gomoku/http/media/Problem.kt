@@ -31,13 +31,14 @@ data class Problem(
     fun toResponse() = ResponseEntity
         .status(status)
         .header("Content-Type", MEDIA_TYPE)
-        .header("Content-Language", "en")
+        .header("Content-Language", LANGUAGE)
         .body<Any>(this)
 
     companion object {
 
         private const val BASE_URL = "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/"
         const val MEDIA_TYPE = "application/problem+json"
+        const val LANGUAGE = "en"
 
         val invalidRequestContent = URI("${BASE_URL}invalid-request-content")
         val insecurePassword = URI("${BASE_URL}insecure-password")
@@ -46,7 +47,6 @@ data class Problem(
         val userNotInGame = URI("${BASE_URL}user-not-in-game")
         val invalidMove = URI("${BASE_URL}invalid-move")
         val positionTaken = URI("${BASE_URL}position-taken")
-        val userAlreadyInGame = URI("${BASE_URL}user-already-in-game")
         val usernameAlreadyExists = URI("${BASE_URL}username-already-exists")
         val emailAlreadyExists = URI("${BASE_URL}email-already-exists")
         val userNotFound = URI("${BASE_URL}user-not-found")
@@ -89,22 +89,10 @@ data class Problem(
 
         fun gameNotFound(gameId: Id, instance: URI): ResponseEntity<*> = Problem(
             type = gameNotFound,
-            title = "Requested game was not found",
+            title = "Game was not found",
             status = 404,
             detail = "The game with id <${gameId.value}> was not found",
             instance = instance
-        ).toResponse()
-
-        fun userAlreadyInGame(userId: Id, gameId: Id, instance: URI): ResponseEntity<*> = Problem(
-            type = userAlreadyInGame,
-            title = "User already in game",
-            status = 400,
-            detail = "The user with id <${userId.value}> is already in a game.",
-            instance = instance,
-            data = mapOf(
-                "userId" to userId.value,
-                "gameId" to gameId.value
-            )
         ).toResponse()
 
         fun userNotInLobby(userId: Id, lobbyId: Id, instance: URI): ResponseEntity<*> = Problem(

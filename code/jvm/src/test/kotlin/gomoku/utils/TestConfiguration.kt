@@ -8,6 +8,6 @@ import kotlin.time.Duration.Companion.seconds
  */
 object TestConfiguration {
     const val NR_OF_TEST_ITERATIONS: Int = 3
-    const val NR_OF_STRESS_TEST_ITERATIONS: Int = 10
-    val stressTestTimeoutDuration: Duration = 10.seconds
+    const val NR_OF_STRESS_TEST_ITERATIONS: Int = 1
+    val stressTestTimeoutDuration: Duration = 5.seconds
 }

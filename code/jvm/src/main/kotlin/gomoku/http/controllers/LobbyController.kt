@@ -10,7 +10,6 @@ import gomoku.services.game.GamesService
 import gomoku.services.game.LobbyDeleteError
 import gomoku.services.game.WaitForGameSuccess
 import gomoku.utils.Failure
-import gomoku.utils.NotTested
 import gomoku.utils.Success
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
@@ -50,12 +49,6 @@ class LobbyController(
                 }
 
                 is Failure -> when (result.value) {
-                    is GameWaitError.UserNotInLobby -> Problem.userNotInLobby(
-                        userId = userId,
-                        lobbyId = lobbyIdResult.value,
-                        instance = instance
-                    )
-
                     GameWaitError.UserNotInAnyGameOrLobby -> Problem.userNotInAnyGameOrLobby(
                         userId = userId,
                         instance = instance
@@ -71,7 +64,6 @@ class LobbyController(
      * @param user the authenticated user.
      */
     @DeleteMapping(Uris.Lobby.EXIT_LOBBY)
-    @NotTested
     fun exitLobby(
         @PathVariable id: Int,
         user: AuthenticatedUser

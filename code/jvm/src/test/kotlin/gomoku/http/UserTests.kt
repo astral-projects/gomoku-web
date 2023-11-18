@@ -500,7 +500,7 @@ class UserTests {
 
         // when: accessing the user home with the revoked token
         // then: the response is a 401 with the proper problem
-        client.post().uri("users/home")
+        client.get().uri("/users/home")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isUnauthorized
@@ -508,7 +508,7 @@ class UserTests {
 
         // when: accessing logout without authentication
         // then: the response is a 401 with the proper problem
-        client.post().uri("users/logout")
+        client.post().uri("/users/logout")
             .exchange()
             .expectStatus().isUnauthorized
             .expectBody()
@@ -533,7 +533,7 @@ class UserTests {
             .responseBody!!
 
         // and: the user is the same as the one created
-        assertEquals(userId.value, userOutputModel.id)
+        assertEquals(userId, userOutputModel.id)
         assertEquals(registrationCredentials.username, userOutputModel.username)
         assertEquals(registrationCredentials.email, userOutputModel.email)
 
@@ -667,7 +667,7 @@ class UserTests {
             .responseBody!!
 
         // and: the user is the same as the one created
-        assertEquals(userId.value, userStatsOutputModel.id)
+        assertEquals(userId, userStatsOutputModel.id)
         assertEquals(registrationCredentials.username, userStatsOutputModel.username)
         assertEquals(registrationCredentials.email, userStatsOutputModel.email)
 

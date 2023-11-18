@@ -1,45 +1,44 @@
 package gomoku.services.game
 
-import gomoku.domain.components.Id
-
 /**
  * Represents a successful operation result when finding a game.
- * Either a game was found, and the player joined it, or a lobby was created and the player is waiting for an opponent.
- * @param id The id of the game created or the lobby created.
+ *
+ * There are three possible results:
+ * - [GameMatch] a game was found, and the player joined it.
+ * - [LobbyCreated] a lobby was created, and the player is waiting for a guest.
+ * @param id The id of the game or the lobby created/retrieved.
  * @param message A message describing the result.
  */
-sealed class FindGameSuccess(val id: Id, val message: String) {
-    class GameMatch(gameId: Id) : FindGameSuccess(
-        gameId,
-        "Joined the game successfully with id=${gameId.value}"
+sealed class FindGameSuccess(val id: Int, val message: String) {
+    class GameMatch(gameInt: Int, message: String? = null) : FindGameSuccess(
+        gameInt,
+        message ?: "Joined the game successfully with id=${gameInt}"
     )
 
-    class LobbyCreated(lobbyId: Id) : FindGameSuccess(
-        lobbyId,
-        "Lobby created successfully with id=${lobbyId.value}"
-    )
-
-    class StillInLobby(lobbyId: Id) : FindGameSuccess(
-        lobbyId,
-        "Still waiting in the lobby with id=${lobbyId.value}"
+    class LobbyCreated(lobbyInt: Int, message: String? = null) : FindGameSuccess(
+        lobbyInt,
+        message ?: "Lobby created successfully with id=${lobbyInt}"
     )
 }
 
 /**
  * Represents a successful operation result when waiting for a game.
- * Either a game was found or the user is still waiting in a lobby.
+ *
+ * There are two possible results:
+ * - [GameMatch] a game was found, and the player joined it.
+ * - [WaitingInLobby] the player is still waiting in the lobby.
  * @param id The id of the game created or the lobby created.
  * @param message A message describing the result.
  */
 
-sealed class WaitForGameSuccess(val id: Id, val message: String) {
-    class GameMatch(gameId: Id) : WaitForGameSuccess(
-        gameId,
-        "Joined the game successfully with id=${gameId.value}"
+sealed class WaitForGameSuccess(val id: Int, val message: String) {
+    class GameMatch(gameInt: Int, message: String? = null) : WaitForGameSuccess(
+        gameInt,
+        message ?: "Joined the game successfully with id=${gameInt}"
     )
 
-    class WaitingInLobby(lobbyId: Id) : WaitForGameSuccess(
-        lobbyId,
-        "Waiting in lobby with id=${lobbyId.value}"
+    class WaitingInLobby(lobbyInt: Int, message: String? = null) : WaitForGameSuccess(
+        lobbyInt,
+        message ?: "Waiting in lobby with id=${lobbyInt}"
     )
 }

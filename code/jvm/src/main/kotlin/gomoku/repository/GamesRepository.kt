@@ -78,9 +78,10 @@ interface GamesRepository {
     /**
      * Asserts if a user is in a lobby already waiting for a game to start.
      * @param variantId the id of the variant to search for.
+     * @param guestId the user that is not the host of the lobby.
      * @return the lobby where the host is waiting for a game with the given variant for the longest time, or null if no such lobby exists.
      */
-    fun isMatchmaking(variantId: Id): Lobby?
+    fun isMatchmaking(variantId: Id, guestId: Id): Lobby?
 
     /**
      * Asserts if a user is in a game already.

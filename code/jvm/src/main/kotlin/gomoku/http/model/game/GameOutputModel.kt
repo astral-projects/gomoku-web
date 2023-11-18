@@ -6,7 +6,7 @@ import gomoku.http.jackson.serializers.InstantSerializer
 import gomoku.http.model.JsonOutputModel
 import kotlinx.datetime.Instant
 
-class GameOutputModel private constructor(
+class GameOutputModel(
     val id: Int,
     val state: GameStateOutputModel,
     val variant: GameVariantOutputModel,
@@ -16,7 +16,7 @@ class GameOutputModel private constructor(
     @field:JsonSerialize(using = InstantSerializer::class)
     val updatedAt: Instant,
     val hostId: Int,
-    val guestId: Int
+    val guestId: Int,
 ) {
     companion object : JsonOutputModel<Game, GameOutputModel> {
         override fun serializeFrom(domainClass: Game): GameOutputModel {

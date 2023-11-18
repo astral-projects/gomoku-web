@@ -27,4 +27,4 @@ package gomoku.utils
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-internal annotation class RequiresDatabaseConnection
+annotation class RequiresDatabaseConnection

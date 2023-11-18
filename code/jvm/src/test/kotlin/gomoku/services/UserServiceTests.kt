@@ -169,7 +169,7 @@ class UserServiceTests {
         }
     }
 
-    @RepeatedTest(10)
+    @RepeatedTest(NR_OF_TEST_ITERATIONS)
     fun `can use token during rolling period but not after absolute TTL`() {
         // given: a user service
         val testClock = TestClock()

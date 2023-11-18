@@ -6,7 +6,6 @@ import gomoku.domain.game.board.errors.MakeMoveError
 import gomoku.utils.Either
 
 sealed class GameCreationError {
-    class UserAlreadyInGame(val gameId: Id) : GameCreationError()
     data object VariantNotFound : GameCreationError()
     class UserAlreadyLeftTheLobby(val lobbyId: Id) : GameCreationError()
     data object GameInsertionError : GameCreationError()
@@ -51,7 +50,6 @@ typealias GameMakeMoveResult = Either<GameMakeMoveError, Boolean>
 
 sealed class GameWaitError {
     data object UserNotInAnyGameOrLobby : GameWaitError()
-    data object UserNotInLobby : GameWaitError()
 }
 
 typealias GameWaitResult = Either<GameWaitError, WaitForGameSuccess>

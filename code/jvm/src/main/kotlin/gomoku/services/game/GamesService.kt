@@ -86,15 +86,12 @@ class GamesService(
      *
      * **Returns an error**, when:
      * - The variant is not found;
-     * - The user is already in a game;
-     * - The user is still in a lobby;
      * - The user was not in the lobby when the lobby was going to be deleted.
      * - The game was not created correctly.
      *
      * **Returns success**, when:
      * - The game was created successfully;
      * - The lobby was created successfully;
-     * - The user is already in a lobby, and must wait for an opponent.
      * @param variantId the id of the variant to search or create a game with.
      * @param userId the id of to user to be associated with the game.
      */
@@ -104,45 +101,36 @@ class GamesService(
             val gamesRepository = transaction.gamesRepository
             val variant = gameVariantMap[variantId]
                 ?: return@run failure(GameCreationError.VariantNotFound)
-            val userLobbies = gamesRepository.getUserLobbies(userId)
-            if (userLobbies.isNotEmpty()) {
-                return@run success(FindGameSuccess.StillInLobby(userLobbies.first().lobbyId))
-            }
-            val game = gamesRepository.findIfUserIsInGame(userId)
-            if (game == null) {
-                val lobby = gamesRepository.isMatchmaking(variantId)
-                if (lobby != null) {
-                    logger.info("Host '$userId' was waiting for a game in lobby(id='${lobby.lobbyId}, variantId='$variantId')")
-                    if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
-                        logger.info("Deleted user '$userId' from lobby(id='${lobby.lobbyId}')")
-                        failure(GameCreationError.UserAlreadyLeftTheLobby(lobby.lobbyId))
-                    } else {
-                        val gameId = gamesRepository.createGame(
-                            variantId = variantId,
-                            hostId = lobby.userId,
-                            guestId = userId,
-                            lobbyId = lobby.lobbyId,
-                            board = variant.initialBoard()
-                        )
-                        when (gameId) {
-                            null -> failure(GameCreationError.GameInsertionError)
-                            else -> {
-                                logger.info("Created game(id='$gameId') for guest '$userId' and host '${lobby.userId}'")
-                                success(FindGameSuccess.GameMatch(gameId))
-                            }
-                        }
-                    }
+            val lobby = gamesRepository.isMatchmaking(variantId, guestId = userId)
+            if (lobby != null) {
+                logger.info("Host '$userId' was waiting for a game in lobby(id='${lobby.lobbyId}', variantId='$variantId')")
+                if (!gamesRepository.deleteUserFromLobby(lobby.lobbyId)) {
+                    logger.info("Deleted host '$userId' from lobby(id='${lobby.lobbyId}')")
+                    failure(GameCreationError.UserAlreadyLeftTheLobby(lobby.lobbyId))
                 } else {
-                    when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
-                        null -> failure(GameCreationError.LobbyNotFound)
+                    val gameId = gamesRepository.createGame(
+                        variantId = variantId,
+                        hostId = lobby.userId,
+                        guestId = userId,
+                        lobbyId = lobby.lobbyId,
+                        board = variant.initialBoard()
+                    )
+                    when (gameId) {
+                        null -> failure(GameCreationError.GameInsertionError)
                         else -> {
-                            logger.info("Created lobby(id='$lobbyId') for user '$userId'")
-                            success(FindGameSuccess.LobbyCreated(lobbyId))
+                            logger.info("Created game(id='$gameId') for guest '$userId' and host '${lobby.userId}'")
+                            success(FindGameSuccess.GameMatch(gameId.value))
                         }
                     }
                 }
             } else {
-                failure(GameCreationError.UserAlreadyInGame(game.id))
+                when (val lobbyId = gamesRepository.addUserToLobby(variantId, userId)) {
+                    null -> failure(GameCreationError.LobbyNotFound)
+                    else -> {
+                        logger.info("Created lobby(id='$lobbyId') for host user '$userId'")
+                        success(FindGameSuccess.LobbyCreated(lobbyId.value))
+                    }
+                }
             }
         }
 
@@ -264,15 +252,11 @@ class GamesService(
             val lobbies = gamesRepository.getUserLobbies(userId)
             val lobby = lobbies.firstOrNull { it.lobbyId == lobbyId }
             if (lobby != null) {
-                if (lobby.userId != userId) {
-                    return@run failure(GameWaitError.UserNotInLobby)
-                } else {
-                    return@run success(WaitForGameSuccess.WaitingInLobby(lobby.lobbyId))
-                }
+                return@run success(WaitForGameSuccess.WaitingInLobby(lobby.lobbyId.value))
             }
             val gameId = gamesRepository.waitForGame(lobbyId, userId)
                 ?: return@run failure(GameWaitError.UserNotInAnyGameOrLobby)
-            success(WaitForGameSuccess.GameMatch(gameId))
+            success(WaitForGameSuccess.GameMatch(gameId.value))
         }
 
     /**

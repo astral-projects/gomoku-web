@@ -28,7 +28,7 @@ object TestDataGenerator {
     /**
      * Generates a random [Id].
      */
-    fun newTestId() = Id(abs(Random.nextInt())).get()
+    fun newTestId() = Id(abs(Random.nextInt()).coerceAtLeast(10000)).get()
 
     /**
      * Generates a random [Username] prefixed with "user-".

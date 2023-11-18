@@ -43,30 +43,6 @@ class GamesController(
 ) {
 
     /**
-     * Retrieves the game with the given id.
-     * @param id the id of the game.
-     */
-    @GetMapping(Uris.Games.GET_BY_ID)
-    @NotTested
-    fun getGameById(
-        @PathVariable id: Int,
-    ): ResponseEntity<*> {
-        val instance = Uris.Games.byId(id)
-        return when (val gameIdResult = Id(id)) {
-            is Failure -> Problem.invalidGameId(instance)
-            is Success -> when (val gameResult = gamesService.getGameById(gameIdResult.value)) {
-                is Success -> ResponseEntity.ok(GameOutputModel.serializeFrom(gameResult.value))
-                is Failure -> when (gameResult.value) {
-                    GettingGameError.GameNotFound -> Problem.gameNotFound(
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-                }
-            }
-        }
-    }
-
-    /**
      * Creates a new game or joins a lobby with the given variant.
      * @param variant the variant of the game.
      * @param user the authenticated user.
@@ -74,7 +50,7 @@ class GamesController(
     @PostMapping(Uris.Games.FIND_GAME)
     @RequiresAuthentication
     fun findGame(
-        @Valid @RequestBody
+        @RequestBody
         variant: VariantInputModel,
         user: AuthenticatedUser,
     ): ResponseEntity<*> {
@@ -96,18 +72,9 @@ class GamesController(
                         ResponseEntity
                             .status(HttpStatus.CREATED)
                             .body(gameCreationResult.value)
-
-                    is FindGameSuccess.StillInLobby ->
-                        ResponseEntity.ok(gameCreationResult.value)
                 }
 
                 is Failure -> when (gameCreationResult.value) {
-                    is GameCreationError.UserAlreadyInGame -> Problem.userAlreadyInGame(
-                        userId = userId,
-                        gameId = gameCreationResult.value.gameId,
-                        instance = instance
-                    )
-
                     is GameCreationError.UserAlreadyLeftTheLobby -> Problem.userNotInLobby(
                         userId = userId,
                         instance = instance,
@@ -132,13 +99,35 @@ class GamesController(
     }
 
     /**
+     * Retrieves the game with the given id.
+     * @param id the id of the game.
+     */
+    @GetMapping(Uris.Games.GET_BY_ID)
+    fun getGameById(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
+        val instance = Uris.Games.byId(id)
+        return when (val gameIdResult = Id(id)) {
+            is Failure -> Problem.invalidGameId(instance)
+            is Success -> when (val gameResult = gamesService.getGameById(gameIdResult.value)) {
+                is Success -> ResponseEntity.ok(GameOutputModel.serializeFrom(gameResult.value))
+                is Failure -> when (gameResult.value) {
+                    GettingGameError.GameNotFound -> Problem.gameNotFound(
+                        gameId = gameIdResult.value,
+                        instance = instance
+                    )
+                }
+            }
+        }
+    }
+
+    /**
      * Deletes the game with the given id.
      * @param id the id of the game.
      * @param user the authenticated user.
      */
     @DeleteMapping(Uris.Games.DELETE_BY_ID)
     @RequiresAuthentication
-    @NotTested
     fun deleteById(
         @PathVariable id: Int,
         user: AuthenticatedUser,
@@ -163,6 +152,50 @@ class GamesController(
                     )
 
                     GameDeleteError.GameIsInProgress -> Problem.gameIsInProgress(
+                        gameId = gameIdResult.value,
+                        instance = instance
+                    )
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Exits the game with the given id.
+     * @param id the id of the game.
+     * @param user the authenticated user.
+     */
+    @PostMapping(Uris.Games.EXIT_GAME)
+    @RequiresAuthentication
+    fun exitGame(
+        @Valid
+        @Range(min = 1)
+        @PathVariable
+        id: Int,
+        user: AuthenticatedUser,
+    ): ResponseEntity<*> {
+        val userId = user.user.id
+        val instance = Uris.Games.exitGame(id)
+        return when (val gameIdResult = Id(id)) {
+            is Failure -> Problem.invalidGameId(instance)
+            is Success -> when (val game = gamesService.exitGame(gameIdResult.value, userId)) {
+                is Success -> ResponseEntity.ok(GameExitOutputModel(gameIdResult.value.value))
+                is Failure -> when (game.value) {
+                    GameUpdateError.GameNotFound -> Problem.gameNotFound(
+                        gameId = gameIdResult.value,
+                        instance = instance
+                    )
+
+                    GameUpdateError.UserNotInGame -> Problem.userDoesntBelongToThisGame(
+                        userId = userId,
+                        gameId = gameIdResult.value,
+                        instance = instance
+                    )
+
+                    GameUpdateError.VariantNotFound -> Problem.variantNotFound(instance = instance)
+
+                    GameUpdateError.GameAlreadyFinished -> Problem.gameAlreadyFinished(
                         gameId = gameIdResult.value,
                         instance = instance
                     )
@@ -258,56 +291,12 @@ class GamesController(
     }
 
     /**
-     * Exits the game with the given id.
-     * @param id the id of the game.
-     * @param user the authenticated user.
-     */
-    @PostMapping(Uris.Games.EXIT_GAME)
-    @RequiresAuthentication
-    @NotTested
-    fun exitGame(
-        @Valid
-        @Range(min = 1)
-        @PathVariable
-        id: Int,
-        user: AuthenticatedUser,
-    ): ResponseEntity<*> {
-        val userId = user.user.id
-        val instance = Uris.Games.exitGame(id)
-        return when (val gameIdResult = Id(id)) {
-            is Failure -> Problem.invalidGameId(instance)
-            is Success -> when (val game = gamesService.exitGame(gameIdResult.value, userId)) {
-                is Success -> ResponseEntity.ok(GameExitOutputModel(gameIdResult.value.value))
-                is Failure -> when (game.value) {
-                    GameUpdateError.GameNotFound -> Problem.gameNotFound(
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-
-                    GameUpdateError.UserNotInGame -> Problem.userDoesntBelongToThisGame(
-                        userId = userId,
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-
-                    GameUpdateError.VariantNotFound -> Problem.variantNotFound(instance = instance)
-
-                    GameUpdateError.GameAlreadyFinished -> Problem.gameAlreadyFinished(
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-                }
-            }
-        }
-    }
-
-    /**
      * Retrieves the list of available variants.
      */
     @GetMapping(Uris.Games.GET_VARIANTS)
-    @NotTested
     fun getVariants(): ResponseEntity<*> {
         val variants = gamesService.getVariants()
         return ResponseEntity.ok(variants)
     }
+
 }

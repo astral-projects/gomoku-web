@@ -101,15 +101,6 @@ class GameServicesTests {
             is Success -> assertIs<FindGameSuccess.LobbyCreated>(gameCreationResult2.value)
         }
 
-        // when: the same user tries to join the same game
-        val gameCreationResult3 = gamesService.findGame(testVariantId, host.id)
-
-        // then: the user is still in the lobby
-        when (gameCreationResult3) {
-            is Failure -> fail("Unexpected $gameCreationResult3")
-            is Success -> assertIs<FindGameSuccess.StillInLobby>(gameCreationResult3.value)
-        }
-
         // then: another player wants to play the same variant, so its match between the two
         val gameCreationResult4 = gamesService.findGame(testVariantId, guest.id)
 
@@ -117,12 +108,6 @@ class GameServicesTests {
         when (gameCreationResult4) {
             is Failure -> fail("Unexpected $gameCreationResult4")
             is Success -> assertIs<FindGameSuccess.GameMatch>(gameCreationResult4.value)
-        }
-
-        // and: the game is created, and the user is in the game
-        when (val gameResult = gamesService.findGame(testVariantId, host.id)) {
-            is Success -> fail("User needs to be already in a Game $gameResult")
-            is Failure -> assertIs<GameCreationError.UserAlreadyInGame>(gameResult.value)
         }
     }
 
@@ -505,17 +490,8 @@ class GameServicesTests {
             is Success -> assertIs<FindGameSuccess.LobbyCreated>(waitingInLobby.value)
         }
 
-        // when: the host waits for a game in random lobby that they are not in
-        val hostWaitsInLobbyThatDoesNotBelong = gamesService.waitForGame(newTestId(), host.id)
-
-        // then: the wait is not valid
-        when (hostWaitsInLobbyThatDoesNotBelong) {
-            is Failure -> assertIs<GameWaitError.UserNotInLobby>(hostWaitsInLobbyThatDoesNotBelong.value)
-            is Success -> fail("Unexpected $hostWaitsInLobbyThatDoesNotBelong")
-        }
-
         // when: the host waits for a game in the lobby
-        val lobbyId = waitingInLobby.value.id
+        val lobbyId = Id(waitingInLobby.value.id).get()
         val hostWaitsInLobby = gamesService.waitForGame(lobbyId, host.id)
 
         // then: the wait is successful
@@ -561,7 +537,7 @@ class GameServicesTests {
         }
 
         // when: the host waits for a game in the lobby again
-        val newLobbyId = rejoinLobby.value.id
+        val newLobbyId = Id(rejoinLobby.value.id).get()
         val hostWaitsInLobbyAgain = gamesService.waitForGame(newLobbyId, host.id)
 
         // then: the wait is successful
@@ -909,8 +885,6 @@ class GameServicesTests {
                             usersInGames[threadId] = repetionId++
                             gamesCreated.incrementAndGet()
                         }
-                        // or: the user is still in a lobby, waiting for a game
-                        is FindGameSuccess.StillInLobby -> stillInLobby.incrementAndGet()
                     }
                 }
             }
@@ -970,7 +944,7 @@ class GameServicesTests {
         val hostGameCreationResult = gameService.findGame(variantId, host.id)
         val guestGameCreationResult = gameService.findGame(variantId, guest.id)
         return if (hostGameCreationResult is Success && guestGameCreationResult is Success)
-            guestGameCreationResult.value.id else null
+            Id(guestGameCreationResult.value.id).get() else null
             ?: fail("Unexpected null game")
     }
 

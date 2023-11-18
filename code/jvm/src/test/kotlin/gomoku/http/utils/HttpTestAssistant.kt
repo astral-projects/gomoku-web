@@ -2,15 +2,17 @@ package gomoku.http.utils
 
 import gomoku.domain.components.Id
 import gomoku.http.model.IdOutputModel
-import gomoku.http.model.RegistrationCredentials
+import gomoku.http.model.TestRegistrationCredentials
+import gomoku.http.model.game.GameExitOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.services.GameServicesTests
 import gomoku.services.game.FindGameSuccess
-import gomoku.utils.TestDataGenerator
+import gomoku.utils.TestDataGenerator.newTestEmail
+import gomoku.utils.TestDataGenerator.newTestPassword
+import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.get
 import org.springframework.test.web.reactive.server.WebTestClient
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -27,25 +29,25 @@ object HttpTestAssistant {
      * Inserts the test variant into the database and returns its id, as specified in the
      * [GameServicesTests.gameTestVariant] property.
      */
-    private fun getTestVariantId(): Id = Id(1).get()// GameServicesTests.gameTestVariant.id
+    fun getTestVariantId(): Id = Id(1).get() // GameServicesTests.gameTestVariant.id
 
-    /*
+    /**
      * Creates a lobby or a game and returns the id of the created lobby or game, or fails the test
      * if not successful.
      * @param client the HTTP client to send the request.
      * @param token the token of the user.
-     * @param isHost whether the user is the host of the game or not.
+     * @param expectLobbyCreation whether the request is expected to create a lobby or not.
      * @return the id of the created lobby or game.
      */
     fun findGame(
         client: WebTestClient,
         token: String,
-        isHost: Boolean,
-    ): Id {
+        expectLobbyCreation: Boolean,
+    ): Int {
         // when: when joining a lobby (find game)
-        // then: the response is a 200 with the proper representation
+        // then: the response is a 201 with the proper representation
         val findGameClass =
-            if (isHost) FindGameSuccess.LobbyCreated::class.java else FindGameSuccess.GameMatch::class.java
+            if (expectLobbyCreation) FindGameSuccess.LobbyCreated::class.java else FindGameSuccess.GameMatch::class.java
         val findGameSuccess = client.post().uri("/games")
             .bodyValue(
                 mapOf(
@@ -59,17 +61,44 @@ object HttpTestAssistant {
             .returnResult()
             .responseBody!!
 
-        assertIs<FindGameSuccess.LobbyCreated>(findGameSuccess)
+        if (expectLobbyCreation) {
+            assertTrue(findGameSuccess is FindGameSuccess.LobbyCreated)
+        } else {
+            assertTrue(findGameSuccess is FindGameSuccess.GameMatch)
+        }
 
-        // and: the id and message are those expected
         val id = findGameSuccess.id
-        println("id = $id")
-        assertTrue(id.value > 0)
+        assertTrue(id > 0)
         assertEquals(
-            if (isHost) "Lobby created successfully with id=${id.value}" else "Joined the game successfully with id=${id.value}",
+            if (expectLobbyCreation) "Lobby created successfully with id=${id}" else "Joined the game successfully with id=${id}",
             findGameSuccess.message
         )
         return id
+    }
+
+    /**
+     * Exits the game with the given id or fails the test if not successful.
+     * Should only be called after calling [findGame] twice.
+     * @param client the HTTP client to send the request.
+     * @param token the token of the user.
+     * @param gameId the id of the game to exit.
+     */
+    fun exitGame(
+        client: WebTestClient,
+        token: String,
+        gameId: Int,
+    ) {
+        // when: a user exits the game
+        // then: the response is a 200 with the proper representation
+        val exitGameModel = client.post().uri("/games/$gameId/exit")
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(GameExitOutputModel::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(exitGameModel.gameId, gameId)
     }
 
     /**
@@ -82,11 +111,11 @@ object HttpTestAssistant {
     fun createRandomUser(
         client: WebTestClient,
         usernameSuffix: String? = null,
-    ): Pair<Id, RegistrationCredentials> {
+    ): Pair<Int, TestRegistrationCredentials> {
         // and: a random user
-        val actualUsername = TestDataGenerator.newTestUserName().value + (usernameSuffix ?: "")
-        val password = TestDataGenerator.newTestPassword().value
-        val email = TestDataGenerator.newTestEmail().value
+        val actualUsername = newTestUserName().value + (usernameSuffix ?: "")
+        val password = newTestPassword().value
+        val email = newTestEmail().value
 
         // when: creating an user
         // then: the response is a 201 with a proper Location header
@@ -109,12 +138,11 @@ object HttpTestAssistant {
 
         assertTrue(userId.id > 0)
 
-        return Id(userId.id).get() to RegistrationCredentials(
+        return userId.id to TestRegistrationCredentials(
             username = actualUsername,
             password = password,
             email = email
         )
-
     }
 
     /**
@@ -125,7 +153,7 @@ object HttpTestAssistant {
      */
     fun createToken(
         client: WebTestClient,
-        registrationCredentials: RegistrationCredentials,
+        registrationCredentials: TestRegistrationCredentials,
     ): UserTokenCreateOutputModel {
         // when: creating a token
         // then: the response is a 200

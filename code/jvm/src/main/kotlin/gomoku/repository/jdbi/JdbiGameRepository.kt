@@ -180,9 +180,10 @@ class JdbiGameRepository(
             .mapTo<JdbiIdModel>()
             .singleOrNull()?.toDomainModel()
 
-    override fun isMatchmaking(variantId: Id): Lobby? =
-        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id order by created_at desc limit 1")
+    override fun isMatchmaking(variantId: Id, guestId: Id): Lobby? =
+        handle.createQuery("select * from dbo.Lobbies where variant_id = :variant_id and host_id != :guest_id order by created_at desc limit 1")
             .bind("variant_id", variantId.value)
+            .bind("guest_id", guestId.value)
             .mapTo<JdbiLobbyModel>()
             .singleOrNull()?.toDomainModel()
 

@@ -169,10 +169,10 @@ class JdbiGameRepositoryTests {
         assertTrue(isUserDeleted)
 
         // when: checking if the user is waiting in the lobby again
-        val userInLobbyAfterDeleted = repoGames.getUserLobbies(host)
+        val userLobbiesAfterDeletion = repoGames.getUserLobbies(host)
 
         // then: user is not waiting in the lobby
-        assertNull(userInLobbyAfterDeleted)
+        assertTrue(userLobbiesAfterDeletion.isEmpty())
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
@@ -194,7 +194,7 @@ class JdbiGameRepositoryTests {
         val guestId = createRandomUser(repoUsers)
 
         // when: checking if another user is waiting in the lobby
-        val matchMakingLobby = repoGames.isMatchmaking(variantId)
+        val matchMakingLobby = repoGames.isMatchmaking(variantId, guestId)
 
         // then:
         assertNotNull(matchMakingLobby)
@@ -504,7 +504,7 @@ class JdbiGameRepositoryTests {
                     val userId = createRandomUser(repoUsers)
                         .also { usersCreated.incrementAndGet() }
                     // and: the user tries to find a game
-                    val lobby = repoGames.isMatchmaking(variantId)
+                    val lobby = repoGames.isMatchmaking(variantId, userId)
                     if (lobby != null) {
                         val hostId = lobby.userId
                         // then: the user joins the lobby and creates a game
