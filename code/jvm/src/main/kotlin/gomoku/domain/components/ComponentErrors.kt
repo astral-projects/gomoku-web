@@ -40,12 +40,12 @@ sealed class PasswordError {
 typealias GettingPasswordResult = Either<PasswordError, Password>
 
 sealed class RowError {
-    data class InvalidRow(val value: Int) : RowError()
+    data class InvalidRow(val value: Any) : RowError()
 }
 typealias GettingRowResult = Either<RowError, Row>
 
 sealed class ColumnError {
-    data class InvalidColumn(val value: Char) : ColumnError()
+    data class InvalidColumn(val value: Any) : ColumnError()
 }
 typealias GettingColumnResult = Either<ColumnError, Column>
 

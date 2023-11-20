@@ -2,6 +2,8 @@ package gomoku.services.game
 
 import gomoku.domain.components.Id
 import gomoku.domain.game.Game
+import gomoku.domain.game.GameLogic
+import gomoku.domain.game.GameLogic.Companion.toPlayer
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
@@ -13,14 +15,12 @@ import gomoku.domain.game.variant.Variant
 import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.repository.GamesRepository
 import gomoku.repository.transaction.TransactionManager
-import gomoku.services.game.GameLogic.Companion.toPlayer
 import gomoku.utils.Failure
 import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.sql.Connection.TRANSACTION_SERIALIZABLE
 
@@ -28,7 +28,7 @@ import java.sql.Connection.TRANSACTION_SERIALIZABLE
 class GamesService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
-    @Autowired
+    // @Autowired
     private val variants: List<Variant>,
 ) {
 

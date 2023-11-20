@@ -1,8 +1,6 @@
-package gomoku.services.game
+package gomoku.domain.game
 
 import gomoku.domain.components.Id
-import gomoku.domain.game.Game
-import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.errors.MakeMoveError
@@ -10,19 +8,18 @@ import gomoku.domain.game.board.isFinished
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.play
 import gomoku.domain.game.variant.Variant
+import gomoku.services.game.MakeMoveResult
 import gomoku.utils.Failure
 import gomoku.utils.Success
 import gomoku.utils.failure
 import gomoku.utils.success
 import kotlinx.datetime.Clock
-import org.springframework.stereotype.Component
 
 /**
- * Represents the logic of the game.
- * @param variant variant implementation to be used by this game logic.
- * @param clock clock implementation.
+ * Represents the game logic, encapsulating the rules of the game given by the variant.
+ * @property variant The variant of the game.
+ * @property clock The clock used to get the current time.
  */
-@Component
 class GameLogic(
     private val variant: Variant,
     private val clock: Clock
@@ -32,18 +29,19 @@ class GameLogic(
      * Makes a move on the board.
      * @param game game to which the user belongs.
      * @param userId user who makes a move.
-     * @param square square position on the board.
+     * @param toSquare square where the move is being made.
      * @return the updated game if the move is valid, or an error otherwise.
      */
-    fun play(game: Game, userId: Id, square: Square): MakeMoveResult {
+    fun play(game: Game, userId: Id, toSquare: Square): MakeMoveResult {
         val board = game.board
         if (board !is BoardRun || game.state === GameState.FINISHED) {
             return failure(MakeMoveError.GameOver)
         }
-        if (board.turn?.player != userId.toPlayer(game) && board.turn != null) {
+        val localPlayer = userId.toPlayer(game)
+        if (board.turn?.player != localPlayer && board.turn != null) {
             return failure(MakeMoveError.NotYourTurn(board.turn.player))
         }
-        return when (val newBoard = board.play(variant, square)) {
+        return when (val newBoard = board.play(variant, localPlayer, toSquare)) {
             is Failure -> when (newBoard.value) {
                 MakeMoveError.GameOver -> Failure(MakeMoveError.GameOver)
                 is MakeMoveError.NotYourTurn -> Failure(MakeMoveError.NotYourTurn(newBoard.value.player))
@@ -60,7 +58,6 @@ class GameLogic(
             )
         }
     }
-
 
     companion object {
         /**

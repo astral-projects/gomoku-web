@@ -12,11 +12,11 @@ import gomoku.utils.Success
 class Row private constructor(val number: Int) : Component, Indexable {
 
     companion object {
-        operator fun invoke(value: Int): GettingRowResult {
-            return if (value > 0) {
-                Success(Row(value))
+        operator fun invoke(index: Int): GettingRowResult {
+            return if (index >= 0) {
+                Success(Row(index + 1))
             } else {
-                Failure(RowError.InvalidRow(value))
+                Failure(RowError.InvalidRow(index))
             }
         }
     }
@@ -30,7 +30,7 @@ class Row private constructor(val number: Int) : Component, Indexable {
         return true
     }
 
-    override fun toString(): String = number.toString()
+    override fun toString(): String = "$number"
 
     override fun hashCode(): Int = number
 

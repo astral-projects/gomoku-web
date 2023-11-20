@@ -18,10 +18,11 @@ class BoardDraw(moves: Moves) : Board(moves, null)
 /**
  * Checks if a move is valid on the board, depending on received variant rules.
  * @param variant The variant of the game.
- * @param square The square where the move is being made.
+ * @param player The player who is making the move.
+ * @param toSquare The square where the move is being made.
  */
-fun Board.play(variant: Variant, square: Square): BoardMakeMoveResult =
-    variant.isMoveValid(this, square)
+fun Board.play(variant: Variant, player: Player, toSquare: Square): BoardMakeMoveResult =
+    variant.isMoveValid(this, player, toSquare)
 
 /**
  * Checks if the game is finished based on the board state.

@@ -1,8 +1,12 @@
 package gomoku.domain.game.board.moves.square
 
 /**
- * Interface that represents an indexable object.
+ * Represents an indexable object.
  */
-interface Indexable {
+@FunctionalInterface
+fun interface Indexable {
+    /**
+     * Returns the index of the object.
+     */
     fun toIndex(): Int
 }

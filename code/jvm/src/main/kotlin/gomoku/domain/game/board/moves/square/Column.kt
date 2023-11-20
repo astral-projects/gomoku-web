@@ -12,11 +12,20 @@ import gomoku.utils.Success
 class Column private constructor(val letter: Char) : Component, Indexable {
 
     companion object {
+        const val MAX_INDEX = 'z' - 'a'
         operator fun invoke(value: Char): GettingColumnResult {
             return if (value in 'a'..'z') {
                 Success(Column(value))
             } else {
                 Failure(ColumnError.InvalidColumn(value))
+            }
+        }
+
+        operator fun invoke(index: Int): GettingColumnResult {
+            return if (index in 0..MAX_INDEX) {
+                Success(Column('a' + index))
+            } else {
+                Failure(ColumnError.InvalidColumn(index))
             }
         }
     }

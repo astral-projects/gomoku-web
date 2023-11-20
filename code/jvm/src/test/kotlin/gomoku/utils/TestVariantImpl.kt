@@ -31,7 +31,7 @@ import gomoku.domain.game.variant.config.VariantName
  *
  * It is not marked as **@Component** because it is not to be used in production.
  */
-class TestVariant : Variant {
+object TestVariantImpl : Variant {
     override val config = VariantConfig(
         name = VariantName.TEST,
         openingRule = OpeningRule.PRO,
@@ -54,15 +54,15 @@ class TestVariant : Variant {
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(30).get()
 
-    override fun isMoveValid(board: Board, square: Square): BoardMakeMoveResult {
+    override fun isMoveValid(board: Board, player: Player, toSquare: Square): BoardMakeMoveResult {
         val turn = board.turn ?: return Success(board)
-        if (board.grid.containsKey(square)) {
-            return Failure(MakeMoveError.PositionTaken(square))
+        if (board.grid.containsKey(toSquare)) {
+            return Failure(MakeMoveError.PositionTaken(toSquare))
         }
-        if (square.col.toIndex() >= config.boardSize.size || square.row.toIndex() >= config.boardSize.size) {
-            return Failure(MakeMoveError.InvalidPosition(square))
+        if (toSquare.col.toIndex() >= config.boardSize.size || toSquare.row.toIndex() >= config.boardSize.size) {
+            return Failure(MakeMoveError.InvalidPosition(toSquare))
         }
-        val newMoves = board.grid + Move(square, Piece(turn.player))
+        val newMoves = board.grid + Move(toSquare, Piece(turn.player))
         return when {
             checkWin(newMoves) -> Success(BoardWin(newMoves, turn.player))
             checkDraw(newMoves) -> Success(BoardDraw(newMoves))
@@ -73,8 +73,8 @@ class TestVariant : Variant {
 
     private fun checkWin(newMoves: Moves): Boolean = newMoves.size == 3
 
-    private fun checkDraw(newMoves: Moves): Boolean =
-        newMoves.keys.groupBy { it.row }.map { it.value.size }.any { it >= 2 }
+    override fun checkDraw(updatedMoves: Moves): Boolean =
+        updatedMoves.keys.groupBy { it.row }.map { it.value.size }.any { it >= 2 }
 
     override fun initialBoard(): Board {
         return BoardRun(

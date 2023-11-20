@@ -47,7 +47,7 @@ import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestPassword
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.randomTo
-import gomoku.utils.TestVariant
+import gomoku.utils.TestVariantImpl
 import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -816,7 +816,7 @@ class GameServicesTests {
         }
 
         // when: getting more than one variant
-        val variantsList = listOf(FreestyleVariant(), TestVariant())
+        val variantsList = listOf(FreestyleVariant, TestVariantImpl)
 
         // and: constructing the game service with the variants
         val gameServiceWithVariants = createGamesService(TestClock(), variantsList)
@@ -1016,7 +1016,7 @@ class GameServicesTests {
 
     companion object {
         private val transactionManager: TransactionManager = JdbiTransactionManager(JdbiTestConfiguration.jdbi)
-        private val testVariant: Variant = TestVariant()
+        private val testVariant: Variant = TestVariantImpl
         private val variantsList: List<Variant> = listOf(testVariant)
         val gameTestVariant: GameVariant =
             transactionManager.run { transaction ->

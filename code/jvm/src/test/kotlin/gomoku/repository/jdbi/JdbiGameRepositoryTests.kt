@@ -25,7 +25,7 @@ import gomoku.utils.TestDataGenerator.newTestId
 import gomoku.utils.TestDataGenerator.newTestUserName
 import gomoku.utils.TestDataGenerator.newTokenValidationData
 import gomoku.utils.TestDataGenerator.randomTo
-import gomoku.utils.TestVariant
+import gomoku.utils.TestVariantImpl
 import gomoku.utils.get
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel
 import org.junit.jupiter.api.BeforeAll
@@ -46,7 +46,7 @@ class JdbiGameRepositoryTests {
     private val lobbyId = newTestId()
 
     companion object {
-        private val testVariant = TestVariant()
+        private val testVariant = TestVariantImpl
 
         private lateinit var variantId: Id
 
@@ -246,7 +246,7 @@ class JdbiGameRepositoryTests {
 
         // when: updating game 1 with a new board
         val move = Square(Column('a').get(), Row(1).get())
-        val newBoard = board.play(testVariant, move).get()
+        val newBoard = board.play(testVariant, Player.W, move).get()
         assertNotNull(newBoard)
         val updatedGame = repoGames.updateGame(game1.id, newBoard)
 
