@@ -79,8 +79,8 @@ interface UsersRepository {
 
     /**
      * Retrieves user's statistics information.
-     * @param offset the offset to start the result from.
-     * @param limit the maximum number of results to return.
+     * @param page the page number to retrieve.
+     * @param itemsPerPage the maximum number of items to return per page.
      * @return the user's statistic information in a paginated result.
      * The results are ordered by the user's rank.
      */
@@ -96,8 +96,8 @@ interface UsersRepository {
     /**
      * Retrieves users' statistics information by a search term.
      * @param term the term to search for.
-     * @param limit the maximum number of results to return.
-     * @param offset the offset to start the result from.
+     * @param page the page number to retrieve.
+     * @param itemsPerPage the maximum number of items to return per page.
      * @return the user's statistic information in a paginated result.
      */
     fun getUserStatsByTerm(term: Term, page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo>

@@ -1,6 +1,5 @@
 package gomoku.repository.jdbi
 
-import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.Term
 import gomoku.domain.token.Token
@@ -197,15 +196,15 @@ class JdbiUserRepositoryTests {
         }
 
         // and: retrieving the first 3 users statistic information
-        val limitValue = 3
+        val itemsPerPage = 3
         val usersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(0).get(),
-            limit = PositiveValue(limitValue).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         // then: the users statistic information is paginated
         assertEquals(1, usersRanking.currentPage)
-        assertEquals(limitValue, usersRanking.itemsPerPage)
+        assertEquals(itemsPerPage, usersRanking.itemsPerPage)
 
         // when: comparing with user information
         // then: the users statistic information is correct
@@ -217,25 +216,25 @@ class JdbiUserRepositoryTests {
         }
 
         // when: retrieving all users statistic information
-        val secondLimitValue = nrOfUsers
+        val secondItemsForPage = nrOfUsers
         val allUsersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(0).get(),
-            limit = PositiveValue(secondLimitValue).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(secondItemsForPage).get()
         )
 
         // then: the users statistic is paginated
         assertEquals(1, allUsersRanking.currentPage)
-        assertEquals(secondLimitValue, allUsersRanking.itemsPerPage)
+        assertEquals(secondItemsForPage, allUsersRanking.itemsPerPage)
 
         // when: when retrieving the second page of users statistic information
         val secondPageUsersRanking = repo.getUsersStats(
-            offset = NonNegativeValue(limitValue).get(),
-            limit = PositiveValue(limitValue).get()
+            page = PositiveValue(itemsPerPage).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         // then:
         assertEquals(2, secondPageUsersRanking.currentPage)
-        assertEquals(limitValue, secondPageUsersRanking.itemsPerPage)
+        assertEquals(itemsPerPage, secondPageUsersRanking.itemsPerPage)
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
@@ -261,8 +260,8 @@ class JdbiUserRepositoryTests {
         val searchTerm = Term(queryFormat).get()
         val userStatsByUsername = repo.getUserStatsByTerm(
             term = searchTerm,
-            offset = NonNegativeValue(0).get(),
-            limit = PositiveValue(nrOfUsers).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(nrOfUsers).get()
         )
 
         // and: calculating the expected number of users
@@ -275,7 +274,7 @@ class JdbiUserRepositoryTests {
         // then: the users statistic information is paginated
         assertEquals(1, userStatsByUsername.currentPage)
         assertEquals(actualNrOfUsers, userStatsByUsername.itemsPerPage)
-        assertEquals(actualNrOfUsers, userStatsByUsername.totalItems)
+        assertEquals(actualNrOfUsers, userStatsByUsername.items.size)
 
         // when: comparing with user information
         // then: the users statistic information is correct

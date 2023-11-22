@@ -1,6 +1,5 @@
 package gomoku.services
 
-import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.Term
 import gomoku.domain.token.Sha256TokenEncoder
@@ -444,15 +443,15 @@ class UserServiceTests {
         }
 
         // when: retrieving the users statistic information
-        val limit = nrOfUsers
+        val itemsPerPage = nrOfUsers
         val ranking = userService.getUsersStats(
-            offset = NonNegativeValue(0).get(),
-            limit = PositiveValue(limit).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         // then: the statistics is paginated
         assertEquals(nrOfUsers, ranking.items.size)
-        assertEquals(limit, ranking.itemsPerPage)
+        assertEquals(itemsPerPage, ranking.itemsPerPage)
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
@@ -521,11 +520,11 @@ class UserServiceTests {
         }
 
         // when: retrieving users statistic information by username format defined above
-        val limit = nrOfUsers
+        val itemsPerPage = nrOfUsers
         val ranking = userService.getUserStatsByTerm(
             term = Term(usernameFormat).get(),
-            limit = PositiveValue(limit).get(),
-            offset = NonNegativeValue(0).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         val actualUsers = if (nrOfUsers % 2 == 0) {
@@ -535,20 +534,20 @@ class UserServiceTests {
         }
 
         // then: the statistics is paginated and the number of users is the expected one
-        assertEquals(actualUsers, ranking.totalItems)
+        assertEquals(actualUsers, ranking.items.size)
         assertEquals(actualUsers, ranking.itemsPerPage)
 
-        // when: offset is not 0
-        val offset = 2
+        // when: page is not 0
+        val page = 2
         val rankingWithOffset = userService.getUserStatsByTerm(
             term = Term(usernameFormat).get(),
-            offset = NonNegativeValue(offset).get(),
-            limit = PositiveValue(limit).get()
+            page = PositiveValue(page).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         // then: the statistics is paginated and first offset users are skipped
-        assertEquals(actualUsers, rankingWithOffset.totalItems)
-        assertEquals(actualUsers - offset, rankingWithOffset.itemsPerPage)
+        assertEquals(actualUsers, rankingWithOffset.items.size)
+        assertEquals(actualUsers - page, rankingWithOffset.itemsPerPage)
 
         // when: creating another user with a unique username
         val usernameToQuery = newTestUserName()
@@ -565,12 +564,12 @@ class UserServiceTests {
         // when: retrieving users statistic information by the previously created username
         val singleRanking = userService.getUserStatsByTerm(
             term = Term(usernameToQuery.value).get(),
-            offset = NonNegativeValue(0).get(),
-            limit = PositiveValue(limit).get()
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
         // then: the statistics is paginated and the number of users is the expected one
-        assertEquals(1, singleRanking.totalItems)
+        assertEquals(1, singleRanking.items.size)
     }
 
     companion object {

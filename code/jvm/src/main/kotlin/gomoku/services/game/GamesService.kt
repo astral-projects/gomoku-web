@@ -28,7 +28,7 @@ import java.sql.Connection.TRANSACTION_SERIALIZABLE
 class GamesService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
-    private val variants: List<Variant>,
+    private val variants: List<Variant>
 ) {
 
     /**

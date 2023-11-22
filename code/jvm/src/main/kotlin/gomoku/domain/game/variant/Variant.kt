@@ -79,9 +79,9 @@ interface Variant {
         }
         val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
         return places.hasConsecutive(WINNING_PIECES, Square::isInSameRow) ||
-                places.hasConsecutive(WINNING_PIECES, Square::isInSameColumn) ||
-                places.hasConsecutive(WINNING_PIECES, Square::isInSameSlash) ||
-                places.hasConsecutive(WINNING_PIECES, Square::isInSameBackSlash)
+            places.hasConsecutive(WINNING_PIECES, Square::isInSameColumn) ||
+            places.hasConsecutive(WINNING_PIECES, Square::isInSameSlash) ||
+            places.hasConsecutive(WINNING_PIECES, Square::isInSameBackSlash)
     }
 
     /**
@@ -91,7 +91,7 @@ interface Variant {
      */
     private fun Set<Square>.hasConsecutive(
         length: Int,
-        condition: (Square, Square) -> Boolean,
+        condition: (Square, Square) -> Boolean
     ): Boolean {
         if (size < length) {
             return false

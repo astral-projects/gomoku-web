@@ -9,7 +9,6 @@ import gomoku.domain.user.components.Username
 import org.springframework.http.ResponseEntity
 import java.net.URI
 
-
 /**
  * Represents a problem that occurred while processing a request.
  * @param type A URI reference that identifies the problem type.

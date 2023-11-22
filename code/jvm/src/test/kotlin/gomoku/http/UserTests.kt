@@ -614,37 +614,37 @@ class UserTests {
 
         // when: getting the user statistic information with an invalid offset
         // then: the response is a 400
-        val invalidOffset = -1
-        val invalidOffsetProblem = client.get().uri("/users/stats?offset=$invalidOffset")
+        val invalidPage = -1
+        val invalidPageProblem = client.get().uri("/users/stats?page=$invalidPage")
             .exchange()
             .expectStatus().isBadRequest
             .expectBody(Problem::class.java)
             .returnResult()
             .responseBody!!
 
-        assertEquals(Problem.invalidOffset, invalidOffsetProblem.type)
-        assertEquals("The offset must be a non-negative integer", invalidOffsetProblem.detail)
-        val invalidOffsetInstance = assertNotNull(invalidOffsetProblem.instance)
-        assertEquals(URI("/api/users/stats?offset=$invalidOffset&limit=10"), invalidOffsetInstance)
-        assertEquals("Invalid offset", invalidOffsetProblem.title)
-        assertEquals(400, invalidOffsetProblem.status)
+        assertEquals(Problem.invalidPage, invalidPageProblem.type)
+        assertEquals("The offset must be a non-negative integer", invalidPageProblem.detail)
+        val invalidOffsetInstance = assertNotNull(invalidPageProblem.instance)
+        assertEquals(URI("/api/users/stats?page=$invalidPage"), invalidOffsetInstance)
+        assertEquals("Invalid offset", invalidPageProblem.title)
+        assertEquals(400, invalidPageProblem.status)
 
         // when: getting the user statistic information with an invalid limit
         // then: the response is a 400 with a proper problem
-        val invalidLimit = 0
-        val invalidLimitProblem = client.get().uri("/users/stats?limit=$invalidLimit")
+        val invalidItemsPerPage = 0
+        val invalidItemsPerPageProblem = client.get().uri("/users/stats?itemsPerPage=$invalidItemsPerPage")
             .exchange()
             .expectStatus().isBadRequest
             .expectBody(Problem::class.java)
             .returnResult()
             .responseBody!!
 
-        assertEquals(Problem.invalidLimit, invalidLimitProblem.type)
-        assertEquals("The limit must be a positive integer", invalidLimitProblem.detail)
-        val invalidLimitInstance = assertNotNull(invalidLimitProblem.instance)
-        assertEquals(URI("/api/users/stats?offset=0&limit=$invalidLimit"), invalidLimitInstance)
-        assertEquals("Invalid limit", invalidLimitProblem.title)
-        assertEquals(400, invalidLimitProblem.status)
+        assertEquals(Problem.invalidItemsPerPage, invalidItemsPerPageProblem.type)
+        assertEquals("The limit must be a positive integer", invalidItemsPerPageProblem.detail)
+        val invalidLimitInstance = assertNotNull(invalidItemsPerPageProblem.instance)
+        assertEquals(URI("/api/users/stats?offset=0&limit=$invalidItemsPerPage"), invalidLimitInstance)
+        assertEquals("Invalid limit", invalidItemsPerPageProblem.title)
+        assertEquals(400, invalidItemsPerPageProblem.status)
     }
 
     @Test
@@ -748,13 +748,13 @@ class UserTests {
         assertEquals(1, resultWithNoOffsetOrLimit.currentPage)
         assertEquals(10, resultWithNoOffsetOrLimit.itemsPerPage)
 
-        // when: getting the user statistic information by search term with an offset and
-        // limit combination that do not exceed the total number of users created earlier
-        val offset = 2
-        val limit = 5
+        // when: getting the user statistic information by search term with a page and
+        // itemsPerPage combination that do not exceed the total number of users created earlier
+        val page = 2
+        val itemsPerPage = 5
 
         // then: the response is a 200 with the proper representation
-        val resultWithOffsetAndLimit = client.get().uri("/users/stats/search?term=$term&offset=$offset&limit=$limit")
+        val resultWithPageAndItemsPerPage = client.get().uri("/users/stats/search?term=$term&page=$page&itemsPerPage=$itemsPerPage")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
@@ -763,13 +763,13 @@ class UserTests {
             .responseBody!!
 
         // and: the result is correctly paginated
-        assertEquals(offset / limit + 1, resultWithOffsetAndLimit.currentPage)
-        assertEquals(if (limit < nrOfUsers) limit else nrOfUsers, resultWithOffsetAndLimit.itemsPerPage)
+        assertEquals(page / itemsPerPage + 1, resultWithPageAndItemsPerPage.currentPage)
+        assertEquals(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers, resultWithPageAndItemsPerPage.itemsPerPage)
 
-        // when: getting the user statistic information by search term with an invalid offset
+        // when: getting the user statistic information by search term with an invalid page
         // then: the response is a 400
-        val invalidOffset = -1
-        val invalidOffsetProblem = client.get().uri("/users/stats/search?term=$term&offset=$invalidOffset")
+        val invalidPage = -1
+        val invalidPageProblem = client.get().uri("/users/stats/search?term=$term&page=$invalidPage")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isBadRequest
@@ -777,17 +777,17 @@ class UserTests {
             .returnResult()
             .responseBody!!
 
-        assertEquals(Problem.invalidOffset, invalidOffsetProblem.type)
-        assertEquals("The offset must be a non-negative integer", invalidOffsetProblem.detail)
-        val invalidOffsetInstance = assertNotNull(invalidOffsetProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$term&offset=$invalidOffset&limit=10"), invalidOffsetInstance)
-        assertEquals("Invalid offset", invalidOffsetProblem.title)
-        assertEquals(400, invalidOffsetProblem.status)
+        assertEquals(Problem.invalidPage, invalidPageProblem.type)
+        assertEquals("The offset must be a non-negative integer", invalidPageProblem.detail)
+        val invalidPageInstance = assertNotNull(invalidPageProblem.instance)
+        assertEquals(URI("/api/users/stats/search?term=$term&page=$invalidPage"), invalidPageInstance)
+        assertEquals("Invalid offset", invalidPageProblem.title)
+        assertEquals(400, invalidPageProblem.status)
 
-        // when: getting the user statistic information by search term with an invalid limit
+        // when: getting the user statistic information by search term with an invalid itemsPerPage
         // then: the response is a 400 with a proper problem
-        val invalidLimit = 0
-        val invalidLimitProblem = client.get().uri("/users/stats/search?term=$term&limit=$invalidLimit")
+        val invalidItemsPerPage = 0
+        val invalidLimitProblem = client.get().uri("/users/stats/search?term=$term&itemsPerPage=$invalidItemsPerPage")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isBadRequest
@@ -795,10 +795,10 @@ class UserTests {
             .returnResult()
             .responseBody!!
 
-        assertEquals(Problem.invalidLimit, invalidLimitProblem.type)
+        assertEquals(Problem.invalidItemsPerPage, invalidLimitProblem.type)
         assertEquals("The limit must be a positive integer", invalidLimitProblem.detail)
-        val invalidLimitInstance = assertNotNull(invalidLimitProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$term&offset=0&limit=$invalidLimit"), invalidLimitInstance)
+        val invalidItemsPerPageInstance = assertNotNull(invalidLimitProblem.instance)
+        assertEquals(URI("/api/users/stats/search?term=$term&page=1&itemsPerPage=$invalidItemsPerPage"), invalidItemsPerPageInstance)
         assertEquals("Invalid limit", invalidLimitProblem.title)
         assertEquals(400, invalidLimitProblem.status)
 

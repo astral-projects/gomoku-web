@@ -43,7 +43,7 @@ abstract class VariantTest {
             return moves.foldIndexed(variant.initialBoard()) { idx: Int, board: Board, move: Square ->
                 println(
                     "Board state: ${board::class.java.simpleName}\n" +
-                            "Making Move[${idx + 1}] to: Square($move)[Column(${move.col.toIndex()})-Row(${move.row.toIndex()})]"
+                        "Making Move[${idx + 1}] to: Square($move)[Column(${move.col.toIndex()})-Row(${move.row.toIndex()})]"
                 )
                 val observedBoardTurn = board.turn
                 requireNotNull(observedBoardTurn) { "Board turn cannot be null" }
@@ -193,7 +193,7 @@ abstract class VariantTest {
          * win will be blocked, and with even the slash and backslash wins will be blocked.
          */
         fun getDrawSquareSequence(
-            variant: Variant,
+            variant: Variant
         ): List<Square> {
             val boardSize = variant.config.boardSize.size
             val allSquaresInBoard = possibleSquaresIn(boardSize)
