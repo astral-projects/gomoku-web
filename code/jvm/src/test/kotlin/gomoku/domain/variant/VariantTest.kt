@@ -6,16 +6,18 @@ import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.game.variant.Variant
+import gomoku.domain.game.variant.config.VariantConfig
 import gomoku.utils.Failure
 import gomoku.utils.Success
 import gomoku.utils.get
+import java.util.*
 
 /**
- * Provides a set of tests that should be run for all variants
- * to ensure they are working as expected.
+ * Provides a set of test functions that should be runned for all variant implementations.
  */
 abstract class VariantTest {
 
+    abstract val variant: Variant
     abstract fun `can make moves on the board`()
     abstract fun `can detect a diagonal slash win`()
     abstract fun `can detect a diagonal backslash win`()
@@ -41,7 +43,7 @@ abstract class VariantTest {
             return moves.foldIndexed(variant.initialBoard()) { idx: Int, board: Board, move: Square ->
                 println(
                     "Board state: ${board::class.java.simpleName}\n" +
-                            "Move[$idx]: Square($move)[Row(${move.row.toIndex()})-Column(${move.col.toIndex()})]"
+                            "Making Move[${idx + 1}] to: Square($move)[Column(${move.col.toIndex()})-Row(${move.row.toIndex()})]"
                 )
                 val observedBoardTurn = board.turn
                 requireNotNull(observedBoardTurn) { "Board turn cannot be null" }
@@ -56,7 +58,9 @@ abstract class VariantTest {
                         throw IllegalArgumentException(errorMessage)
                     }
 
-                    is Success -> moveResult.value
+                    is Success ->
+                        moveResult.value
+                            .also { it.print(variant.config) }
                 }
             }
         }
@@ -116,6 +120,109 @@ abstract class VariantTest {
                 )
             }
         }
-    }
 
+        /**
+         * Prints the board to the console, according to the given variant configuration.
+         *
+         * Example:
+         *
+         * ```kotlin
+         *         Turn = B
+         *             a   b   c   d   e
+         *         .---+---+---+---+---+---.
+         *         |   |   |   |   |   |   |
+         *       1 |--[B]-[W]--|---|--[W]--|
+         *         |   |   |   |   |   |   |
+         *       2 |--[W]--|---|---|---|---|
+         *         |   |   |   |   |   |   |
+         *       3 |---|---|---|--[B]--|---|
+         *         |   |   |   |   |   |   |
+         *       4 |---|---|---|---|---|---|
+         *         |   |   |   |   |   |   |
+         *       5 |--[B]--|---|---|---|---|
+         *         |   |   |   |   |   |   |
+         *         .---+---+---+---+---+---.
+         * ```
+         * @param variantConfig The variant configuration.
+         */
+        private fun Board.print(variantConfig: VariantConfig) {
+            val dim = variantConfig.boardSize.size
+            val topBottomBorder = "." + "---+".repeat(dim - 1) + "---."
+            val middleBorder = "|" + "   |".repeat(dim)
+            val tabValue = 5
+            val nrOfColumns = dim - 1
+            val tab = " ".repeat(tabValue)
+            val boardTurn = turn
+            val turnTemplate = if (boardTurn != null) "Turn was = ${boardTurn.other().player}" else ""
+            println("\n" + tab + turnTemplate)
+                .also {
+                    print("$tab   ")
+                        .also {
+                            ('a'..'z')
+                                .take(nrOfColumns)
+                                .forEach { print(" $it  ") }
+                        }
+                        .also { println() }
+                }
+            println(tab + topBottomBorder)
+            for (row in 0 until dim - 1) {
+                println(tab + middleBorder)
+                val factor = if (row < 9) 2 else 3
+                print(" ".repeat(tabValue - factor) + "${row + 1} |-")
+                for (col in 0 until nrOfColumns) {
+                    val square = Square(Column(index = col).get(), Row(index = row).get())
+                    val piece = grid[square]
+                    print("-")
+                    val pieceString = if (piece != null) {
+                        "[${piece.player}]"
+                    } else {
+                        "-|-"
+                    }
+                    print(pieceString)
+                }
+                println("--|")
+            }
+            println(tab + middleBorder)
+            println(tab + topBottomBorder + "\n")
+        }
+
+        /**
+         * Retrieves a sequence of squares that would result in a draw, according to the given variant
+         * configuration.
+         * The sequence generated will work for both even and odd board sizes, since with odd the vertical
+         * win will be blocked, and with even the slash and backslash wins will be blocked.
+         */
+        fun getDrawSquareSequence(
+            variant: Variant,
+        ): List<Square> {
+            val boardSize = variant.config.boardSize.size
+            val allSquaresInBoard = possibleSquaresIn(boardSize)
+            val rowGroupSize = variant.winningPieces - 1
+            var shouldRotateRowGroup = false
+            var rowIndex = 0
+            while (rowIndex < boardSize - 1) {
+                val isInRowGroupStart = rowIndex % (rowGroupSize) == 0
+                val remainingRows = boardSize - rowIndex - 1
+                val numberOfRowsToRotate = rowGroupSize.coerceAtMost(remainingRows)
+                if (rowIndex != 0 && isInRowGroupStart) {
+                    // Toggle rotation status for the next row group
+                    shouldRotateRowGroup = !shouldRotateRowGroup
+                }
+                if (shouldRotateRowGroup) {
+                    repeat(numberOfRowsToRotate) {
+                        val rowStartIndex = rowIndex * (boardSize - 1)
+                        val rowEndIndex = rowStartIndex + (boardSize - 1)
+                        // Rotate the row one position to the right
+                        val extractedRow = allSquaresInBoard.subList(rowStartIndex, rowEndIndex)
+                        Collections.rotate(extractedRow, 1)
+                        rowIndex += 1
+                    }
+                } else {
+                    // Skip the next row group
+                    rowIndex += rowGroupSize
+                }
+            }
+            return allSquaresInBoard
+        }
+    }
 }

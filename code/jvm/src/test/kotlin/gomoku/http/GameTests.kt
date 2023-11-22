@@ -165,7 +165,7 @@ class GameTests {
 
         // when: a user tries to get the game by id
         // then: the response is a 200 with the proper body
-        val getGameResponse = client.get().uri("/games/${gameId}")
+        val getGameResponse = client.get().uri("/games/$gameId")
             .exchange()
             .expectStatus().isOk
             .expectBody(TestGameModel::class.java)
@@ -232,7 +232,7 @@ class GameTests {
 
         // when: a user that is not authenticated tries to delete the game
         // then: the response is a 401 with the proper problem
-        client.delete().uri("/games/${gameId}")
+        client.delete().uri("/games/$gameId")
             .header("Authorization", "Bearer invalid-token")
             .exchange()
             .expectStatus().isUnauthorized
@@ -240,7 +240,7 @@ class GameTests {
 
         // when: the guest tries to delete the game
         // then: the response is a 400 with the proper body
-        val userNotTheHostProblem = client.delete().uri("/games/${gameId}")
+        val userNotTheHostProblem = client.delete().uri("/games/$gameId")
             .header("Authorization", "Bearer $guestToken")
             .exchange()
             .expectStatus().isBadRequest
@@ -266,7 +266,7 @@ class GameTests {
 
         // when: the host tries to delete the game before its finished
         // then: the response is a 400 with the proper body
-        val gameIsInProgressProblem = client.delete().uri("/games/${gameId}")
+        val gameIsInProgressProblem = client.delete().uri("/games/$gameId")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isBadRequest
@@ -285,7 +285,7 @@ class GameTests {
 
         // and: the host tries to delete the game after its finished
         // then: the response is a 200 with the proper body
-        val deleteGameResponse = client.delete().uri("/games/${gameId}")
+        val deleteGameResponse = client.delete().uri("/games/$gameId")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
@@ -354,7 +354,7 @@ class GameTests {
         val thirdToken = createToken(client, thirdRegistrationCredentials).token
 
         // then: the response is a 400 with the proper body
-        val userDoesntBelongToThisGameProblem = client.post().uri("/games/${gameId}/exit")
+        val userDoesntBelongToThisGameProblem = client.post().uri("/games/$gameId/exit")
             .header("Authorization", "Bearer $thirdToken")
             .exchange()
             .expectStatus().isBadRequest
@@ -374,7 +374,7 @@ class GameTests {
         // when: a guest or host tries to exit the game
         // then: the response is a 200 with the proper body
         val playerToken = if (Random().nextBoolean()) guestToken else hostToken
-        val exitGameResponse = client.post().uri("/games/${gameId}/exit")
+        val exitGameResponse = client.post().uri("/games/$gameId/exit")
             .header("Authorization", "Bearer $playerToken")
             .exchange()
             .expectStatus().isOk
@@ -386,7 +386,7 @@ class GameTests {
 
         // when: a user tries to exit the game again
         // then: the response is a 400 with the proper body
-        val exitAlreadyFinishedGame = client.post().uri("/games/${gameId}/exit")
+        val exitAlreadyFinishedGame = client.post().uri("/games/$gameId/exit")
             .header("Authorization", "Bearer $guestToken")
             .exchange()
             .expectStatus().isBadRequest

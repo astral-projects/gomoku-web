@@ -31,5 +31,4 @@ class Term private constructor(val value: String) : Component {
     override fun hashCode(): Int = value.hashCode()
 
     override fun toString() = value
-
 }

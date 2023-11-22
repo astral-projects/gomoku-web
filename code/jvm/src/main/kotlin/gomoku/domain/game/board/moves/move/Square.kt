@@ -72,7 +72,7 @@ data class Square(val col: Column, val row: Row) {
      * Checks if a square is in the same column as another square.
      * @param other The other square to compare with.
      */
-    fun isInsameColumn(other: Square): Boolean = this.col == other.col
+    fun isInSameColumn(other: Square): Boolean = this.col == other.col
 
     /**
      * Checks if a square is in the same backslash diagonal as another square.
@@ -89,4 +89,12 @@ data class Square(val col: Column, val row: Row) {
      */
     fun isInSameSlash(other: Square): Boolean =
         this.row.toIndex() - this.col.toIndex() == other.row.toIndex() - other.col.toIndex()
+
+    /**
+     * Checks if a square is consecutive to another square.
+     * Two squares are consecutive if they are one intersection apart.
+     * @param other The other square to compare with.
+     */
+    fun isConsecutiveTo(other: Square): Boolean =
+        this.isNIntersectionsApartFrom(other, PositiveValue(1).get())
 }

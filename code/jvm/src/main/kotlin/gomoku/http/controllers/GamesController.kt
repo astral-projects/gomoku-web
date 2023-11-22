@@ -160,7 +160,6 @@ class GamesController(
         }
     }
 
-
     /**
      * Exits the game with the given id.
      * @param id the id of the game.
@@ -298,5 +297,4 @@ class GamesController(
         val variants = gamesService.getVariants()
         return ResponseEntity.ok(variants)
     }
-
 }

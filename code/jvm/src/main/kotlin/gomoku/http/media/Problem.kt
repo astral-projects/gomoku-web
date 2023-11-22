@@ -9,7 +9,6 @@ import gomoku.domain.user.components.Username
 import org.springframework.http.ResponseEntity
 import java.net.URI
 
-
 /**
  * Represents a problem that occurred while processing a request.
  * @param type A URI reference that identifies the problem type.
@@ -72,7 +71,6 @@ data class Problem(
         val gameInsertFailure = URI("${BASE_URL}game-insert-failure")
         val usernameDoesNotExists = URI("${BASE_URL}username-doesnt-exists")
         val invalidTermLength = URI("${BASE_URL}invalid-term-length")
-        val blankTerm = URI("${BASE_URL}blank-term")
 
         private fun invalidId(idType: String, instance: URI): ResponseEntity<*> = Problem(
             type = invalidId,
@@ -378,14 +376,6 @@ data class Problem(
             title = "Invalid search term length",
             status = 400,
             detail = "The search term must be above 3 characters",
-            instance = instance
-        ).toResponse()
-
-        fun blankTerm(instance: URI): ResponseEntity<*> = Problem(
-            type = blankTerm,
-            title = "Blank search term",
-            status = 400,
-            detail = "The search term cannot be blank",
             instance = instance
         ).toResponse()
     }

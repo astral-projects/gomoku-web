@@ -1,4 +1,4 @@
-package gomoku.http.jackson.serializers
+package gomoku.repository.jackson.serializers
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer

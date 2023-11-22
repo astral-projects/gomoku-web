@@ -34,8 +34,8 @@ data class VariantConfig(
             rowIndex == centerIndex - 1 && columnIndex == centerIndex - 1
         } else {
             val upperLeftCorner =
-                rowIndex == centerIndex - 1
-                        && columnIndex == centerIndex - 1
+                rowIndex == centerIndex - 1 &&
+                        columnIndex == centerIndex - 1
             val upperRightCorner =
                 rowIndex == centerIndex - 1 && columnIndex == centerIndex
             val lowerLeftCorner =

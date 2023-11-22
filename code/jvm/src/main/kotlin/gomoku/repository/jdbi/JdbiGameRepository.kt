@@ -131,7 +131,7 @@ class JdbiGameRepository(
                 END,
             games_drawn = games_drawn + :gamesDrawnIncrement
         WHERE user_id IN (:winnerId, :loserId)
-        """.trimIndent()
+            """.trimIndent()
         )
             .bind("winnerId", winnerId.value)
             .bind("loserId", loserId.value)

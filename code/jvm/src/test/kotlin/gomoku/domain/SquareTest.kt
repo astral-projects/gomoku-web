@@ -4,6 +4,7 @@ import gomoku.domain.components.PositiveValue
 import gomoku.domain.game.board.moves.move.Square
 import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
+import gomoku.domain.variant.VariantTest.Companion.maximumBoardSizeSquares
 import gomoku.utils.get
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -95,7 +96,7 @@ class SquareTest {
             Square("i10"),
             Square("j8"),
             Square("j9"),
-            Square("j10"),
+            Square("j10")
         )
 
         // then: all of them should be one intersection apart from the square
@@ -122,7 +123,7 @@ class SquareTest {
             Square("k8"),
             Square("k9"),
             Square("k10"),
-            Square("k11"),
+            Square("k11")
         )
 
         // then: none of them should be one intersection apart from the square
@@ -155,7 +156,7 @@ class SquareTest {
             Square("l9"),
             Square("l10"),
             Square("l11"),
-            Square("l12"),
+            Square("l12")
         )
 
         // then: all of them should be two intersections apart from the square
@@ -190,4 +191,224 @@ class SquareTest {
         }
     }
 
+    @Test
+    fun `can detect consecutive squares`() {
+        // given: a square that is not in a corner
+        val square = Square("e5")
+
+        // and: a list of squares that are consecutive to the square
+        val consecutiveSquares = listOf(
+            Square("d4"),
+            Square("d5"),
+            Square("d6"),
+            Square("e4"),
+            Square("e6"),
+            Square("f4"),
+            Square("f5"),
+            Square("f6")
+        )
+
+        // then: all of them should be consecutive to the square
+        consecutiveSquares.forEach {
+            assertTrue(square.isConsecutiveTo(it))
+        }
+
+        // when: a list of squares that are not consecutive to the square
+        val nonConsecutiveSquares = maximumBoardSizeSquares().minus(consecutiveSquares.toSet())
+
+        // then: none of them should be consecutive to the square
+        nonConsecutiveSquares.forEach {
+            assertFalse(square.isConsecutiveTo(it))
+        }
+
+        // given: the left top corner square
+        val leftTopCornerSquare = Square("a1")
+
+        // and: a list of squares that are consecutive to the square
+        val leftTopCornerConsecutiveSquares = listOf(
+            Square("a2"),
+            Square("b1"),
+            Square("b2")
+        )
+
+        // then: all of them should be consecutive to the square
+        leftTopCornerConsecutiveSquares.forEach {
+            assertTrue(leftTopCornerSquare.isConsecutiveTo(it))
+        }
+
+        // when: a list of squares that are not consecutive to the square
+        val nonConsecutiveSquaresOfLTSquare = maximumBoardSizeSquares().minus(leftTopCornerConsecutiveSquares.toSet())
+
+        // then: none of them should be consecutive to the square
+        nonConsecutiveSquaresOfLTSquare.forEach {
+            assertFalse(leftTopCornerSquare.isConsecutiveTo(it))
+        }
+
+        // given: the right top corner square
+        val rightTopCornerSquare = Square(colIndex = Column.MAX_INDEX, rowIndex = 0)
+
+        // and: a list of squares that are consecutive to the square
+        val rightTopCornerConsecutiveSquares = listOf(
+            Square(colIndex = Column.MAX_INDEX - 1, rowIndex = 0),
+            Square(colIndex = Column.MAX_INDEX - 1, rowIndex = 1),
+            Square(colIndex = Column.MAX_INDEX, rowIndex = 1)
+        )
+
+        // then: all of them should be consecutive to the square
+        rightTopCornerConsecutiveSquares.forEach {
+            assertTrue(rightTopCornerSquare.isConsecutiveTo(it))
+        }
+
+        // when: a list of squares that are not consecutive to the square
+        val nonConsecutiveSquaresOfRTSquare = maximumBoardSizeSquares().minus(rightTopCornerConsecutiveSquares.toSet())
+
+        // then: none of them should be consecutive to the square
+        nonConsecutiveSquaresOfRTSquare.forEach {
+            assertFalse(rightTopCornerSquare.isConsecutiveTo(it))
+        }
+
+        // given: the left bottom corner square
+        val leftBottomCornerSquare = Square(0, Column.MAX_INDEX)
+
+        // and: a list of squares that are consecutive to the square
+        val leftBottomCornerConsecutiveSquares = listOf(
+            Square(0, Column.MAX_INDEX - 1),
+            Square(1, Column.MAX_INDEX - 1),
+            Square(1, Column.MAX_INDEX)
+        )
+
+        // then: all of them should be consecutive to the square
+        leftBottomCornerConsecutiveSquares.forEach {
+            assertTrue(leftBottomCornerSquare.isConsecutiveTo(it))
+        }
+
+        // when: a list of squares that are not consecutive to the square
+        val nonConsecutiveSquaresOfLBSquare =
+            maximumBoardSizeSquares().minus(leftBottomCornerConsecutiveSquares.toSet())
+
+        // then: none of them should be consecutive to the square
+        nonConsecutiveSquaresOfLBSquare.forEach {
+            assertFalse(leftBottomCornerSquare.isConsecutiveTo(it))
+        }
+
+        // given: the right bottom corner square
+        val rightBottomCornerSquare = Square(Column.MAX_INDEX, Column.MAX_INDEX)
+
+        // and: a list of squares that are consecutive to the square
+        val rightBottomCornerConsecutiveSquares = listOf(
+            Square(Column.MAX_INDEX - 1, Column.MAX_INDEX),
+            Square(Column.MAX_INDEX - 1, Column.MAX_INDEX - 1),
+            Square(Column.MAX_INDEX, Column.MAX_INDEX - 1)
+        )
+
+        // then: all of them should be consecutive to the square
+        rightBottomCornerConsecutiveSquares.forEach {
+            assertTrue(rightBottomCornerSquare.isConsecutiveTo(it))
+        }
+
+        // when: a list of squares that are not consecutive to the square
+        val nonConsecutiveSquaresOfRBSquare =
+            maximumBoardSizeSquares().minus(rightBottomCornerConsecutiveSquares.toSet())
+
+        // then: none of them should be consecutive to the square
+        nonConsecutiveSquaresOfRBSquare.forEach {
+            assertFalse(rightBottomCornerSquare.isConsecutiveTo(it))
+        }
+    }
+
+    @Test
+    fun `can detect two squares in the same row`() {
+        // given: a square
+        val square = Square("e5")
+
+        // and: a list of squares that are in the same row as the square
+        val squaresInSameRow = maximumBoardSizeSquares().filter {
+            it.row.toIndex() == square.row.toIndex()
+        }
+
+        // then: all of them should be in the same row as the square
+        squaresInSameRow.forEach {
+            assertTrue(square.isInSameRow(it))
+        }
+
+        // when: a list of squares that are not in the same row as the square
+        val squaresNotInSameRow = maximumBoardSizeSquares().minus(squaresInSameRow.toSet())
+
+        // then: none of them should be in the same row as the square
+        squaresNotInSameRow.forEach {
+            assertFalse(square.isInSameRow(it))
+        }
+    }
+
+    @Test
+    fun `can detect two squares in the same column`() {
+        // given: a square
+        val square = Square("e5")
+
+        // and: a list of squares that are in the same column as the square
+        val squaresInSameColumn = maximumBoardSizeSquares().filter {
+            it.col.toIndex() == square.col.toIndex()
+        }
+
+        // then: all of them should be in the same column as the square
+        squaresInSameColumn.forEach {
+            assertTrue(square.isInSameColumn(it))
+        }
+
+        // when: a list of squares that are not in the same column as the square
+        val squaresNotInSameColumn = maximumBoardSizeSquares().minus(squaresInSameColumn.toSet())
+
+        // then: none of them should be in the same column as the square
+        squaresNotInSameColumn.forEach {
+            assertFalse(square.isInSameColumn(it))
+        }
+    }
+
+    @Test
+    fun `can detect squares in the same slash`() {
+        // given: a square
+        val square = Square("e5")
+
+        // and: a list of squares that are in the same slash as the square
+        val squaresInSameSlash = maximumBoardSizeSquares().filter {
+            it.col.toIndex() - it.row.toIndex() == square.col.toIndex() - square.row.toIndex()
+        }
+
+        // then: all of them should be in the same slash as the square
+        squaresInSameSlash.forEach {
+            assertTrue(square.isInSameSlash(it))
+        }
+
+        // when: a list of squares that are not in the same slash as the square
+        val squaresNotInTheSameSlash = maximumBoardSizeSquares().minus(squaresInSameSlash.toSet())
+
+        // then: none of them should be in the same slash as the square
+        squaresNotInTheSameSlash.forEach {
+            assertFalse(square.isInSameSlash(it))
+        }
+    }
+
+    @Test
+    fun `can detect squares in the same backslash`() {
+        // given: a square
+        val square = Square("e5")
+
+        // and: a list of squares that are in the same backslash as the square
+        val squaresInSameBackSlash = maximumBoardSizeSquares().filter {
+            it.col.toIndex() + it.row.toIndex() == square.col.toIndex() + square.row.toIndex()
+        }
+
+        // then: all of them should be in the same backslash as the square
+        squaresInSameBackSlash.forEach {
+            assertTrue(square.isInSameBackSlash(it))
+        }
+
+        // when: a list of squares that are not in the same backslash as the square
+        val squaresNotInTheSameBackSlash = maximumBoardSizeSquares().minus(squaresInSameBackSlash.toSet())
+
+        // then: none of them should be in the same backslash as the square
+        squaresNotInTheSameBackSlash.forEach {
+            assertFalse(square.isInSameBackSlash(it))
+        }
+    }
 }

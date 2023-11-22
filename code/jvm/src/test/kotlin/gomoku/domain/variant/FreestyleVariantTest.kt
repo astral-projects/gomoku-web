@@ -18,11 +18,10 @@ import kotlin.test.fail
 
 class FreestyleVariantTest : VariantTest() {
 
+    override val variant = FreestyleVariant
+
     @Test
     override fun `can make moves on the board`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // and: a board
         val board = variant.initialBoard()
 
@@ -103,9 +102,6 @@ class FreestyleVariantTest : VariantTest() {
 
     @Test
     override fun `can detect a diagonal slash win`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // when: two players make moves
         val moves = listOf(
             Square(0, 0),
@@ -117,7 +113,7 @@ class FreestyleVariantTest : VariantTest() {
             Square(3, 3),
             Square(0, 4),
             Square(4, 4)
-        ).reversed()
+        )
         val boardAfterMoves = makeMoves(variant, moves)
 
         // then: the game is finished
@@ -140,20 +136,17 @@ class FreestyleVariantTest : VariantTest() {
 
     @Test
     override fun `can detect a diagonal backslash win`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // when: two players make moves
         val moves = listOf(
+            Square(4, 0),
             Square(0, 0),
-            Square(0, 1),
-            Square(1, 1),
-            Square(0, 2),
+            Square(3, 1),
+            Square(1, 0),
             Square(2, 2),
-            Square(0, 3),
-            Square(3, 3),
-            Square(0, 4),
-            Square(4, 4)
+            Square(2, 0),
+            Square(1, 3),
+            Square(3, 0),
+            Square(0, 4)
         )
         val boardAfterMoves = makeMoves(variant, moves)
 
@@ -177,9 +170,6 @@ class FreestyleVariantTest : VariantTest() {
 
     @Test
     override fun `can detect a horizontal win`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // when: two players make moves
         val moves = listOf(
             Square(0, 0),
@@ -214,9 +204,6 @@ class FreestyleVariantTest : VariantTest() {
 
     @Test
     override fun `can detect a vertical win`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // when: two players make moves
         val moves = listOf(
             Square(0, 0),
@@ -251,13 +238,9 @@ class FreestyleVariantTest : VariantTest() {
 
     @Test
     override fun `can detect a draw`() {
-        // given: a variant
-        val variant = FreestyleVariant
-
         // when: two players make moves
-        val allSquaresInBoard = possibleSquaresIn(variant.config.boardSize.size)
-        println(allSquaresInBoard)
-        val boardAfterMoves = makeMoves(variant, allSquaresInBoard)
+        val drawSquareSequence = getDrawSquareSequence(variant)
+        val boardAfterMoves = makeMoves(variant, drawSquareSequence)
 
         // then: the game is finished
         assertTrue(boardAfterMoves.isFinished())

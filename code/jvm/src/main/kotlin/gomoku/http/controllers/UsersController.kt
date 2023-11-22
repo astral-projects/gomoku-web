@@ -289,7 +289,7 @@ class UsersController(
      * @param user The authenticated user making the request.
      * @param offset The optional offset to start from (default is **0**).
      * @param limit The optional maximum number of user statistics results to be returned (default is **10**).
-     * @param userName The username or substring to filter user statistics by.
+     * @param term The term to search for.
      * @return A [ResponseEntity] containing the [PaginatedResult] result of user statistics or an
      * appropriate [Problem] response.
      */
@@ -324,7 +324,7 @@ class UsersController(
                         val paginatedResult: PaginatedResult<UserStatsInfo> = userService.getUserStatsByTerm(
                             term = termResult.value,
                             offset = offsetResult.value,
-                            limit = limitResult.value,
+                            limit = limitResult.value
                         )
                         ResponseEntity.ok(paginatedResult)
                     }

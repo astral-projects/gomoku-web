@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import gomoku.domain.game.board.BoardWin
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.moves.Moves
-import gomoku.http.jackson.serializers.MovesDeserializer
-import gomoku.http.jackson.serializers.MovesSerializer
+import gomoku.repository.jackson.serializers.MovesDeserializer
+import gomoku.repository.jackson.serializers.MovesSerializer
 
 class JdbiBoardWinModel(
     @field: JsonDeserialize(using = MovesDeserializer::class)

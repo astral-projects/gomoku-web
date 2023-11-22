@@ -2,18 +2,16 @@ package gomoku.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.transaction.LocalTransactionHandler
 import org.jdbi.v3.core.transaction.SerializableTransactionRunner
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel
 import org.postgresql.ds.PGSimpleDataSource
-
-// Constants
-private const val DB_URL = "jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit"
 
 /**
  * Provides JDBI test configurations and utility functions.
  */
 object JdbiTestConfiguration {
+
+    private const val DB_URL = "jdbc:postgresql://localhost:5432/db?user=dbuser&password=changeit"
 
     /**
      * Runs the given block with a handle and a transaction with the given isolation level.
@@ -27,8 +25,6 @@ object JdbiTestConfiguration {
     ) {
         if (isolationLevel == TransactionIsolationLevel.SERIALIZABLE) {
             jdbi.setTransactionHandler(SerializableTransactionRunner())
-        } else {
-            jdbi.setTransactionHandler(LocalTransactionHandler())
         }
         jdbi.useTransaction<Exception>(isolationLevel, block)
     }

@@ -1,4 +1,4 @@
-package gomoku.http.jackson.serializers
+package gomoku.repository.jackson.serializers
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -26,9 +26,9 @@ class MovesSerializer : JsonSerializer<Moves>() {
     override fun serialize(value: Moves, gen: JsonGenerator, serializers: SerializerProvider) {
         gen.writeStartArray()
         value.forEach { (square, piece) ->
-            val squareString = "${square.col.letter}${square.row.number}"
             val pieceString = piece.player.name.lowercase(Locale.getDefault())
-            val moveString = "$squareString$MOVE_SEPARATOR$pieceString"
+            // Example: a1-w or a11-b
+            val moveString = "$square$MOVE_SEPARATOR$pieceString"
             gen.writeString(moveString)
         }
         gen.writeEndArray()
@@ -36,17 +36,24 @@ class MovesSerializer : JsonSerializer<Moves>() {
 }
 
 class MovesDeserializer : JsonDeserializer<Moves>() {
-    @Throws(IOException::class)
+    @Throws(IOException::class, IllegalArgumentException::class)
     override fun deserialize(jsonParser: JsonParser, ctxt: DeserializationContext): Moves {
         val node = jsonParser.codec.readTree<JsonNode>(jsonParser)
         try {
             return node.fold(emptyMap()) { moves, move ->
                 val (squareString, playerString) = move.asText().split(MOVE_SEPARATOR)
                 val square = when (squareString.length) {
-                    // Example: a1-W
-                    2 -> Square(Column(squareString.first()).get(), Row(squareString.last().toString().toInt()).get())
-                    // Example: a11-B
-                    3 -> Square(Column(squareString.first()).get(), Row(squareString.drop(1).toInt()).get())
+                    // Example: a1 from a1-w
+                    2 -> Square(
+                        Column(value = squareString.first()).get(),
+                        Row(index = squareString.last().toString().toInt() - 1).get()
+                    )
+                    // Example: a11 from a11-b
+                    3 -> Square(
+                        Column(value = squareString.first()).get(),
+                        Row(squareString.drop(1).toInt() - 1).get()
+                    )
+
                     else -> throw IllegalArgumentException("Invalid square: $squareString")
                 }
                 val player = Player.valueOf(playerString.first().uppercase(Locale.getDefault()))
@@ -59,6 +66,6 @@ class MovesDeserializer : JsonDeserializer<Moves>() {
     }
 
     companion object {
-        val logger = LoggerFactory.getLogger(MovesDeserializer::class.java)
+        private val logger = LoggerFactory.getLogger(MovesDeserializer::class.java)
     }
 }

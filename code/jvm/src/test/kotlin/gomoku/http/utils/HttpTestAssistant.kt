@@ -70,7 +70,7 @@ object HttpTestAssistant {
         val id = findGameSuccess.id
         assertTrue(id > 0)
         assertEquals(
-            if (expectLobbyCreation) "Lobby created successfully with id=${id}" else "Joined the game successfully with id=${id}",
+            if (expectLobbyCreation) "Lobby created successfully with id=$id" else "Joined the game successfully with id=$id",
             findGameSuccess.message
         )
         return id

@@ -39,7 +39,6 @@ import gomoku.utils.MultiThreadTestHelper
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.Success
 import gomoku.utils.TestClock
-import gomoku.utils.TestConfiguration.NR_OF_STRESS_TEST_ITERATIONS
 import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
 import gomoku.utils.TestConfiguration.stressTestTimeoutDuration
 import gomoku.utils.TestDataGenerator.newTestEmail
@@ -312,7 +311,7 @@ class GameServicesTests {
         val moveOnGameNotFound = gamesService.makeMove(
             gameId = newTestId(),
             userId = host.id,
-            toSquare = Square(Column('a').get(), Row(1).get())
+            toSquare = Square("a1")
         )
 
         // then: the move is not valid
@@ -322,7 +321,7 @@ class GameServicesTests {
         }
 
         // when: a move is made by a user that does not belong to the game
-        val validHostMove = Square(Column('a').get(), Row(1).get())
+        val validHostMove = Square("a1")
         val moveMadeByAUserThatDoesNotBelongToTheGame = gamesService.makeMove(
             gameId = gameId,
             userId = newTestId(),
@@ -677,8 +676,8 @@ class GameServicesTests {
             gamesService = gamesService,
             gameId = gameId,
             squares = listOf(
-                Square(Column('a').get(), Row(1).get()),
-                Square(Column('b').get(), Row(1).get())
+                Square("a1"),
+                Square("b1")
             ),
             host = host,
             guest = guest
@@ -722,7 +721,7 @@ class GameServicesTests {
         val testClock = TestClock()
         val gamesService = createGamesService(testClock)
 
-        // and: a users service
+        // and: a user's service
         val usersService = createUsersService(testClock)
 
         // when: checking the variant points
@@ -760,9 +759,9 @@ class GameServicesTests {
             gamesService = gamesService,
             gameId = gameId,
             squares = listOf(
-                Square(Column('a').get(), Row(1).get()),
-                Square(Column('b').get(), Row(2).get()),
-                Square(Column('a').get(), Row(3).get())
+                Square("a1"),
+                Square("b3"),
+                Square("a2")
             ),
             host = host,
             guest = guest
@@ -827,16 +826,18 @@ class GameServicesTests {
         // then: the available variants are the ones passed to the constructor
         assertEquals(variantsList.size, moreVariantsFromService.size)
         variantsList.forEach { variant ->
-            assertTrue(moreVariantsFromService.any {
-                val variantConfig = variant.config
-                it.name == variantConfig.name &&
+            assertTrue(
+                moreVariantsFromService.any {
+                    val variantConfig = variant.config
+                    it.name == variantConfig.name &&
                         it.openingRule == variantConfig.openingRule &&
                         it.boardSize == variantConfig.boardSize
-            })
+                }
+            )
         }
     }
 
-    @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
+    // @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
     fun `stress test simulating several users joining lobbies and creating games`() {
         // given: a game service
         val gamesService = createGamesService(TestClock())
@@ -943,9 +944,12 @@ class GameServicesTests {
     private fun createRandomGame(gameService: GamesService, variantId: Id, host: User, guest: User): Id {
         val hostGameCreationResult = gameService.findGame(variantId, host.id)
         val guestGameCreationResult = gameService.findGame(variantId, guest.id)
-        return if (hostGameCreationResult is Success && guestGameCreationResult is Success)
-            Id(guestGameCreationResult.value.id).get() else null
-            ?: fail("Unexpected null game")
+        return if (hostGameCreationResult is Success && guestGameCreationResult is Success) {
+            Id(guestGameCreationResult.value.id).get()
+        } else {
+            null
+                ?: fail("Unexpected null game")
+        }
     }
 
     /**

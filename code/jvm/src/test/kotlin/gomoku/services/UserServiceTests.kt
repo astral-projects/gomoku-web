@@ -491,7 +491,6 @@ class UserServiceTests {
         assertEquals(0, gettingUserResult.wins.value)
         assertEquals(0, gettingUserResult.draws.value)
         assertEquals(0, gettingUserResult.losses.value)
-
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)

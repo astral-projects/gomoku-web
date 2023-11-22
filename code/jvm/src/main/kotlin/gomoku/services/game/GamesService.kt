@@ -28,7 +28,6 @@ import java.sql.Connection.TRANSACTION_SERIALIZABLE
 class GamesService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
-    // @Autowired
     private val variants: List<Variant>,
 ) {
 
@@ -75,6 +74,7 @@ class GamesService(
      */
     fun getGameById(gameId: Id): GettingGameResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             when (val game = (transaction.gamesRepository.getGameById(gameId))) {
                 null -> failure(GettingGameError.GameNotFound)
                 else -> success(game)
@@ -146,6 +146,7 @@ class GamesService(
      */
     fun deleteGame(gameId: Id, userId: Id): GameDeleteResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameDeleteError.GameNotFound)
@@ -176,6 +177,7 @@ class GamesService(
      */
     fun makeMove(gameId: Id, userId: Id, toSquare: Square): GameMakeMoveResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameMakeMoveError.GameNotFound)
@@ -209,8 +211,9 @@ class GamesService(
      * @param gameId the id of the game to exit.
      * @param userId the id of the user that requests the exit.
      */
-    fun exitGame(gameId: Id, userId: Id): GameUpdateResult {
-        return transactionManager.run { transaction ->
+    fun exitGame(gameId: Id, userId: Id): GameUpdateResult =
+        transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val game = gamesRepository.getGameById(gameId)
                 ?: return@run failure(GameUpdateError.GameNotFound)
@@ -235,7 +238,6 @@ class GamesService(
                 failure(GameUpdateError.GameAlreadyFinished)
             }
         }
-    }
 
     /**
      * Enables a user to wait for a game within a lobby.
@@ -248,6 +250,7 @@ class GamesService(
      */
     fun waitForGame(lobbyId: Id, userId: Id): GameWaitResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val lobbies = gamesRepository.getUserLobbies(userId)
             val lobby = lobbies.firstOrNull { it.lobbyId == lobbyId }
@@ -269,6 +272,7 @@ class GamesService(
      */
     fun exitLobby(lobbyId: Id, userId: Id): LobbyDeleteResult =
         transactionManager.run { transaction ->
+            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
             val gamesRepository = transaction.gamesRepository
             val lobbies = gamesRepository.getUserLobbies(userId)
             lobbies.firstOrNull { it.lobbyId == lobbyId }

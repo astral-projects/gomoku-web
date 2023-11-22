@@ -72,7 +72,7 @@ object FreestyleVariant : Variant {
         }
     }
 
-    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(startingPlayer, turnTimer))
+    override fun initialBoard(): BoardRun = BoardRun(emptyMap(), BoardTurn(startingPlayer, turnTimer))
 
     override val points: GamePoints
         get() = GamePoints(
@@ -91,5 +91,4 @@ object FreestyleVariant : Variant {
 
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(MAX_TURN_TIME_IN_SEC).get()
-
 }

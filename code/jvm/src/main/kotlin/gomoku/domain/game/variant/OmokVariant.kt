@@ -60,9 +60,9 @@ object OmokVariant : Variant {
             is BoardWin, is BoardDraw -> return Failure(MakeMoveError.GameOver)
             is BoardRun -> {
                 requireNotNull(board.turn) { "Board turn cannot be null" }
+                if (!isPositionValid(board, toSquare)) return Failure(MakeMoveError.InvalidPosition(toSquare))
                 if (toSquare in board.grid) return Failure(MakeMoveError.PositionTaken(toSquare))
                 if (board.turn.player != player) return Failure(MakeMoveError.NotYourTurn(player))
-                if (!isPositionValid(board, toSquare)) return Failure(MakeMoveError.InvalidPosition(toSquare))
                 val updatedMoves = board.grid + Move(toSquare, Piece(board.turn.player))
                 return when {
                     checkWin(board, toSquare) -> Success(BoardWin(updatedMoves, board.turn.player))
@@ -73,7 +73,7 @@ object OmokVariant : Variant {
         }
     }
 
-    override fun initialBoard(): Board = BoardRun(emptyMap(), BoardTurn(startingPlayer, turnTimer))
+    override fun initialBoard(): BoardRun = BoardRun(emptyMap(), BoardTurn(startingPlayer, turnTimer))
 
     override val points: GamePoints
         get() = GamePoints(
