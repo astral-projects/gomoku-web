@@ -473,7 +473,7 @@ class JdbiGameRepositoryTests {
     }
 
     private fun stress_test_simulating_several_users_joining_lobbies_and_creating_games(
-        isolationLevel: TransactionIsolationLevel,
+        isolationLevel: TransactionIsolationLevel
     ) {
         // given: a multi-thread test helper and a set of threads
         val testDuration = stressTestTimeoutDuration
@@ -521,8 +521,8 @@ class JdbiGameRepositoryTests {
                         if (previousRepetion >= repetionId) {
                             throw AssertionError(
                                 "Repetion id is not in fifo order: " +
-                                        "previous repetion id: $previousRepetion, " +
-                                        "current repetion id: $repetionId"
+                                    "previous repetion id: $previousRepetion, " +
+                                    "current repetion id: $repetionId"
                             )
                         }
                         usersInGames[threadId] = repetionId++
@@ -581,7 +581,6 @@ class JdbiGameRepositoryTests {
             "The number of games created is less than $inversedErrorFormat of the total number of lobbies created"
         )
     }
-
 
     /**
      * Creates and stores a random user.

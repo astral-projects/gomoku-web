@@ -18,7 +18,7 @@ typealias TestFunction = (Int, () -> Boolean) -> Unit
  * @param duration the maximum duration of the test.
  */
 class MultiThreadTestHelper(
-    duration: Duration,
+    duration: Duration
 ) {
 
     private val deadline = Instant.now().plusMillis(duration.inWholeMilliseconds)

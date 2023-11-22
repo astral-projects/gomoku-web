@@ -61,7 +61,7 @@ class VariantConfigTests {
     @MethodSource("provideVariantConfigArguments")
     fun `should check correctly if a square is in bounds of given board size`(
         name: String,
-        variantConfig: VariantConfig,
+        variantConfig: VariantConfig
     ) {
         // given: a variant config
         // when: checking if a square is in bounds of the board
@@ -117,7 +117,7 @@ class VariantConfigTests {
     @MethodSource("provideVariantConfigArguments")
     fun `should check correctly if a square is in the board center(s) intersection(s)`(
         name: String,
-        variantConfig: VariantConfig,
+        variantConfig: VariantConfig
     ) {
         // given: a variant config
         // when: checking if a square is in the center of the board

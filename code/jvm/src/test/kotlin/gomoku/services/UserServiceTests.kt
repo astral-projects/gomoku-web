@@ -491,7 +491,6 @@ class UserServiceTests {
         assertEquals(0, gettingUserResult.wins.value)
         assertEquals(0, gettingUserResult.draws.value)
         assertEquals(0, gettingUserResult.losses.value)
-
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
@@ -580,7 +579,7 @@ class UserServiceTests {
             testClock: TestClock,
             tokenTtl: Duration = 30.days,
             tokenRollingTtl: Duration = 30.minutes,
-            maxTokensPerUser: Int = 3,
+            maxTokensPerUser: Int = 3
         ) = UsersService(
             JdbiTransactionManager(jdbi),
             UsersDomain(

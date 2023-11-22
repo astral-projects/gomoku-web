@@ -26,10 +26,10 @@ object Uris {
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun byIdStats(id: Int) = UriTemplate(STATS_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
-        fun stats(offset: Int, limit: Int): URI = URI("$STATS?offset=$offset&limit=$limit")
-        fun statsByTerm(term: String, offset: Int, limit: Int): URI =
-            URI("$STATS_BY_TERM?term=$term&offset=$offset&limit=$limit")
-
+        fun home(): URI = URI(HOME)
+        fun stats(page: Int): URI = URI("$STATS?page=$page")
+        fun statsByTerm(term: String, page: Int): URI =
+            URI("$STATS_BY_TERM?term=$term&page=$page")
         fun register(): URI = URI(REGISTER)
         fun logout(): URI = URI(LOGOUT)
     }
@@ -67,5 +67,7 @@ object Uris {
      */
     object System {
         const val GET_SYSTEM_INFO = "$PREFIX/system"
+
+        fun getSystemInfo() = URI(GET_SYSTEM_INFO)
     }
 }

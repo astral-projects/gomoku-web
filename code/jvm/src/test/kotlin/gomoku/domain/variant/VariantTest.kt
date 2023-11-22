@@ -41,7 +41,7 @@ abstract class VariantTest {
             return moves.foldIndexed(variant.initialBoard()) { idx: Int, board: Board, move: Square ->
                 println(
                     "Board state: ${board::class.java.simpleName}\n" +
-                            "Move[$idx]: Square($move)[Row(${move.row.toIndex()})-Column(${move.col.toIndex()})]"
+                        "Move[$idx]: Square($move)[Row(${move.row.toIndex()})-Column(${move.col.toIndex()})]"
                 )
                 val observedBoardTurn = board.turn
                 requireNotNull(observedBoardTurn) { "Board turn cannot be null" }
@@ -117,5 +117,4 @@ abstract class VariantTest {
             }
         }
     }
-
 }

@@ -137,7 +137,7 @@ interface GamesRepository {
         loserId: Id,
         winnerPoints: NonNegativeValue,
         loserPoints: NonNegativeValue,
-        shouldCountAsGameWin: Boolean,
+        shouldCountAsGameWin: Boolean
     ): Boolean
 
     /**

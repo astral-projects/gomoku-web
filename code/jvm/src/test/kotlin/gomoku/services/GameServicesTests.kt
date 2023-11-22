@@ -827,12 +827,14 @@ class GameServicesTests {
         // then: the available variants are the ones passed to the constructor
         assertEquals(variantsList.size, moreVariantsFromService.size)
         variantsList.forEach { variant ->
-            assertTrue(moreVariantsFromService.any {
-                val variantConfig = variant.config
-                it.name == variantConfig.name &&
+            assertTrue(
+                moreVariantsFromService.any {
+                    val variantConfig = variant.config
+                    it.name == variantConfig.name &&
                         it.openingRule == variantConfig.openingRule &&
                         it.boardSize == variantConfig.boardSize
-            })
+                }
+            )
         }
     }
 
@@ -878,8 +880,8 @@ class GameServicesTests {
                             if (previousRepetion >= repetionId) {
                                 throw AssertionError(
                                     "Repetion id is not in fifo order: " +
-                                            "previous repetion id: $previousRepetion, " +
-                                            "current repetion id: $repetionId"
+                                        "previous repetion id: $previousRepetion, " +
+                                        "current repetion id: $repetionId"
                                 )
                             }
                             usersInGames[threadId] = repetionId++
@@ -943,9 +945,12 @@ class GameServicesTests {
     private fun createRandomGame(gameService: GamesService, variantId: Id, host: User, guest: User): Id {
         val hostGameCreationResult = gameService.findGame(variantId, host.id)
         val guestGameCreationResult = gameService.findGame(variantId, guest.id)
-        return if (hostGameCreationResult is Success && guestGameCreationResult is Success)
-            Id(guestGameCreationResult.value.id).get() else null
-            ?: fail("Unexpected null game")
+        return if (hostGameCreationResult is Success && guestGameCreationResult is Success) {
+            Id(guestGameCreationResult.value.id).get()
+        } else {
+            null
+                ?: fail("Unexpected null game")
+        }
     }
 
     /**
@@ -959,7 +964,7 @@ class GameServicesTests {
         gamesService: GamesService,
         gameId: Id,
         user: User,
-        toSquare: Square,
+        toSquare: Square
     ) {
         val hostMoveResult = gamesService.makeMove(
             gameId = gameId,
@@ -987,7 +992,7 @@ class GameServicesTests {
         gameId: Id,
         squares: List<Square>,
         host: User,
-        guest: User,
+        guest: User
     ) = squares.fold(host) { currentTurn, square ->
         makeAMoveOnTheBoard(
             gamesService = gamesService,
@@ -1038,7 +1043,7 @@ class GameServicesTests {
             testClock: TestClock,
             tokenTtl: Duration = 30.days,
             tokenRollingTtl: Duration = 30.minutes,
-            maxTokensPerUser: Int = 3,
+            maxTokensPerUser: Int = 3
         ) = UsersService(
             JdbiTransactionManager(JdbiTestConfiguration.jdbi),
             UsersDomain(
@@ -1056,7 +1061,7 @@ class GameServicesTests {
 
         fun createGamesService(
             testClock: TestClock,
-            variants: List<Variant> = variantsList,
+            variants: List<Variant> = variantsList
         ) = GamesService(
             transactionManager = JdbiTransactionManager(JdbiTestConfiguration.jdbi),
             clock = testClock,

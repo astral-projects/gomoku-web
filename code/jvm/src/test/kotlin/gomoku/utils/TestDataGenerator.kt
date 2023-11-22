@@ -22,7 +22,7 @@ object TestDataGenerator {
      */
     fun newTestString(
         minLength: Int = 0,
-        maxLength: Int = 10,
+        maxLength: Int = 10
     ): String = UUID.randomUUID().toString().substring(minLength, maxLength.coerceAtMost(36))
 
     /**
@@ -54,5 +54,4 @@ object TestDataGenerator {
      * Generates a random number between this [Int] and [end] (inclusive).
      */
     infix fun Int.randomTo(end: Int) = (this..end).random()
-
 }

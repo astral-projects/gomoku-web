@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GamesController(
-    private val gamesService: GamesService,
+    private val gamesService: GamesService
 ) {
 
     /**
@@ -52,7 +52,7 @@ class GamesController(
     fun findGame(
         @RequestBody
         variant: VariantInputModel,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.findGame()
@@ -104,7 +104,7 @@ class GamesController(
      */
     @GetMapping(Uris.Games.GET_BY_ID)
     fun getGameById(
-        @PathVariable id: Int,
+        @PathVariable id: Int
     ): ResponseEntity<*> {
         val instance = Uris.Games.byId(id)
         return when (val gameIdResult = Id(id)) {
@@ -130,7 +130,7 @@ class GamesController(
     @RequiresAuthentication
     fun deleteById(
         @PathVariable id: Int,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.deleteById(id)
@@ -160,7 +160,6 @@ class GamesController(
         }
     }
 
-
     /**
      * Exits the game with the given id.
      * @param id the id of the game.
@@ -173,7 +172,7 @@ class GamesController(
         @Range(min = 1)
         @PathVariable
         id: Int,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.exitGame(id)
@@ -220,7 +219,7 @@ class GamesController(
         id: Int,
         @Valid @RequestBody
         move: MoveInputModel,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
         val instance = Uris.Games.makeMove(id)
@@ -298,5 +297,4 @@ class GamesController(
         val variants = gamesService.getVariants()
         return ResponseEntity.ok(variants)
     }
-
 }

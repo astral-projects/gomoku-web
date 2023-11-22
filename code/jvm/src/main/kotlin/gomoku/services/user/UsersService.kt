@@ -2,7 +2,6 @@ package gomoku.services.user
 
 import gomoku.domain.PaginatedResult
 import gomoku.domain.components.Id
-import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.Term
 import gomoku.domain.token.Token
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Service
 class UsersService(
     private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
-    private val clock: Clock,
+    private val clock: Clock
 ) {
 
     fun createUser(username: Username, email: Email, password: Password): UserCreationResult {
@@ -103,9 +102,9 @@ class UsersService(
         }
     }
 
-    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo> =
+    fun getUsersStats(page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
-            it.usersRepository.getUsersStats(offset, limit)
+            it.usersRepository.getUsersStats(page, itemsPerPage)
         }
 
     fun getUserStats(userId: Id): UserStatsInfo? =
@@ -115,12 +114,12 @@ class UsersService(
 
     fun getUserStatsByTerm(
         term: Term,
-        offset: NonNegativeValue,
-        limit: PositiveValue,
+        page: PositiveValue,
+        itemsPerPage: PositiveValue
     ): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
             val userRepository = it.usersRepository
-            userRepository.getUserStatsByTerm(term, offset, limit)
+            userRepository.getUserStatsByTerm(term, page, itemsPerPage)
         }
 
     companion object {

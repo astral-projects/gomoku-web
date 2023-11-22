@@ -16,7 +16,7 @@ class GameOutputModel(
     @field:JsonSerialize(using = InstantSerializer::class)
     val updatedAt: Instant,
     val hostId: Int,
-    val guestId: Int,
+    val guestId: Int
 ) {
     companion object : JsonOutputModel<Game, GameOutputModel> {
         override fun serializeFrom(domainClass: Game): GameOutputModel {

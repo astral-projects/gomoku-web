@@ -3,7 +3,6 @@ package gomoku.repository.jdbi
 import gomoku.domain.PaginatedResult
 import gomoku.domain.UserAndToken
 import gomoku.domain.components.Id
-import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.Term
 import gomoku.domain.token.Token
@@ -24,7 +23,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.slf4j.LoggerFactory
 
 class JdbiUsersRepository(
-    private val handle: Handle,
+    private val handle: Handle
 ) : UsersRepository {
 
     override fun getUserByUsername(username: Username): User? =
@@ -133,25 +132,33 @@ class JdbiUsersRepository(
             .execute()
             .let { it == 1 }
 
-    override fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo> {
-        val totalItems = handle.createQuery("select count(*) from dbo.Statistics")
-            .mapTo<Int>()
-            .single()
-        val result = handle.createQuery(
+    override fun getUsersStats(page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo> {
+        val result: List<UserStatsInfo> = handle.createQuery(
             """
-                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won, games_drawn
-                from dbo.Users as users 
-                inner join dbo.Statistics as stats 
-                on users.id = stats.user_id
-                offset :offset 
-                limit :limit
+        SELECT id, username, email, points, RANK() OVER (ORDER BY points DESC) AS rank, games_played, games_won, games_drawn
+        FROM dbo.Users AS users
+        INNER JOIN dbo.Statistics AS stats ON users.id = stats.user_id
+        ORDER BY points DESC
+        OFFSET :offset ROWS
+        FETCH NEXT :limit ROWS ONLY
             """.trimIndent()
         )
-            .bind("offset", offset.value)
-            .bind("limit", limit.value)
+            .bind("offset", (page.value * itemsPerPage.value))
+            .bind("limit", itemsPerPage.value)
             .mapTo<JdbiUserAndStatsModel>()
-            .map { it.toDomainModel() }
-        return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
+            .map { it.toDomainModel() }.toList()
+
+        val totalItems = handle.createQuery(
+            """
+        SELECT COUNT(*) AS total_items
+        FROM dbo.Users AS users
+        INNER JOIN dbo.Statistics AS stats ON users.id = stats.user_id
+            """.trimIndent()
+        )
+            .mapTo<Int>()
+            .single().toInt()
+
+        return PaginatedResult.create(result, totalItems, page.value, itemsPerPage.value)
     }
 
     override fun getUserStats(userId: Id): UserStatsInfo? =
@@ -170,20 +177,10 @@ class JdbiUsersRepository(
 
     override fun getUserStatsByTerm(
         term: Term,
-        offset: NonNegativeValue,
-        limit: PositiveValue,
+        page: PositiveValue,
+        itemsPerPage: PositiveValue
     ): PaginatedResult<UserStatsInfo> {
         val termSQLFormat = "%${term.value}%"
-        val totalItems = handle.createQuery(
-            """select count(*)
-               from dbo.Statistics as stats
-               inner join dbo.Users as users on stats.user_id = users.id
-               where users.username like :term;
-            """.trimIndent()
-        )
-            .bind("term", termSQLFormat)
-            .mapTo<Int>()
-            .single()
 
         val result = handle.createQuery(
             """
@@ -199,11 +196,24 @@ class JdbiUsersRepository(
             """.trimIndent()
         )
             .bind("term", termSQLFormat)
-            .bind("limit", limit.value)
-            .bind("offset", offset.value)
+            .bind("limit", itemsPerPage.value)
+            .bind("offset", (page.value * itemsPerPage.value))
             .mapTo<JdbiUserAndStatsModel>()
-            .map { it.toDomainModel() }
-        return PaginatedResult.create(result.toList(), totalItems, offset.value, limit.value)
+            .map { it.toDomainModel() }.toList()
+
+        val totalItems = handle.createQuery(
+            """
+            SELECT COUNT(*) AS total_items
+            FROM dbo.Statistics AS stats
+            INNER JOIN dbo.Users AS users ON stats.user_id = users.id
+            WHERE users.username LIKE :term
+            """.trimIndent()
+        )
+            .bind("term", termSQLFormat)
+            .mapTo<Int>()
+            .single().toInt()
+
+        return PaginatedResult.create(result, totalItems, page.value, itemsPerPage.value)
     }
 
     companion object {

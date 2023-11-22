@@ -68,7 +68,6 @@ object TestVariantImpl : Variant {
             checkDraw(newMoves) -> Success(BoardDraw(newMoves))
             else -> Success(BoardRun(newMoves, turn.other()))
         }
-
     }
 
     private fun checkWin(newMoves: Moves): Boolean = newMoves.size == 3

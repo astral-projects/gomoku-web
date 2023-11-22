@@ -101,7 +101,7 @@ object OmokVariant : Variant {
      */
     private fun isPositionValid(
         board: Board,
-        square: Square,
+        square: Square
     ): Boolean {
         if (board.grid.isEmpty()) {
             // Check the Pro opening rule for the initial placement

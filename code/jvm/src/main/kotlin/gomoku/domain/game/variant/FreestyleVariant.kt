@@ -91,5 +91,4 @@ object FreestyleVariant : Variant {
 
     override val turnTimer: NonNegativeValue
         get() = NonNegativeValue(MAX_TURN_TIME_IN_SEC).get()
-
 }

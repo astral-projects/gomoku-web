@@ -23,7 +23,7 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         ex: MethodArgumentNotValidException,
         headers: HttpHeaders,
         status: HttpStatusCode,
-        request: WebRequest,
+        request: WebRequest
     ): ResponseEntity<Any>? {
         log.info("Handling MethodArgumentNotValidException: {}", ex.message)
         return Problem(
@@ -38,7 +38,7 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         ex: TypeMismatchException,
         headers: HttpHeaders,
         status: HttpStatusCode,
-        request: WebRequest,
+        request: WebRequest
     ): ResponseEntity<Any>? {
         log.info("Handling TypeMismatchException: {}", ex.message)
         val type = ex.value?.let { it::class.java.simpleName } ?: "null"
@@ -57,7 +57,7 @@ class CustomExceptionHandler : ResponseEntityExceptionHandler() {
         ex: HttpMessageNotReadableException,
         headers: HttpHeaders,
         status: HttpStatusCode,
-        request: WebRequest,
+        request: WebRequest
     ): ResponseEntity<Any> {
         log.info("Handling HttpMessageNotReadableException: {}", ex.message)
 

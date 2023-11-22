@@ -8,31 +8,30 @@ data class TestGameModel(
     val createdAt: String,
     val updatedAt: String,
     val hostId: Int,
-    val guestId: Int,
+    val guestId: Int
 ) {
     data class State(
-        val name: String,
+        val name: String
     )
 
     data class Variant(
         val id: Int,
         val name: String,
         val openingRule: String,
-        val boardSize: Int,
+        val boardSize: Int
     )
 
     data class Board(
         val grid: List<String>,
-        val turn: Turn,
+        val turn: Turn
     ) {
         data class Turn(
             val player: String,
-            val timeLeftInSec: TimeLeftInSec,
+            val timeLeftInSec: TimeLeftInSec
         ) {
             data class TimeLeftInSec(
-                val value: Int,
+                val value: Int
             )
         }
     }
 }
-

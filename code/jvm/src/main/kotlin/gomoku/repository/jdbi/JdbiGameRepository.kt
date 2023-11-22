@@ -25,7 +25,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
 class JdbiGameRepository(
-    private val handle: Handle,
+    private val handle: Handle
 ) : GamesRepository {
 
     override fun getGameById(gameId: Id): Game? =
@@ -112,7 +112,7 @@ class JdbiGameRepository(
         loserId: Id,
         winnerPoints: NonNegativeValue,
         loserPoints: NonNegativeValue,
-        shouldCountAsGameWin: Boolean,
+        shouldCountAsGameWin: Boolean
     ): Boolean =
         handle.createUpdate(
             """
@@ -131,7 +131,7 @@ class JdbiGameRepository(
                 END,
             games_drawn = games_drawn + :gamesDrawnIncrement
         WHERE user_id IN (:winnerId, :loserId)
-        """.trimIndent()
+            """.trimIndent()
         )
             .bind("winnerId", winnerId.value)
             .bind("loserId", loserId.value)

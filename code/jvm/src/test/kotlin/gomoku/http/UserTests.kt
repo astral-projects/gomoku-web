@@ -85,7 +85,7 @@ class UserTests {
             .responseBody!!
 
         assertEquals(Problem.usernameAlreadyExists, sameUsernameProblem.type)
-        assertEquals("The username <${username}> already exists", sameUsernameProblem.detail)
+        assertEquals("The username <$username> already exists", sameUsernameProblem.detail)
         val sameUsernameInstance = assertNotNull(sameUsernameProblem.instance)
         assertEquals(URI("/api/users"), sameUsernameInstance)
         assertEquals("Username already exists", sameUsernameProblem.title)
@@ -512,7 +512,6 @@ class UserTests {
             .exchange()
             .expectStatus().isUnauthorized
             .expectBody()
-
     }
 
     @Test
@@ -570,7 +569,6 @@ class UserTests {
         assertEquals(URI("/api/users/${notFoundId.value}"), notFoundUserInstance)
         assertEquals("User not found", notFoundUserProblem.title)
         assertEquals(404, notFoundUserProblem.status)
-
     }
 
     @Test
@@ -627,7 +625,7 @@ class UserTests {
         assertEquals(Problem.invalidOffset, invalidOffsetProblem.type)
         assertEquals("The offset must be a non-negative integer", invalidOffsetProblem.detail)
         val invalidOffsetInstance = assertNotNull(invalidOffsetProblem.instance)
-        assertEquals(URI("/api/users/stats?offset=${invalidOffset}&limit=10"), invalidOffsetInstance)
+        assertEquals(URI("/api/users/stats?offset=$invalidOffset&limit=10"), invalidOffsetInstance)
         assertEquals("Invalid offset", invalidOffsetProblem.title)
         assertEquals(400, invalidOffsetProblem.status)
 
@@ -711,7 +709,6 @@ class UserTests {
         assertEquals(URI("/api/users/${notFoundId.value}/stats"), notFoundUserInstance)
         assertEquals("User not found", notFoundUserProblem.title)
         assertEquals(404, notFoundUserProblem.status)
-
     }
 
     @Test
@@ -726,8 +723,11 @@ class UserTests {
         // and: a set random users with the same suffix
         val nrOfUsers = 15 randomTo 30
         repeat(nrOfUsers) {
-            if (it % 2 == 0) createRandomUser(client)
-            else createRandomUser(client, usernameSuffix)
+            if (it % 2 == 0) {
+                createRandomUser(client)
+            } else {
+                createRandomUser(client, usernameSuffix)
+            }
         }
 
         // and: a logged-in user
@@ -780,7 +780,7 @@ class UserTests {
         assertEquals(Problem.invalidOffset, invalidOffsetProblem.type)
         assertEquals("The offset must be a non-negative integer", invalidOffsetProblem.detail)
         val invalidOffsetInstance = assertNotNull(invalidOffsetProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$term&offset=${invalidOffset}&limit=10"), invalidOffsetInstance)
+        assertEquals(URI("/api/users/stats/search?term=$term&offset=$invalidOffset&limit=10"), invalidOffsetInstance)
         assertEquals("Invalid offset", invalidOffsetProblem.title)
         assertEquals(400, invalidOffsetProblem.status)
 
@@ -831,5 +831,4 @@ class UserTests {
             .expectStatus().isUnauthorized
             .expectBody()
     }
-
 }

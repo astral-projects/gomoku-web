@@ -29,7 +29,7 @@ class GamesService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
     // @Autowired
-    private val variants: List<Variant>,
+    private val variants: List<Variant>
 ) {
 
     /**
@@ -300,7 +300,7 @@ class GamesService(
         gamesRepository: GamesRepository,
         gamePoints: GamePoints,
         userId: Id,
-        game: Game,
+        game: Game
     ): Boolean = when (game.board) {
         is BoardWin -> {
             gamesRepository.updatePoints(

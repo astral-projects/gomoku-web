@@ -95,7 +95,7 @@ class SquareTest {
             Square("i10"),
             Square("j8"),
             Square("j9"),
-            Square("j10"),
+            Square("j10")
         )
 
         // then: all of them should be one intersection apart from the square
@@ -122,7 +122,7 @@ class SquareTest {
             Square("k8"),
             Square("k9"),
             Square("k10"),
-            Square("k11"),
+            Square("k11")
         )
 
         // then: none of them should be one intersection apart from the square
@@ -155,7 +155,7 @@ class SquareTest {
             Square("l9"),
             Square("l10"),
             Square("l11"),
-            Square("l12"),
+            Square("l12")
         )
 
         // then: all of them should be two intersections apart from the square
@@ -189,5 +189,4 @@ class SquareTest {
             assertFalse(square.isNIntersectionsApartFrom(it, threeIntersections))
         }
     }
-
 }

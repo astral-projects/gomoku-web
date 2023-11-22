@@ -9,7 +9,6 @@ import gomoku.domain.user.components.Username
 import org.springframework.http.ResponseEntity
 import java.net.URI
 
-
 /**
  * Represents a problem that occurred while processing a request.
  * @param type A URI reference that identifies the problem type.
@@ -55,8 +54,8 @@ data class Problem(
         val gameAlreadyFinished = URI("${BASE_URL}game-already-finished")
         val gameIsInProgress = URI("${BASE_URL}game-is-in-progress")
         val invalidId = URI("${BASE_URL}invalid-id")
-        val invalidOffset = URI("${BASE_URL}invalid-offset")
-        val invalidLimit = URI("${BASE_URL}invalid-limit")
+        val invalidPage = URI("${BASE_URL}invalid-page")
+        val invalidItemsPerPage = URI("${BASE_URL}invalid-items-per-page")
         val invalidEmail = URI("${BASE_URL}invalid-email")
         val blankUsername = URI("${BASE_URL}blank-username")
         val blankPassword = URI("${BASE_URL}blank-password")
@@ -198,22 +197,6 @@ data class Problem(
             title = "User not found",
             status = 404,
             detail = "The user with id <${userId.value}> was not found",
-            instance = instance
-        ).toResponse()
-
-        fun invalidLimit(instance: URI): ResponseEntity<*> = Problem(
-            type = invalidLimit,
-            title = "Invalid limit",
-            status = 400,
-            detail = "The limit must be a positive integer",
-            instance = instance
-        ).toResponse()
-
-        fun invalidOffset(instance: URI): ResponseEntity<*> = Problem(
-            type = invalidOffset,
-            title = "Invalid offset",
-            status = 400,
-            detail = "The offset must be a non-negative integer",
             instance = instance
         ).toResponse()
 
@@ -386,6 +369,22 @@ data class Problem(
             title = "Blank search term",
             status = 400,
             detail = "The search term cannot be blank",
+            instance = instance
+        ).toResponse()
+
+        fun invalidPage(instance: URI): ResponseEntity<*> = Problem(
+            type = invalidPage,
+            title = "Invalid page number",
+            status = 400,
+            detail = "The page must be a positive integer",
+            instance = instance
+        ).toResponse()
+
+        fun invalidItemsPerPage(instance: URI): ResponseEntity<*> = Problem(
+            type = invalidItemsPerPage,
+            title = "Invalid items per page",
+            status = 400,
+            detail = "The items per page must be a positive integer",
             instance = instance
         ).toResponse()
     }

@@ -23,7 +23,7 @@ object JdbiTestConfiguration {
      */
     fun runWithHandle(
         isolationLevel: TransactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED,
-        block: (Handle) -> Unit,
+        block: (Handle) -> Unit
     ) {
         if (isolationLevel == TransactionIsolationLevel.SERIALIZABLE) {
             jdbi.setTransactionHandler(SerializableTransactionRunner())
@@ -43,7 +43,7 @@ object JdbiTestConfiguration {
      */
     fun runWithHandleAndRollback(
         isolationLevel: TransactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED,
-        block: (Handle) -> Unit,
+        block: (Handle) -> Unit
     ) = runWithHandle(isolationLevel) { handle ->
         try {
             block(handle)

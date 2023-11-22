@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class JdbiTransactionManager(
-    private val jdbi: Jdbi,
+    private val jdbi: Jdbi
 ) : TransactionManager {
 
     companion object {

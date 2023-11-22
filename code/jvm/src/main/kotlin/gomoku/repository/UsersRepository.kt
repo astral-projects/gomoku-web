@@ -3,7 +3,6 @@ package gomoku.repository
 import gomoku.domain.PaginatedResult
 import gomoku.domain.UserAndToken
 import gomoku.domain.components.Id
-import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.components.PositiveValue
 import gomoku.domain.components.Term
 import gomoku.domain.token.Token
@@ -85,7 +84,7 @@ interface UsersRepository {
      * @return the user's statistic information in a paginated result.
      * The results are ordered by the user's rank.
      */
-    fun getUsersStats(offset: NonNegativeValue, limit: PositiveValue): PaginatedResult<UserStatsInfo>
+    fun getUsersStats(page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo>
 
     /**
      * Retrieves single user statistic information.
@@ -101,9 +100,5 @@ interface UsersRepository {
      * @param offset the offset to start the result from.
      * @return the user's statistic information in a paginated result.
      */
-    fun getUserStatsByTerm(
-        term: Term,
-        offset: NonNegativeValue,
-        limit: PositiveValue,
-    ): PaginatedResult<UserStatsInfo>
+    fun getUserStatsByTerm(term: Term, page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo>
 }

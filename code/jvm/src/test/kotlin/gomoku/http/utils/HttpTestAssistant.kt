@@ -42,7 +42,7 @@ object HttpTestAssistant {
     fun findGame(
         client: WebTestClient,
         token: String,
-        expectLobbyCreation: Boolean,
+        expectLobbyCreation: Boolean
     ): Int {
         // when: when joining a lobby (find game)
         // then: the response is a 201 with the proper representation
@@ -70,7 +70,7 @@ object HttpTestAssistant {
         val id = findGameSuccess.id
         assertTrue(id > 0)
         assertEquals(
-            if (expectLobbyCreation) "Lobby created successfully with id=${id}" else "Joined the game successfully with id=${id}",
+            if (expectLobbyCreation) "Lobby created successfully with id=$id" else "Joined the game successfully with id=$id",
             findGameSuccess.message
         )
         return id
@@ -86,7 +86,7 @@ object HttpTestAssistant {
     fun exitGame(
         client: WebTestClient,
         token: String,
-        gameId: Int,
+        gameId: Int
     ) {
         // when: a user exits the game
         // then: the response is a 200 with the proper representation
@@ -110,7 +110,7 @@ object HttpTestAssistant {
      */
     fun createRandomUser(
         client: WebTestClient,
-        usernameSuffix: String? = null,
+        usernameSuffix: String? = null
     ): Pair<Int, TestRegistrationCredentials> {
         // and: a random user
         val actualUsername = newTestUserName().value + (usernameSuffix ?: "")
@@ -153,7 +153,7 @@ object HttpTestAssistant {
      */
     fun createToken(
         client: WebTestClient,
-        registrationCredentials: TestRegistrationCredentials,
+        registrationCredentials: TestRegistrationCredentials
     ): UserTokenCreateOutputModel {
         // when: creating a token
         // then: the response is a 200
