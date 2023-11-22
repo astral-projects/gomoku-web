@@ -52,7 +52,11 @@ class GameLogic(
             is Success -> success(
                 game.copy(
                     board = newBoard.value,
-                    state = if (newBoard.value.isFinished()) GameState.FINISHED else GameState.IN_PROGRESS,
+                    state = if (newBoard.value.isFinished()) {
+                        GameState.FINISHED
+                    } else {
+                        GameState.IN_PROGRESS
+                    },
                     updatedAt = clock.now()
                 )
             )

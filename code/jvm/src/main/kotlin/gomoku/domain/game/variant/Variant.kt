@@ -3,6 +3,7 @@ package gomoku.domain.game.variant
 import gomoku.domain.components.NonNegativeValue
 import gomoku.domain.game.GamePoints
 import gomoku.domain.game.board.Board
+import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.Player
 import gomoku.domain.game.board.errors.BoardMakeMoveResult
 import gomoku.domain.game.board.moves.Moves
@@ -16,6 +17,12 @@ private const val WINNING_PIECES = 5
  * Represents a game variant that defines the rules and characteristics of a game.
  */
 interface Variant {
+
+    /**
+     * The number of pieces consecutive pieces needed to win the game.
+     */
+    val winningPieces: Int
+        get() = WINNING_PIECES
 
     /**
      * Configuration specific to this game variant.
@@ -45,7 +52,7 @@ interface Variant {
      * Gets the initial game board for this variant.
      * @return The initial game board.
      */
-    fun initialBoard(): Board
+    fun initialBoard(): BoardRun
 
     /**
      * Checks if the game is a draw, according to this variant rules.
@@ -72,9 +79,9 @@ interface Variant {
         }
         val places = board.grid.filter { it.value == Piece(board.turn.player) }.keys + square
         return places.hasConsecutive(WINNING_PIECES, Square::isInSameRow) ||
-            places.hasConsecutive(WINNING_PIECES, Square::isInsameColumn) ||
-            places.hasConsecutive(WINNING_PIECES, Square::isInSameSlash) ||
-            places.hasConsecutive(WINNING_PIECES, Square::isInSameBackSlash)
+                places.hasConsecutive(WINNING_PIECES, Square::isInSameColumn) ||
+                places.hasConsecutive(WINNING_PIECES, Square::isInSameSlash) ||
+                places.hasConsecutive(WINNING_PIECES, Square::isInSameBackSlash)
     }
 
     /**
@@ -84,18 +91,25 @@ interface Variant {
      */
     private fun Set<Square>.hasConsecutive(
         length: Int,
-        condition: (Square, Square) -> Boolean
+        condition: (Square, Square) -> Boolean,
     ): Boolean {
         if (size < length) {
             return false
         }
-        // TODO("is not detecting consecutive squares in the same row, revisit")
-        val sortedSquares = sortedBy { it.row.toIndex() }
-        for (i in 0 until sortedSquares.size - length + 1) {
-            val firstSquare = sortedSquares[i]
-            val lastSquare = sortedSquares[i + length - 1]
-            if (condition(firstSquare, lastSquare)) {
-                return true
+        val sortedSquares =
+            sortedBy { it.row.toIndex() }
+                .sortedBy { it.col.toIndex() }
+        sortedSquares.forEachIndexed { idx, square ->
+            if (idx + length <= sortedSquares.size) {
+                val maybeConsecutiveSquares = sortedSquares.subList(idx, idx + length)
+                if (maybeConsecutiveSquares.all { condition(square, it) }) {
+                    for (i in 1 until length) {
+                        if (!maybeConsecutiveSquares[i - 1].isConsecutiveTo(maybeConsecutiveSquares[i])) {
+                            return false
+                        }
+                    }
+                    return true
+                }
             }
         }
         return false

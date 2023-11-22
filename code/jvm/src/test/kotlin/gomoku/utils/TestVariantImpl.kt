@@ -26,7 +26,7 @@ import gomoku.domain.game.variant.config.VariantName
 /**
  * Variant used for testing purposes.
  * Enables to test the game variant logic without the need to play the whole game.
- * - **To draw**: make two valid moves in the same row (horizontal).
+ * - **To draw**: make two valid moves in the first row (horizontal).
  * - **To win**: the board must have three valid moves.
  *
  * It is not marked as **@Component** because it is not to be used in production.
@@ -34,8 +34,8 @@ import gomoku.domain.game.variant.config.VariantName
 object TestVariantImpl : Variant {
     override val config = VariantConfig(
         name = VariantName.TEST,
-        openingRule = OpeningRule.PRO,
-        boardSize = BoardSize.FIFTEEN
+        openingRule = OpeningRule.NONE,
+        boardSize = BoardSize.FIVE
     )
     override val points: GamePoints
         get() = GamePoints(
@@ -59,7 +59,7 @@ object TestVariantImpl : Variant {
         if (board.grid.containsKey(toSquare)) {
             return Failure(MakeMoveError.PositionTaken(toSquare))
         }
-        if (toSquare.col.toIndex() >= config.boardSize.size || toSquare.row.toIndex() >= config.boardSize.size) {
+        if (!config.isSquareInBounds(toSquare)) {
             return Failure(MakeMoveError.InvalidPosition(toSquare))
         }
         val newMoves = board.grid + Move(toSquare, Piece(turn.player))
@@ -73,9 +73,9 @@ object TestVariantImpl : Variant {
     private fun checkWin(newMoves: Moves): Boolean = newMoves.size == 3
 
     override fun checkDraw(updatedMoves: Moves): Boolean =
-        updatedMoves.keys.groupBy { it.row }.map { it.value.size }.any { it >= 2 }
+        updatedMoves.keys.filter { it.row.toIndex() == 0 }.size >= 2
 
-    override fun initialBoard(): Board {
+    override fun initialBoard(): BoardRun {
         return BoardRun(
             moves = emptyMap(),
             turn = BoardTurn(

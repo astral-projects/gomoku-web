@@ -10,7 +10,11 @@ import gomoku.domain.game.variant.Variant
  * @property grid The grid of the game board.
  * @property turn The turn of the game board. Depending on the game state, it can be null.
  */
-sealed class Board(val grid: Moves, val turn: BoardTurn?)
+sealed class Board(val grid: Moves, val turn: BoardTurn?) {
+    override fun toString(): String {
+        return "Board(grid=$grid, turn=$turn)"
+    }
+}
 class BoardRun(moves: Moves, turn: BoardTurn) : Board(moves, turn)
 class BoardWin(moves: Moves, val winner: Player) : Board(moves, null)
 class BoardDraw(moves: Moves) : Board(moves, null)

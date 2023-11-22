@@ -18,7 +18,7 @@ class JacksonConfig {
 
     @Bean
     fun jackson2ObjectMapperBuilder(): Jackson2ObjectMapperBuilder {
-        logger.info("Configuring JackSonObjectMapperBuilder with custom property naming strategy")
+        logger.info("Configuring JacksonObjectMapperBuilder with custom property naming strategy")
         return Jackson2ObjectMapperBuilder()
             .propertyNamingStrategy(object : PropertyNamingStrategy() {
                 override fun nameForField(config: MapperConfig<*>, field: AnnotatedField, defaultName: String): String {

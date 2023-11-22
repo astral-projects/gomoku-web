@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import gomoku.domain.game.board.Board
 import gomoku.domain.game.board.BoardTurn
 import gomoku.domain.game.board.moves.Moves
-import gomoku.http.jackson.serializers.MovesSerializer
 import gomoku.http.model.JsonOutputModel
+import gomoku.repository.jackson.serializers.MovesSerializer
 
 class BoardOutputModel private constructor(
     @field:JsonSerialize(using = MovesSerializer::class)

@@ -9,7 +9,6 @@
 
 - [Introduction](#introduction)
 - [Functionality](#functionality)
-- [Open-API Specification](#open-api-specification)
 - [Media Types](#media-types)
 - [Navigation Graph](#navigation-graph)
 - [Requests](#requests)
@@ -38,16 +37,6 @@ The API provides the following functionality:
 - In-game actions, such as placing pieces on a board;
 - User authentication;
 - Consult user/s statistical information.
-
-## Open-API Specification
-
-The Open-API specification for this API can be found [here](../docs/gomoku-api-spec.yaml).
-
-In our specification, we highlight the following aspects:
-
-- The requests are split into the following groups:
-    - `User` - requests related to the `User` entity;
-    - `Game` - requests related to the `Game` entity;
 
 ## Media Types
 
