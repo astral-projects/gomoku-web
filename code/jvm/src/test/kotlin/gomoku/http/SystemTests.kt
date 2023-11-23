@@ -26,16 +26,16 @@ class SystemTests {
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("gameName").isEqualTo(SystemInfo.GAME_NAME)
-            .jsonPath("version").isEqualTo(SystemInfo.VERSION)
-            .jsonPath("description").isEqualTo(SystemInfo.DESCRIPTION)
-            .jsonPath("releaseDate").isEqualTo(SystemInfo.releaseDate)
-            .jsonPath("authors").isArray
+            .jsonPath("properties.gameName").isEqualTo(SystemInfo.GAME_NAME)
+            .jsonPath("properties.version").isEqualTo(SystemInfo.VERSION)
+            .jsonPath("properties.description").isEqualTo(SystemInfo.DESCRIPTION)
+            .jsonPath("properties.releaseDate").isEqualTo(SystemInfo.releaseDate)
+            .jsonPath("properties.authors").isArray
             .let {
                 SystemInfo.authors.forEachIndexed { index, author ->
-                    it.jsonPath("authors[$index].firstName").isEqualTo(author.firstName)
-                    it.jsonPath("authors[$index].lastName").isEqualTo(author.lastName)
-                    it.jsonPath("authors[$index].gitHubUrl").isEqualTo(author.gitHubUrl.toString())
+                    it.jsonPath("$.properties.authors[$index].firstName").isEqualTo(author.firstName)
+                    it.jsonPath("$.properties.authors[$index].lastName").isEqualTo(author.lastName)
+                    it.jsonPath("$.properties.authors[$index].gitHubUrl").isEqualTo(author.gitHubUrl.toString())
                 }
             }
     }

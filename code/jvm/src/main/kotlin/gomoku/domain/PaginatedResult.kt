@@ -3,30 +3,7 @@ package gomoku.domain
 import kotlin.math.ceil
 
 /**
- * Data structure that represents a paginated result of a list of items.
- * Provides overloads to create paginated items from a list of items, or from a list of filtered items.
- *
- * Example of the *JSON* serialization result with **2** [itemsPerPage] with
- * an offset of **0**.
- * ```json
- * "currentPage": 1,
- * "itemsPerPage": 2,
- * "totalPages": 2
- * "items": [
- *    {
- *        "name": "Task 1",
- *        "description": "Complete first task for Project A",
- *        "boardId": "Project A",
- *        "listId": "To Do"
- *    },
- *    {
- *        "name": "Task 2",
- *        "description": "Work on second task for Project A",
- *        "boardId": "Project A",
- *        "listId": "To Do"
- *    }
- * ],
- * ```
+ * Represents a paginated result of a list of items.
  * @param currentPage the current page number.
  * @param itemsPerPage the maximum number of items per page.
  * @param totalPages the total number of pages that can be created from the original list of items, with
@@ -41,6 +18,28 @@ data class PaginatedResult<T>(
 ) {
 
     companion object {
+
+        /**
+         * Creates a [PaginatedResult] instance for the received [items] and the given [page] and [itemsPerPage].
+         * The total number of pages is calculated based on the number of [items] and the [itemsPerPage].
+         * @param items the items to paginate.
+         * @param page the current page number. Defaults to **1** if not specified.
+         * @param itemsPerPage the maximum number of items to return per page. Defaults to **10** if not specified.
+         * @return a [PaginatedResult] instance.
+         * @throws IllegalArgumentException if [page] is negative or [itemsPerPage] is not positive.
+         */
+        @Throws(IllegalArgumentException::class)
+        fun <T> create(items: List<T>, page: Int = 0, itemsPerPage: Int = 10): PaginatedResult<T> {
+            require(page > 0) { "page must be a positive number" }
+            require(itemsPerPage > 0) { "itemsPerPage must be a positive number" }
+            val filteredItems = items.drop((page - 1) * itemsPerPage).take(itemsPerPage)
+            return create(
+                filteredItems = filteredItems,
+                totalItems = items.size,
+                page = page,
+                itemsPerPage = itemsPerPage
+            )
+        }
 
         /**
          * Creates a [PaginatedResult] instance for the received [filteredItems], based on the total number of

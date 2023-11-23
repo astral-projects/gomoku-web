@@ -35,7 +35,7 @@ class LobbyTests {
         val (_, registrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, registrationCredentials).token
+        val hostToken = createToken(client, registrationCredentials)
 
         // when: joining a lobby (find game)
         val lobbyId = findGame(client, hostToken, true)
@@ -58,7 +58,7 @@ class LobbyTests {
         val (guestId, guestRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val guestToken = createToken(client, guestRegistrationCredentials).token
+        val guestToken = createToken(client, guestRegistrationCredentials)
 
         // when: waiting in a lobby without joining it first or being in any game
         // then: the response is a 403 with a proper problem
@@ -129,7 +129,7 @@ class LobbyTests {
         val (_, registrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, registrationCredentials).token
+        val hostToken = createToken(client, registrationCredentials)
 
         // when: joining a lobby (find game)
         val lobbyId = findGame(client, hostToken, true)

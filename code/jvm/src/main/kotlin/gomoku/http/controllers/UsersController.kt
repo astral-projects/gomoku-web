@@ -16,6 +16,7 @@ import gomoku.domain.user.components.Username
 import gomoku.http.Rels
 import gomoku.http.Uris
 import gomoku.http.media.Problem
+import gomoku.http.model.IdOutputModel
 import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.http.model.user.UserCreateInputModel
 import gomoku.http.model.user.UserCreateTokenInputModel
@@ -110,7 +111,7 @@ class UsersController(
                                             Uris.Users.byId(result.value.value).toASCIIString()
                                         )
                                         .body(
-                                            siren(result.value) {
+                                            siren(IdOutputModel.serializeFrom(result.value)) {
                                                 clazz("user")
                                                 link(Uris.Users.byId(result.value.value), Rels.USER)
                                                 action(
@@ -310,7 +311,7 @@ class UsersController(
         @RequestParam(name = "itemsPerPage", defaultValue = DEFAULT_ITEMS_PER_PAGE)
         itemsPerPage: Int
     ): ResponseEntity<*> {
-        val instance = Uris.Users.stats(page)
+        val instance = Uris.Users.stats(page, itemsPerPage)
         return when (val pageResult = PositiveValue(page)) {
             is Failure -> Problem.invalidPage(instance)
             is Success -> {
@@ -322,25 +323,43 @@ class UsersController(
                         ResponseEntity.ok(
                             siren(paginatedResult) {
                                 clazz("users-stats")
-                                link(Uris.Users.stats(paginatedResult.currentPage), Rels.SELF)
+                                link(
+                                    Uris.Users.stats(paginatedResult.currentPage, paginatedResult.itemsPerPage),
+                                    Rels.SELF
+                                )
                                 // Link to the next page if available
                                 if (paginatedResult.currentPage < paginatedResult.totalPages) {
-                                    link(Uris.Users.stats(paginatedResult.currentPage + 1), Rels.NEXT)
+                                    link(
+                                        Uris.Users.stats(
+                                            paginatedResult.currentPage + 1,
+                                            paginatedResult.itemsPerPage
+                                        ),
+                                        Rels.NEXT
+                                    )
                                 }
 
                                 // Link to the previous page if available
                                 if (paginatedResult.currentPage > 1) {
-                                    link(Uris.Users.stats(paginatedResult.currentPage - 1), Rels.PREV)
+                                    link(
+                                        Uris.Users.stats(
+                                            paginatedResult.currentPage - 1,
+                                            paginatedResult.itemsPerPage
+                                        ),
+                                        Rels.PREV
+                                    )
                                 }
 
                                 // Link to the first page if the current page is not the first page
                                 if (paginatedResult.currentPage > 1) {
-                                    link(Uris.Users.stats(1), Rels.FIRST)
+                                    link(Uris.Users.stats(1, paginatedResult.itemsPerPage), Rels.FIRST)
                                 }
 
                                 // Link to the last page if the current page is not the last page
                                 if (paginatedResult.currentPage < paginatedResult.totalPages) {
-                                    link(Uris.Users.stats(paginatedResult.totalPages), Rels.LAST)
+                                    link(
+                                        Uris.Users.stats(paginatedResult.totalPages, paginatedResult.itemsPerPage),
+                                        Rels.LAST
+                                    )
                                 }
                             }
                         )
@@ -361,7 +380,8 @@ class UsersController(
         @Valid
         @Range(min = 1)
         @PathVariable
-        id: Int
+        id: Int,
+        user: AuthenticatedUser
     ): ResponseEntity<*> {
         val instance = Uris.Users.byIdStats(id)
         return when (val idResult = Id(id)) {
@@ -369,21 +389,13 @@ class UsersController(
             is Success -> {
                 val getUserStatsResult = userService.getUserStats(idResult.value)
                     ?: return Problem.userNotFound(userId = idResult.value, instance = instance)
-                when (val getUserResult = userService.getUserById(getUserStatsResult.id)) {
-                    is Failure -> Problem.userNotFound(idResult.value, instance)
-                    is Success -> {
-                        ResponseEntity.ok(
-                            siren(getUserStatsResult) {
-                                clazz("user-stats")
-                                link(Uris.Users.byIdStats(getUserStatsResult.id.value), Rels.SELF)
-                                entity(getUserResult, Rels.USER) {
-                                    clazz("user")
-                                    link(Uris.Users.byId(getUserStatsResult.id.value), Rels.SELF)
-                                }
-                            }
-                        )
+                ResponseEntity.ok(
+                    siren(getUserStatsResult) {
+                        clazz("user-stats")
+                        requireAuth()
+                        link(Uris.Users.byIdStats(getUserStatsResult.id.value), Rels.SELF)
                     }
-                }
+                )
             }
         }
     }
@@ -414,7 +426,7 @@ class UsersController(
         @RequestParam(name = "term")
         term: String
     ): ResponseEntity<*> {
-        val instance = Uris.Users.statsByTerm(term, page)
+        val instance = Uris.Users.statsByTerm(term, page, itemsPerPage)
         return when (val pageResult = PositiveValue(page)) {
             is Failure -> Problem.invalidPage(instance)
             is Success -> when (val termResult = Term(term)) {
@@ -439,7 +451,8 @@ class UsersController(
                                     link(
                                         Uris.Users.statsByTerm(
                                             termResult.value.value,
-                                            paginatedResult.currentPage
+                                            paginatedResult.currentPage,
+                                            paginatedResult.itemsPerPage
                                         ),
                                         Rels.SELF
                                     )
@@ -448,7 +461,8 @@ class UsersController(
                                         link(
                                             Uris.Users.statsByTerm(
                                                 termResult.value.value,
-                                                paginatedResult.currentPage + 1
+                                                paginatedResult.currentPage + 1,
+                                                paginatedResult.itemsPerPage
                                             ),
                                             Rels.NEXT
                                         )
@@ -459,7 +473,8 @@ class UsersController(
                                         link(
                                             Uris.Users.statsByTerm(
                                                 termResult.value.value,
-                                                paginatedResult.currentPage - 1
+                                                paginatedResult.currentPage - 1,
+                                                paginatedResult.itemsPerPage
                                             ),
                                             Rels.PREV
                                         )
@@ -470,7 +485,8 @@ class UsersController(
                                         link(
                                             Uris.Users.statsByTerm(
                                                 termResult.value.value,
-                                                FIRST_PAGE
+                                                FIRST_PAGE,
+                                                paginatedResult.itemsPerPage
                                             ),
                                             Rels.FIRST
                                         )
@@ -481,7 +497,8 @@ class UsersController(
                                         link(
                                             Uris.Users.statsByTerm(
                                                 termResult.value.value,
-                                                paginatedResult.totalPages
+                                                paginatedResult.totalPages,
+                                                paginatedResult.itemsPerPage
                                             ),
                                             Rels.LAST
                                         )

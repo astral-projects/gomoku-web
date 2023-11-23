@@ -44,7 +44,7 @@ class GameTests {
         val (_, hostRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, hostRegistrationCredentials).token
+        val hostToken = createToken(client, hostRegistrationCredentials)
 
         // when: a user tries to find a game not auhtenticated
         // then: the response is a 401 with the proper problem
@@ -80,7 +80,7 @@ class GameTests {
         val (_, guestRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val guestToken = createToken(client, guestRegistrationCredentials).token
+        val guestToken = createToken(client, guestRegistrationCredentials)
 
         // when: a user tries to find a game
         // then: the response is a 201 with the proper body
@@ -153,14 +153,14 @@ class GameTests {
         val (hostId, hostRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, hostRegistrationCredentials).token
+        val hostToken = createToken(client, hostRegistrationCredentials)
 
         // and: a user tries to find a game
         findGame(client, hostToken, true)
 
         // and: guest joins the lobby
         val (guestId, guestRegistrationCredentials) = createRandomUser(client)
-        val guestToken = createToken(client, guestRegistrationCredentials).token
+        val guestToken = createToken(client, guestRegistrationCredentials)
         val gameId = findGame(client, guestToken, false)
 
         // when: a user tries to get the game by id
@@ -220,14 +220,14 @@ class GameTests {
         val (_, hostRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, hostRegistrationCredentials).token
+        val hostToken = createToken(client, hostRegistrationCredentials)
 
         // and: a user tries to find a game
         findGame(client, hostToken, true)
 
         // and: guest joins the lobby
         val (guestId, guestRegistrationCredentials) = createRandomUser(client)
-        val guestToken = createToken(client, guestRegistrationCredentials).token
+        val guestToken = createToken(client, guestRegistrationCredentials)
         val gameId = findGame(client, guestToken, false)
 
         // when: a user that is not authenticated tries to delete the game
@@ -339,19 +339,19 @@ class GameTests {
         val (_, hostRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val hostToken = createToken(client, hostRegistrationCredentials).token
+        val hostToken = createToken(client, hostRegistrationCredentials)
 
         // and: a user tries to find a game
         findGame(client, hostToken, true)
 
         // and: guest joins the lobby
         val (_, guestRegistrationCredentials) = createRandomUser(client)
-        val guestToken = createToken(client, guestRegistrationCredentials).token
+        val guestToken = createToken(client, guestRegistrationCredentials)
         val gameId = findGame(client, guestToken, false)
 
         // when: a third user tries to exit the game
         val (thirdUserId, thirdRegistrationCredentials) = createRandomUser(client)
-        val thirdToken = createToken(client, thirdRegistrationCredentials).token
+        val thirdToken = createToken(client, thirdRegistrationCredentials)
 
         // then: the response is a 400 with the proper body
         val userDoesntBelongToThisGameProblem = client.post().uri("/games/$gameId/exit")

@@ -1,10 +1,10 @@
 package gomoku.http.utils
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.domain.components.Id
-import gomoku.http.model.IdOutputModel
 import gomoku.http.model.TestRegistrationCredentials
 import gomoku.http.model.game.GameExitOutputModel
-import gomoku.http.model.token.UserTokenCreateOutputModel
 import gomoku.services.GameServicesTests
 import gomoku.services.game.FindGameSuccess
 import gomoku.utils.TestDataGenerator.newTestEmail
@@ -119,7 +119,7 @@ object HttpTestAssistant {
 
         // when: creating an user
         // then: the response is a 201 with a proper Location header
-        val userId = client.post().uri("/users")
+        val responseBody = client.post().uri("/users")
             .bodyValue(
                 mapOf(
                     "username" to actualUsername,
@@ -132,17 +132,19 @@ object HttpTestAssistant {
             .expectHeader().value("location") {
                 assertTrue(it.startsWith("/api/users/"))
             }
-            .expectBody(IdOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id").isNotEmpty
             .returnResult()
             .responseBody!!
 
-        assertTrue(userId.id > 0)
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(responseBody)
 
-        return userId.id to TestRegistrationCredentials(
-            username = actualUsername,
-            password = password,
-            email = email
-        )
+        val userId = jsonNode.path("properties").path("id").asInt()
+        assertTrue(userId > 0)
+
+        return userId to TestRegistrationCredentials(actualUsername, password, email)
     }
 
     /**
@@ -154,10 +156,10 @@ object HttpTestAssistant {
     fun createToken(
         client: WebTestClient,
         registrationCredentials: TestRegistrationCredentials
-    ): UserTokenCreateOutputModel {
+    ): String {
         // when: creating a token
         // then: the response is a 200
-        val tokenOutputModel = client.post().uri("/users/token")
+        val responseBody = client.post().uri("/users/token")
             .bodyValue(
                 mapOf(
                     "username" to registrationCredentials.username,
@@ -166,12 +168,40 @@ object HttpTestAssistant {
             )
             .exchange()
             .expectStatus().isOk
-            .expectBody(UserTokenCreateOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.token").isNotEmpty
             .returnResult()
             .responseBody!!
 
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(responseBody)
+
+        val token = jsonNode.path("properties").path("token").asText()
+
         // and: the token is valid
-        assertNotNull(tokenOutputModel.token)
-        return tokenOutputModel
+        assertNotNull(token)
+        return token.toString()
+    }
+
+    /**
+     * Finds the href of the given position in the links array of the given json node.
+     * @param jsonNode the json node to search in.
+     * @param position the position to search for
+     *  it can be one of the following: "self", "next", "previous", "first", "last".
+     * @return the href of the given position or **null** if not found.
+     */
+    fun findHref(jsonNode: JsonNode, position: String): String? {
+        return jsonNode
+            .path("links")
+            .elements()
+            .asSequence() // for performance reasons
+            .filter { link ->
+                val rel = link.path("rel")
+                rel.isArray && rel.size() > 0 && rel[0].asText() == position
+            }
+            .firstOrNull()
+            ?.path("href")?.asText()
+            ?.substringAfter("/api") // remove the /api prefix
     }
 }

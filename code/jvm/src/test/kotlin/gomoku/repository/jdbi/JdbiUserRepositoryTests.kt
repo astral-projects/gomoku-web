@@ -233,7 +233,7 @@ class JdbiUserRepositoryTests {
         )
 
         // then:
-        assertEquals(2, secondPageUsersRanking.currentPage)
+        assertEquals(3, secondPageUsersRanking.currentPage)
         assertEquals(itemsPerPage, secondPageUsersRanking.itemsPerPage)
     }
 
@@ -256,25 +256,23 @@ class JdbiUserRepositoryTests {
             repo.storeUser(username, email, passwordValidationInfo)
         }
 
-        // and: retrieving the users by search term
-        val searchTerm = Term(queryFormat).get()
-        val userStatsByUsername = repo.getUserStatsByTerm(
-            term = searchTerm,
-            page = PositiveValue(1).get(),
-            itemsPerPage = PositiveValue(nrOfUsers).get()
-        )
-
-        // and: calculating the expected number of users
         val actualNrOfUsers = if (nrOfUsers % 2 == 0) {
             nrOfUsers / 2
         } else {
             nrOfUsers / 2 + 1
         }
 
+        // and: retrieving the first 3-users statistic information
+        val itemsPerPage = nrOfUsers
+        val userStatsByUsername = repo.getUserStatsByTerm(
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get(),
+            term = Term(queryFormat).get()
+        )
+
         // then: the users statistic information is paginated
         assertEquals(1, userStatsByUsername.currentPage)
-        assertEquals(actualNrOfUsers, userStatsByUsername.itemsPerPage)
-        assertEquals(actualNrOfUsers, userStatsByUsername.items.size)
+        assertEquals(itemsPerPage, userStatsByUsername.itemsPerPage)
 
         // when: comparing with user information
         // then: the users statistic information is correct

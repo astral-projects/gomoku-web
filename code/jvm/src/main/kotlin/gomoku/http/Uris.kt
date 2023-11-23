@@ -27,9 +27,9 @@ object Uris {
         fun byIdStats(id: Int) = UriTemplate(STATS_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
         fun home(): URI = URI(HOME)
-        fun stats(page: Int): URI = URI("$STATS?page=$page")
-        fun statsByTerm(term: String, page: Int): URI =
-            URI("$STATS_BY_TERM?term=$term&page=$page")
+        fun stats(page: Int, itemsPerPage: Int): URI = URI("$STATS?page=$page&itemsPerPage=$itemsPerPage")
+        fun statsByTerm(term: String, page: Int, itemsPerPage: Int): URI =
+            URI("$STATS_BY_TERM?term=$term&page=$page&itemsPerPage=$itemsPerPage")
         fun register(): URI = URI(REGISTER)
         fun logout(): URI = URI(LOGOUT)
     }

@@ -1,15 +1,11 @@
 package gomoku.http
 
-import gomoku.domain.PaginatedResult
+import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.domain.components.Term
 import gomoku.http.media.Problem
-import gomoku.http.model.IdOutputModel
-import gomoku.http.model.token.UserTokenCreateOutputModel
-import gomoku.http.model.user.UserLogoutOutputModel
-import gomoku.http.model.user.UserOutputModel
-import gomoku.http.model.user.UserStatsOutputModel
 import gomoku.http.utils.HttpTestAssistant.createRandomUser
 import gomoku.http.utils.HttpTestAssistant.createToken
+import gomoku.http.utils.HttpTestAssistant.findHref
 import gomoku.utils.IntrusiveTests
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.TestDataGenerator.newTestEmail
@@ -26,6 +22,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @RequiresDatabaseConnection
@@ -62,11 +59,10 @@ class UserTests {
             .expectHeader().value("location") {
                 assertTrue(it.startsWith("/api/users"))
             }
-            .expectBody(IdOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id").isNumber
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
             .returnResult()
-            .responseBody!!
-
-        assertTrue(userId.id > 0)
 
         // when: creating a user with the same username
         // then: the response is a 400 with a proper problem
@@ -286,7 +282,7 @@ class UserTests {
 
         // when: creating a token
         // then: the response is a 200
-        val tokenOutputModel = client.post().uri("/users/token")
+        val token = client.post().uri("/users/token")
             .bodyValue(
                 mapOf(
                     "username" to registrationCredentials.username,
@@ -295,12 +291,13 @@ class UserTests {
             )
             .exchange()
             .expectStatus().isOk
-            .expectBody(UserTokenCreateOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.token").isNotEmpty
             .returnResult()
             .responseBody!!
 
         // and: the token is valid
-        assertNotNull(tokenOutputModel.token)
+        assertNotNull(token)
 
         // when: creating a token with an invalid username
         // then: the response is a 401 with a proper problem
@@ -467,7 +464,7 @@ class UserTests {
         val (_, registrationCredentials) = createRandomUser(client)
 
         // and: a token
-        val token = createToken(client, registrationCredentials).token
+        val token = createToken(client, registrationCredentials)
 
         // when: getting the user home with a valid token
         // then: the response is a 200 with the proper representation
@@ -476,6 +473,7 @@ class UserTests {
             .exchange()
             .expectStatus().isOk
             .expectBody()
+            .jsonPath("$.requireAuth[0]").isEqualTo("true")
 
         // when: getting the user home with an invalid token
         // then: the response is a 401 with the proper problem
@@ -487,16 +485,23 @@ class UserTests {
 
         // when: revoking the token
         // then: response is a 200 with the proper representation
-        val userLogoutOutputModel = client.post().uri("/users/logout")
+        val responseBody = client.post().uri("/users/logout")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
-            .expectBody(UserLogoutOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.message").isNotEmpty
             .returnResult()
             .responseBody!!
 
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(responseBody)
+
+        val userLogoutMessage = jsonNode.path("properties").path("message").asText()
+
         // and: the token is revoked with the proper message
-        assertEquals("User logged out successfully, token was revoked.", userLogoutOutputModel.message)
+        assertEquals("User logged out successfully, token was revoked.", userLogoutMessage)
 
         // when: accessing the user home with the revoked token
         // then: the response is a 401 with the proper problem
@@ -524,17 +529,28 @@ class UserTests {
 
         // when: getting the user
         // then: the response is a 200 with the proper representation
-        val userOutputModel = client.get().uri("/users/$userId")
+        val responseBody = client.get().uri("/users/$userId")
             .exchange()
             .expectStatus().isOk
-            .expectBody(UserOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id.value").isNotEmpty
+            .jsonPath("$.properties.username.value").isNotEmpty
+            .jsonPath("$.properties.email.value").isNotEmpty
             .returnResult()
             .responseBody!!
 
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(responseBody)
+
+        val id = jsonNode.path("properties").path("id").path("value").asInt()
+        val username = jsonNode.path("properties").path("username").path("value").asText()
+        val email = jsonNode.path("properties").path("email").path("value").asText()
+
         // and: the user is the same as the one created
-        assertEquals(userId, userOutputModel.id)
-        assertEquals(registrationCredentials.username, userOutputModel.username)
-        assertEquals(registrationCredentials.email, userOutputModel.email)
+        assertEquals(userId, id)
+        assertEquals(registrationCredentials.username, username)
+        assertEquals(registrationCredentials.email, email)
 
         // when: getting a user with an invalid id
         // then: the response is a 404 with the proper problem
@@ -577,40 +593,38 @@ class UserTests {
         val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
 
         // and: a set random users
-        val nrOfUsers = 15 randomTo 30
+        val nrOfUsers = 15 randomTo 50
         repeat(nrOfUsers) {
             createRandomUser(client)
         }
 
         // when: getting the user statistic information with no offset or limit
         // then: the response is a 200 with the proper representation
-        val resultWithNoOffsetOrLimit = client.get().uri("/users/stats")
+        val resultWithNoPageAndItemsPerPage = client.get().uri("/users/stats")
             .exchange()
             .expectStatus().isOk
-            .expectBody(PaginatedResult::class.java)
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(1)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(10)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
             .returnResult()
             .responseBody!!
-
-        // and: the result is correctly paginated
-        assertEquals(1, resultWithNoOffsetOrLimit.currentPage)
-        assertEquals(10, resultWithNoOffsetOrLimit.itemsPerPage)
 
         // when: getting the user statistic information
-        // with an offset and limit combination that do not exceed the total number of users created earlier
-        val offset = 2
-        val limit = 5
+        // in a page and itemsPerPage combination that do not exceed the total number of users created earlier
+        val page = 2
+        val itemsPerPage = 5
 
         // then: the response is a 200 with the proper representation
-        val resultWithOffsetAndLimit = client.get().uri("/users/stats?offset=$offset&limit=$limit")
+        val resultWithPage = client.get().uri("/users/stats?page=$page&itemsPerPage=$itemsPerPage")
             .exchange()
             .expectStatus().isOk
-            .expectBody(PaginatedResult::class.java)
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(page)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
             .returnResult()
             .responseBody!!
-
-        // and: the result is correctly paginated
-        assertEquals(offset / limit + 1, resultWithOffsetAndLimit.currentPage)
-        assertEquals(if (limit < nrOfUsers) limit else nrOfUsers, resultWithOffsetAndLimit.itemsPerPage)
 
         // when: getting the user statistic information with an invalid offset
         // then: the response is a 400
@@ -623,10 +637,10 @@ class UserTests {
             .responseBody!!
 
         assertEquals(Problem.invalidPage, invalidPageProblem.type)
-        assertEquals("The offset must be a non-negative integer", invalidPageProblem.detail)
+        assertEquals("The page must be a positive integer", invalidPageProblem.detail)
         val invalidOffsetInstance = assertNotNull(invalidPageProblem.instance)
-        assertEquals(URI("/api/users/stats?page=$invalidPage"), invalidOffsetInstance)
-        assertEquals("Invalid offset", invalidPageProblem.title)
+        assertEquals(URI("/api/users/stats?page=$invalidPage&itemsPerPage=10"), invalidOffsetInstance)
+        assertEquals("Invalid page number", invalidPageProblem.title)
         assertEquals(400, invalidPageProblem.status)
 
         // when: getting the user statistic information with an invalid limit
@@ -640,11 +654,91 @@ class UserTests {
             .responseBody!!
 
         assertEquals(Problem.invalidItemsPerPage, invalidItemsPerPageProblem.type)
-        assertEquals("The limit must be a positive integer", invalidItemsPerPageProblem.detail)
-        val invalidLimitInstance = assertNotNull(invalidItemsPerPageProblem.instance)
-        assertEquals(URI("/api/users/stats?offset=0&limit=$invalidItemsPerPage"), invalidLimitInstance)
-        assertEquals("Invalid limit", invalidItemsPerPageProblem.title)
+        assertEquals("The items per page must be a positive integer", invalidItemsPerPageProblem.detail)
+        assertEquals("Invalid items per page", invalidItemsPerPageProblem.title)
         assertEquals(400, invalidItemsPerPageProblem.status)
+    }
+
+    @Test
+    fun `can navigate between pages by link`() {
+        // given: an HTTP client
+        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
+
+        // and: a set random users
+        val nrOfUsers = 15 randomTo 75
+        repeat(nrOfUsers) {
+            createRandomUser(client)
+        }
+
+        // when: getting the user statistic information
+        // in a page and itemsPerPage combination that do not exceed the total number of users created earlier
+        val page = 2
+        val itemsPerPage = 5
+
+        // then: the response is a 200 with the proper representation
+        val resultWithPage = client.get().uri("/users/stats?page=$page&itemsPerPage=$itemsPerPage")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(page)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
+            .returnResult()
+            .responseBody!!
+
+        // and: the response contains a link to the next page
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(resultWithPage)
+
+        val nextPageHref = findHref(jsonNode, "next")
+        assertNotNull(nextPageHref)
+
+        // when: getting the next page
+        // then: the response is a 200 with the proper representation
+        val resultWithNextPage = client.get().uri(nextPageHref)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(page + 1)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
+            .returnResult()
+            .responseBody!!
+
+        val jsonNodeOfNextPage = objectMapper.readTree(resultWithNextPage)
+
+        // and: the response contains a link to the previous page
+        val previousPageHref = findHref(jsonNodeOfNextPage, "prev")
+        assertNotNull(previousPageHref)
+
+        // when: getting the previous page
+        // then: the response is a 200 with the proper representation
+        val resultWithPreviousPage = client.get().uri(previousPageHref)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(page)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
+            .returnResult()
+            .responseBody!!
+
+        // when: we are on the first page and we try to get the previous page
+        // then: previous page link does not exist
+        val firstPageHref = "/users/stats?page=1&itemsPerPage=5"
+        val resultWithFirstPage = client.get().uri(firstPageHref)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(1)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
+            .jsonPath("$.requireAuth[0]").isEqualTo("false")
+            .returnResult()
+            .responseBody!!
+
+        val jsonNodeOfFirstPage = objectMapper.readTree(resultWithFirstPage)
+        val previousPageLink = findHref(jsonNodeOfFirstPage, "prev")
+        assertNull(previousPageLink)
     }
 
     @Test
@@ -657,29 +751,28 @@ class UserTests {
 
         // when: getting the user statistic information
         // then: the response is a 200 with the proper representation
-        val userStatsOutputModel = client.get().uri("/users/$userId/stats")
+        val userStatsReponseBody = client.get().uri("/users/$userId/stats")
+            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isOk
-            .expectBody(UserStatsOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id.value").isEqualTo(userId)
+            .jsonPath("$.properties.username.value").isEqualTo(registrationCredentials.username)
+            .jsonPath("$.properties.email.value").isEqualTo(registrationCredentials.email)
+            .jsonPath("$.properties.gamesPlayed.value").isEqualTo(0)
+            .jsonPath("$.properties.wins.value").isEqualTo(0)
+            .jsonPath("$.properties.losses.value").isEqualTo(0)
+            .jsonPath("$.properties.draws.value").isEqualTo(0)
+            .jsonPath("$.properties.points.value").isEqualTo(0)
+            .jsonPath("$.requireAuth[0]").isEqualTo("true")
             .returnResult()
             .responseBody!!
-
-        // and: the user is the same as the one created
-        assertEquals(userId, userStatsOutputModel.id)
-        assertEquals(registrationCredentials.username, userStatsOutputModel.username)
-        assertEquals(registrationCredentials.email, userStatsOutputModel.email)
-
-        // and: the user has no games played yet
-        assertEquals(0, userStatsOutputModel.gamesPlayed)
-        assertEquals(0, userStatsOutputModel.wins)
-        assertEquals(0, userStatsOutputModel.losses)
-        assertEquals(0, userStatsOutputModel.draws)
-        assertEquals(0, userStatsOutputModel.points)
 
         // when: getting the user statistic information with an invalid id
         // then: the response is a 404 with the proper problem
         val invalidId = -1
         val invalidIdProblem = client.get().uri("/users/$invalidId/stats")
+            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isNotFound
             .expectBody(Problem::class.java)
@@ -697,6 +790,7 @@ class UserTests {
         // then: the response is a 404 with the proper problem
         val notFoundId = newTestId()
         val notFoundUserProblem = client.get().uri("/users/${notFoundId.value}/stats")
+            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isNotFound
             .expectBody(Problem::class.java)
@@ -732,21 +826,19 @@ class UserTests {
 
         // and: a logged-in user
         val (_, registrationCredentials) = createRandomUser(client)
-        val token = createToken(client, registrationCredentials).token
-
+        val token = createToken(client, registrationCredentials)
         // when: getting the user statistic information by search term with no offset or limit
         // then: the response is a 200 with the proper representation
-        val resultWithNoOffsetOrLimit = client.get().uri("/users/stats/search?term=$term")
+        val resultWithNoPageAndNoItemsPerPage = client.get().uri("/users/stats/search?term=$term")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
-            .expectBody(PaginatedResult::class.java)
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(1)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(10)
+            .jsonPath("$.requireAuth[0]").isEqualTo("true")
             .returnResult()
             .responseBody!!
-
-        // and: the result is correctly paginated
-        assertEquals(1, resultWithNoOffsetOrLimit.currentPage)
-        assertEquals(10, resultWithNoOffsetOrLimit.itemsPerPage)
 
         // when: getting the user statistic information by search term with a page and
         // itemsPerPage combination that do not exceed the total number of users created earlier
@@ -754,17 +846,19 @@ class UserTests {
         val itemsPerPage = 5
 
         // then: the response is a 200 with the proper representation
-        val resultWithPageAndItemsPerPage = client.get().uri("/users/stats/search?term=$term&page=$page&itemsPerPage=$itemsPerPage")
-            .header("Authorization", "Bearer $token")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(PaginatedResult::class.java)
-            .returnResult()
-            .responseBody!!
-
-        // and: the result is correctly paginated
-        assertEquals(page / itemsPerPage + 1, resultWithPageAndItemsPerPage.currentPage)
-        assertEquals(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers, resultWithPageAndItemsPerPage.itemsPerPage)
+        val resultWithPageAndItemsPerPage =
+            client.get().uri("/users/stats/search?term=$term&page=$page&itemsPerPage=$itemsPerPage")
+                .header("Authorization", "Bearer $token")
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("$.properties.currentPage").isEqualTo(page)
+                .jsonPath("$.properties.itemsPerPage").isEqualTo(
+                    if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers
+                )
+                .jsonPath("$.requireAuth[0]").isEqualTo("true")
+                .returnResult()
+                .responseBody!!
 
         // when: getting the user statistic information by search term with an invalid page
         // then: the response is a 400
@@ -778,10 +872,10 @@ class UserTests {
             .responseBody!!
 
         assertEquals(Problem.invalidPage, invalidPageProblem.type)
-        assertEquals("The offset must be a non-negative integer", invalidPageProblem.detail)
+        assertEquals("The page must be a positive integer", invalidPageProblem.detail)
         val invalidPageInstance = assertNotNull(invalidPageProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$term&page=$invalidPage"), invalidPageInstance)
-        assertEquals("Invalid offset", invalidPageProblem.title)
+        assertEquals(URI("/api/users/stats/search?term=$term&page=-1&itemsPerPage=10"), invalidPageInstance)
+        assertEquals("Invalid page number", invalidPageProblem.title)
         assertEquals(400, invalidPageProblem.status)
 
         // when: getting the user statistic information by search term with an invalid itemsPerPage
@@ -796,10 +890,13 @@ class UserTests {
             .responseBody!!
 
         assertEquals(Problem.invalidItemsPerPage, invalidLimitProblem.type)
-        assertEquals("The limit must be a positive integer", invalidLimitProblem.detail)
+        assertEquals("The items per page must be a positive integer", invalidLimitProblem.detail)
         val invalidItemsPerPageInstance = assertNotNull(invalidLimitProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$term&page=1&itemsPerPage=$invalidItemsPerPage"), invalidItemsPerPageInstance)
-        assertEquals("Invalid limit", invalidLimitProblem.title)
+        assertEquals(
+            URI("/api/users/stats/search?term=$term&page=1&itemsPerPage=$invalidItemsPerPage"),
+            invalidItemsPerPageInstance
+        )
+        assertEquals("Invalid items per page", invalidLimitProblem.title)
         assertEquals(400, invalidLimitProblem.status)
 
         // when: getting the user statistic information by a search term that is too short
@@ -820,15 +917,8 @@ class UserTests {
         assertEquals(Problem.invalidTermLength, shortSearchTermProblem.type)
         assertEquals("The search term must be above 3 characters", shortSearchTermProblem.detail)
         val shortSearchTermInstance = assertNotNull(shortSearchTermProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$shortSearchTerm&offset=0&limit=10"), shortSearchTermInstance)
+        assertEquals(URI("/api/users/stats/search?term=$shortSearchTerm&page=1&itemsPerPage=10"), shortSearchTermInstance)
         assertEquals("Invalid search term length", shortSearchTermProblem.title)
         assertEquals(400, shortSearchTermProblem.status)
-
-        // when: getting the user statistic information without authentication
-        // then: the response is a 401 with the proper problem
-        client.get().uri("/users/stats/search?term=$term")
-            .exchange()
-            .expectStatus().isUnauthorized
-            .expectBody()
     }
 }
