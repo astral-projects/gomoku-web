@@ -35,3 +35,5 @@ inner join dbo.Statistics as stats
 on users.id = stats.user_id
 offset :offset
 limit :limit;
+
+select * from Users as users;
