@@ -86,6 +86,13 @@ class GameServicesTests {
         val gameCreationResult = gamesService.findGame(newTestId(), host.id)
 
         // then: the game creation fails
+        //when: waiting for a game
+        when (val l = gameService.findGame(Id(1).get(), user.id)){
+            is Failure -> fail("Unexpected $gameCreationResult")
+            is Success -> assertEquals("Still waiting in the lobby with id=${l.value.id}", l.value.message)
+        }
+
+        // then: the join is successful
         when (gameCreationResult) {
             is Failure -> assertIs<GameCreationError.VariantNotFound>(gameCreationResult.value)
             is Success -> fail("Unexpected $gameCreationResult")
@@ -97,7 +104,7 @@ class GameServicesTests {
         // then: a lobby is created
         when (gameCreationResult2) {
             is Failure -> fail("Unexpected $gameCreationResult2")
-            is Success -> assertIs<FindGameSuccess.LobbyCreated>(gameCreationResult2.value)
+            is Success -> assertEquals("Joining game", gameCreationResult2.value.message)
         }
 
         // then: another player wants to play the same variant, so its match between the two
