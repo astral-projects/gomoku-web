@@ -1,7 +1,9 @@
-package gomoku.infra
+package gomoku.http.media.siren
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import gomoku.http.media.siren.SirenModel.Companion.HEADER_CONTENT_TYPE_NAME
 import org.springframework.http.HttpMethod
+import org.springframework.http.ResponseEntity
 import java.net.URI
 
 data class SirenModel<T>(
@@ -12,7 +14,12 @@ data class SirenModel<T>(
     val actions: List<ActionModel>,
     val entities: List<EntityModel<*>>,
     val requireAuth: List<Boolean>
-)
+) {
+    companion object {
+        const val MEDIA_TYPE = "application/vnd.siren+json"
+        const val HEADER_CONTENT_TYPE_NAME = "Content-Type"
+    }
+}
 
 data class LinkModel(
     val rel: List<String>,
@@ -127,4 +134,12 @@ fun <T> siren(value: T, block: SirenBuilderScope<T>.() -> Unit): SirenModel<T> {
     val scope = SirenBuilderScope(value)
     scope.block()
     return scope.build()
+}
+
+/**
+ * Creates a siren response with the header "Content-Type" set to "application/vnd.siren+json".
+ * @param siren the siren model representation of the response.
+ */
+fun <T> ResponseEntity.BodyBuilder.sirenResponse(siren: SirenModel<T>): ResponseEntity<SirenModel<T>> {
+    return this.header(HEADER_CONTENT_TYPE_NAME, SirenModel.MEDIA_TYPE).body(siren)
 }

@@ -1,6 +1,6 @@
 package gomoku.http
 
-import gomoku.infra.LinkRelation
+import gomoku.http.media.siren.LinkRelation
 
 object Rels {
 

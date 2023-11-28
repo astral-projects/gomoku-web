@@ -59,6 +59,9 @@ class UserTests {
             .expectHeader().value("location") {
                 assertTrue(it.startsWith("/api/users"))
             }
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.id").isNumber
             .jsonPath("$.requireAuth[0]").isEqualTo("false")
@@ -291,6 +294,9 @@ class UserTests {
             )
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.token").isNotEmpty
             .returnResult()
@@ -472,6 +478,9 @@ class UserTests {
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.requireAuth[0]").isEqualTo("true")
 
@@ -532,6 +541,9 @@ class UserTests {
         val responseBody = client.get().uri("/users/$userId")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.id.value").isNotEmpty
             .jsonPath("$.properties.username.value").isNotEmpty
@@ -603,6 +615,9 @@ class UserTests {
         val resultWithNoPageAndItemsPerPage = client.get().uri("/users/stats")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.currentPage").isEqualTo(1)
             .jsonPath("$.properties.itemsPerPage").isEqualTo(10)
@@ -679,6 +694,9 @@ class UserTests {
         val resultWithPage = client.get().uri("/users/stats?page=$page&itemsPerPage=$itemsPerPage")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.currentPage").isEqualTo(page)
             .jsonPath("$.properties.itemsPerPage").isEqualTo(if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers)
@@ -752,9 +770,11 @@ class UserTests {
         // when: getting the user statistic information
         // then: the response is a 200 with the proper representation
         val userStatsReponseBody = client.get().uri("/users/$userId/stats")
-            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.id.value").isEqualTo(userId)
             .jsonPath("$.properties.username.value").isEqualTo(registrationCredentials.username)
@@ -772,7 +792,6 @@ class UserTests {
         // then: the response is a 404 with the proper problem
         val invalidId = -1
         val invalidIdProblem = client.get().uri("/users/$invalidId/stats")
-            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isNotFound
             .expectBody(Problem::class.java)
@@ -790,7 +809,6 @@ class UserTests {
         // then: the response is a 404 with the proper problem
         val notFoundId = newTestId()
         val notFoundUserProblem = client.get().uri("/users/${notFoundId.value}/stats")
-            .header("Authorization", "Bearer ${createToken(client, registrationCredentials)}")
             .exchange()
             .expectStatus().isNotFound
             .expectBody(Problem::class.java)
@@ -833,6 +851,9 @@ class UserTests {
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("$.properties.currentPage").isEqualTo(1)
             .jsonPath("$.properties.itemsPerPage").isEqualTo(10)

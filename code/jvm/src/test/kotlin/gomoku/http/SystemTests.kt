@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
+import kotlin.test.assertEquals
 
 @RequiresDatabaseConnection
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,6 +26,9 @@ class SystemTests {
         client.get().uri("/system")
             .exchange()
             .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
             .expectBody()
             .jsonPath("properties.gameName").isEqualTo(SystemInfo.GAME_NAME)
             .jsonPath("properties.version").isEqualTo(SystemInfo.VERSION)
