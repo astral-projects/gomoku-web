@@ -1,17 +1,12 @@
 package gomoku.http
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.domain.game.GameState
-import gomoku.domain.game.variant.GameVariant
 import gomoku.http.media.Problem
-import gomoku.http.model.TestGameModel
-import gomoku.http.model.game.GameDeleteOutputModel
-import gomoku.http.model.game.GameExitOutputModel
 import gomoku.http.utils.HttpTestAssistant.createRandomUser
 import gomoku.http.utils.HttpTestAssistant.createToken
-import gomoku.http.utils.HttpTestAssistant.exitGame
 import gomoku.http.utils.HttpTestAssistant.findGame
 import gomoku.http.utils.HttpTestAssistant.getTestVariantId
-import gomoku.services.game.FindGameSuccess
 import gomoku.utils.IntrusiveTests
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.TestDataGenerator.newTestId
@@ -28,7 +23,6 @@ import kotlin.test.assertTrue
 @IntrusiveTests
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GameTests {
-
     @LocalServerPort
     var port: Int = 0
 
@@ -70,11 +64,24 @@ class GameTests {
             )
             .exchange()
             .expectStatus().isCreated
-            .expectBody(FindGameSuccess.LobbyCreated::class.java)
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
+            .expectBody()
+            .jsonPath("$.properties.id").isNumber
+            .jsonPath("$.properties.message").isNotEmpty
             .returnResult()
             .responseBody!!
 
-        assertTrue(lobbyCreated.id > 0)
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(lobbyCreated)
+
+        val lobbyId = jsonNode.path("properties").path("id").asInt()
+        val message = jsonNode.path("properties").path("message").asText()
+
+        assertTrue(lobbyId > 0)
+        assertTrue(message.startsWith("Lobby created successfully"))
 
         // and: a random user to be the guest
         val (_, guestRegistrationCredentials) = createRandomUser(client)
@@ -93,11 +100,22 @@ class GameTests {
             )
             .exchange()
             .expectStatus().isCreated
-            .expectBody(FindGameSuccess.GameMatch::class.java)
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
+            .expectBody()
+            .jsonPath("$.properties.id").isNumber
+            .jsonPath("$.properties.message").isNotEmpty
             .returnResult()
             .responseBody!!
 
-        assertTrue(gameMatch.id > 0)
+        val jsonNode2 = objectMapper.readTree(gameMatch)
+
+        val gameId = jsonNode2.path("properties").path("id").asInt()
+        val messageGame = jsonNode2.path("properties").path("message").asText()
+
+        assertTrue(gameId > 0)
+        assertTrue(messageGame.startsWith("Joined the game successfully"))
 
         // when: a user tries to find a game with an invalid variant id
         val invalidVariantId = "-1"
@@ -111,6 +129,9 @@ class GameTests {
             )
             .exchange()
             .expectStatus().isNotFound
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/problem+json", it)
+            }
             .expectBody(Problem::class.java)
             .returnResult()
             .responseBody!!
@@ -168,15 +189,14 @@ class GameTests {
         val getGameResponse = client.get().uri("/games/$gameId")
             .exchange()
             .expectStatus().isOk
-            .expectBody(TestGameModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id").isEqualTo(gameId)
+            .jsonPath("$.properties.state.name").isEqualTo(GameState.IN_PROGRESS.name.lowercase(Locale.getDefault()))
+            .jsonPath("$.properties.variant.id").isEqualTo(variantId)
+            .jsonPath("$.properties.hostId").isEqualTo(hostId)
+            .jsonPath("$.properties.guestId").isEqualTo(guestId)
             .returnResult()
             .responseBody!!
-
-        assertEquals(gameId, getGameResponse.id)
-        assertEquals(hostId, getGameResponse.hostId)
-        assertEquals(guestId, getGameResponse.guestId)
-        assertEquals(GameState.IN_PROGRESS.name.lowercase(Locale.getDefault()), getGameResponse.state.name)
-        assertEquals(variantId, getGameResponse.variant.id)
 
         // when: a user tries to get a game by an invalid id
         val invalidGameId = "-1"
@@ -212,12 +232,12 @@ class GameTests {
     }
 
     @Test
-    fun `only host user can delete game if not in progress`() {
+    fun `an user can exit a game`() {
         // given: an HTTP client and pushing the variant to the database
         val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
 
         // and: a random user to be the host
-        val (_, hostRegistrationCredentials) = createRandomUser(client)
+        val (hostId, hostRegistrationCredentials) = createRandomUser(client)
 
         // and: a token
         val hostToken = createToken(client, hostRegistrationCredentials)
@@ -227,125 +247,6 @@ class GameTests {
 
         // and: guest joins the lobby
         val (guestId, guestRegistrationCredentials) = createRandomUser(client)
-        val guestToken = createToken(client, guestRegistrationCredentials)
-        val gameId = findGame(client, guestToken, false)
-
-        // when: a user that is not authenticated tries to delete the game
-        // then: the response is a 401 with the proper problem
-        client.delete().uri("/games/$gameId")
-            .header("Authorization", "Bearer invalid-token")
-            .exchange()
-            .expectStatus().isUnauthorized
-            .expectHeader().valueEquals("WWW-Authenticate", "bearer")
-
-        // when: the guest tries to delete the game
-        // then: the response is a 400 with the proper body
-        val userNotTheHostProblem = client.delete().uri("/games/$gameId")
-            .header("Authorization", "Bearer $guestToken")
-            .exchange()
-            .expectStatus().isBadRequest
-            .expectBody(Problem::class.java)
-            .returnResult()
-            .responseBody!!
-
-        assertEquals(Problem.userIsNotTheHost, userNotTheHostProblem.type)
-        assertEquals("User is not the host", userNotTheHostProblem.title)
-        assertEquals(
-            "The user with id <$guestId> is not the host of the game.",
-            userNotTheHostProblem.detail
-        )
-        assertEquals(URI("/api/games/$gameId"), userNotTheHostProblem.instance)
-        assertEquals(400, userNotTheHostProblem.status)
-        assertEquals(
-            mapOf(
-                "userId" to guestId,
-                "gameId" to gameId
-            ),
-            userNotTheHostProblem.data
-        )
-
-        // when: the host tries to delete the game before its finished
-        // then: the response is a 400 with the proper body
-        val gameIsInProgressProblem = client.delete().uri("/games/$gameId")
-            .header("Authorization", "Bearer $hostToken")
-            .exchange()
-            .expectStatus().isBadRequest
-            .expectBody(Problem::class.java)
-            .returnResult()
-            .responseBody!!
-
-        assertEquals(Problem.gameIsInProgress, gameIsInProgressProblem.type)
-        assertEquals("Game is in progress", gameIsInProgressProblem.title)
-        assertEquals("The game with id <$gameId> is in progress", gameIsInProgressProblem.detail)
-        assertEquals(URI("/api/games/$gameId"), gameIsInProgressProblem.instance)
-        assertEquals(400, gameIsInProgressProblem.status)
-
-        // when: when a user exits the game
-        exitGame(client, guestToken, gameId)
-
-        // and: the host tries to delete the game after its finished
-        // then: the response is a 200 with the proper body
-        val deleteGameResponse = client.delete().uri("/games/$gameId")
-            .header("Authorization", "Bearer $hostToken")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(GameDeleteOutputModel::class.java)
-            .returnResult()
-            .responseBody!!
-
-        assertEquals(gameId, deleteGameResponse.gameId)
-
-        // when: a user tries to delete the game by an invalid id
-        val invalidGameId = "-1"
-        // then: the response is a 404 with the proper problem
-        val invalidGameIdProblem = client.delete().uri("/games/$invalidGameId")
-            .header("Authorization", "Bearer $hostToken")
-            .exchange()
-            .expectStatus().isNotFound
-            .expectBody(Problem::class.java)
-            .returnResult()
-            .responseBody!!
-
-        assertEquals(Problem.invalidId, invalidGameIdProblem.type)
-        assertEquals("Invalid game id", invalidGameIdProblem.title)
-        assertEquals("The game id must be a positive integer", invalidGameIdProblem.detail)
-        assertEquals(URI("/api/games/$invalidGameId"), invalidGameIdProblem.instance)
-        assertEquals(404, invalidGameIdProblem.status)
-
-        // when: a user tries to delete the game by an id that doesn't exist
-        val nonExistentGameId = newTestId().value
-        // then: the response is a 404 with the proper problem
-        val nonExistentGameProblem = client.delete().uri("/games/$nonExistentGameId")
-            .header("Authorization", "Bearer $hostToken")
-            .exchange()
-            .expectStatus().isNotFound
-            .expectBody(Problem::class.java)
-            .returnResult()
-            .responseBody!!
-
-        assertEquals(Problem.gameNotFound, nonExistentGameProblem.type)
-        assertEquals("Game was not found", nonExistentGameProblem.title)
-        assertEquals("The game with id <$nonExistentGameId> was not found", nonExistentGameProblem.detail)
-        assertEquals(URI("/api/games/$nonExistentGameId"), nonExistentGameProblem.instance)
-        assertEquals(404, nonExistentGameProblem.status)
-    }
-
-    @Test
-    fun `an user can exit a game`() {
-        // given: an HTTP client and pushing the variant to the database
-        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
-
-        // and: a random user to be the host
-        val (_, hostRegistrationCredentials) = createRandomUser(client)
-
-        // and: a token
-        val hostToken = createToken(client, hostRegistrationCredentials)
-
-        // and: a user tries to find a game
-        findGame(client, hostToken, true)
-
-        // and: guest joins the lobby
-        val (_, guestRegistrationCredentials) = createRandomUser(client)
         val guestToken = createToken(client, guestRegistrationCredentials)
         val gameId = findGame(client, guestToken, false)
 
@@ -374,15 +275,16 @@ class GameTests {
         // when: a guest or host tries to exit the game
         // then: the response is a 200 with the proper body
         val playerToken = if (Random().nextBoolean()) guestToken else hostToken
+        val idOfPlayerToken = if (playerToken == guestToken) guestId else hostId
         val exitGameResponse = client.post().uri("/games/$gameId/exit")
             .header("Authorization", "Bearer $playerToken")
             .exchange()
             .expectStatus().isOk
-            .expectBody(GameExitOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.gameId").isEqualTo(gameId)
+            .jsonPath("$.properties.message").isEqualTo("User with id <$idOfPlayerToken> left the Game with id <$gameId>.")
             .returnResult()
             .responseBody!!
-
-        assertEquals(gameId, exitGameResponse.gameId)
 
         // when: a user tries to exit the game again
         // then: the response is a 400 with the proper body
@@ -445,11 +347,18 @@ class GameTests {
         val getVariantsResponse = client.get().uri("/games/variants")
             .exchange()
             .expectStatus().isOk
-            .expectBodyList(GameVariant::class.java)
+            .expectBody()
+            .jsonPath("$.properties").isArray
             .returnResult()
             .responseBody!!
 
+        // when: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(getVariantsResponse)
+
+        val variants = jsonNode.path("properties")
+
         assertTrue(getVariantsResponse.isNotEmpty())
-        assertTrue(getVariantsResponse.toList().find { it.id.value == variantId } != null)
+        assertTrue(variants.toList().find { it.path("id").path("value").asInt() == variantId } != null)
     }
 }

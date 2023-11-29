@@ -4,11 +4,11 @@ import gomoku.domain.components.Id
 import gomoku.domain.user.AuthenticatedUser
 import gomoku.http.Uris
 import gomoku.http.media.Problem
-import gomoku.http.model.lobby.LobbyExitOutputModel
+import gomoku.http.media.siren.sirenResponse
+import gomoku.http.model.lobby.LobbyOutputModels
 import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
 import gomoku.services.game.LobbyDeleteError
-import gomoku.services.game.WaitForGameSuccess
 import gomoku.utils.Failure
 import gomoku.utils.Success
 import jakarta.validation.Valid
@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController
 class LobbyController(
     private val lobbyService: GamesService
 ) {
+    companion object {
+        val lobbyOutputModels = LobbyOutputModels()
+    }
 
     /**
      * Waits for a game in the lobby with the given id.
@@ -30,7 +33,6 @@ class LobbyController(
      * @param user the authenticated user.
      */
     @GetMapping(Uris.Lobby.GET_IS_IN_LOBBY)
-    @RequiresAuthentication
     fun waitingInLobby(
         @Valid
         @Range(min = 1)
@@ -42,18 +44,18 @@ class LobbyController(
         val instance = Uris.Lobby.isInLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
-            is Success -> when (val result = lobbyService.waitForGame(lobbyIdResult.value, user.user.id)) {
-                is Success -> when (result.value) {
-                    is WaitForGameSuccess.GameMatch -> ResponseEntity.ok(result.value)
-                    is WaitForGameSuccess.WaitingInLobby -> ResponseEntity.ok(result.value)
-                }
-
-                is Failure -> when (result.value) {
+            is Success -> when (val gameWaitResult = lobbyService.waitForGame(lobbyIdResult.value, user.user.id)) {
+                is Failure -> when (gameWaitResult.value) {
                     GameWaitError.UserNotInAnyGameOrLobby -> Problem.userNotInAnyGameOrLobby(
                         userId = userId,
+                        lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
                 }
+
+                is Success -> ResponseEntity.ok().sirenResponse(
+                    lobbyOutputModels.waitingInLobby(gameWaitResult.value)
+                )
             }
         }
     }
@@ -73,14 +75,18 @@ class LobbyController(
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val lobbyDeleteResult = lobbyService.exitLobby(lobbyIdResult.value, userId)) {
-                is Success -> ResponseEntity.ok(LobbyExitOutputModel(lobbyIdResult.value.value))
                 is Failure -> when (lobbyDeleteResult.value) {
                     LobbyDeleteError.LobbyNotFound -> Problem.lobbyNotFound(
                         lobbyId = lobbyIdResult.value,
                         instance = instance
                     )
                 }
+
+                is Success -> ResponseEntity.ok().sirenResponse(
+                    lobbyOutputModels.exitLobby(lobbyIdResult.value)
+                )
             }
         }
     }
 }
+

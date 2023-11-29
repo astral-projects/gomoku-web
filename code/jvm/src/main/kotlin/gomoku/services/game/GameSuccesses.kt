@@ -34,11 +34,11 @@ sealed class FindGameSuccess(val id: Int, val message: String) {
 sealed class WaitForGameSuccess(val id: Int, val message: String) {
     class GameMatch(gameInt: Int, message: String? = null) : WaitForGameSuccess(
         gameInt,
-        message ?: "Joined the game successfully with id=$gameInt"
+        message ?: "Already in game with id <$gameInt>"
     )
 
     class WaitingInLobby(lobbyInt: Int, message: String? = null) : WaitForGameSuccess(
         lobbyInt,
-        message ?: "Waiting in lobby with id=$lobbyInt"
+        message ?: "Waiting in lobby with id <$lobbyInt>"
     )
 }

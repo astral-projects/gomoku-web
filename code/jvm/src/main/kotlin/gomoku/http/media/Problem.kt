@@ -6,6 +6,7 @@ import gomoku.domain.game.board.moves.square.Column
 import gomoku.domain.game.board.moves.square.Row
 import gomoku.domain.user.components.Email
 import gomoku.domain.user.components.Username
+import org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE
 import org.springframework.http.ResponseEntity
 import java.net.URI
 
@@ -36,7 +37,7 @@ data class Problem(
     companion object {
 
         private const val BASE_URL = "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/"
-        const val MEDIA_TYPE = "application/problem+json"
+        const val MEDIA_TYPE = APPLICATION_PROBLEM_JSON_VALUE
         const val LANGUAGE = "en"
 
         val invalidRequestContent = URI("${BASE_URL}invalid-request-content")
@@ -339,11 +340,11 @@ data class Problem(
             )
         ).toResponse()
 
-        fun userNotInAnyGameOrLobby(userId: Id, instance: URI): ResponseEntity<*> = Problem(
+        fun userNotInAnyGameOrLobby(userId: Id, instance: URI, lobbyId: Id): ResponseEntity<*> = Problem(
             type = userDoesntBelongToAnyGameOrLobby,
-            title = "User doesn't belong to any game or lobby",
+            title = "User doesn't belong to lobby <${lobbyId.value}>",
             status = 403,
-            detail = "The user with id <${userId.value}> doesn't belong to any game or lobby",
+            detail = "The user with id <${userId.value}> doesn't belong to lobby <${lobbyId.value}>",
             instance = instance
         ).toResponse()
 

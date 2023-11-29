@@ -32,3 +32,8 @@ fun Board.play(variant: Variant, player: Player, toSquare: Square): BoardMakeMov
  * Checks if the game is finished based on the board state.
  */
 fun Board.isFinished(): Boolean = this is BoardWin || this is BoardDraw
+
+/**
+ * Check if the game is a win based on the board state.
+ */
+fun Board.isWin(): Boolean = this is BoardWin

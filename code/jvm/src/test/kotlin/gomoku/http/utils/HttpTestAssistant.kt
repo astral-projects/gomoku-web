@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.domain.components.Id
 import gomoku.http.model.TestRegistrationCredentials
-import gomoku.http.model.game.GameExitOutputModel
 import gomoku.services.GameServicesTests
-import gomoku.services.game.FindGameSuccess
 import gomoku.utils.TestDataGenerator.newTestEmail
 import gomoku.utils.TestDataGenerator.newTestPassword
 import gomoku.utils.TestDataGenerator.newTestUserName
@@ -46,8 +44,6 @@ object HttpTestAssistant {
     ): Int {
         // when: when joining a lobby (find game)
         // then: the response is a 201 with the proper representation
-        val findGameClass =
-            if (expectLobbyCreation) FindGameSuccess.LobbyCreated::class.java else FindGameSuccess.GameMatch::class.java
         val findGameSuccess = client.post().uri("/games")
             .bodyValue(
                 mapOf(
@@ -57,21 +53,23 @@ object HttpTestAssistant {
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isCreated
-            .expectBody(findGameClass)
+            .expectBody()
+            .jsonPath("$.properties.id").isNotEmpty
+            .jsonPath("$.properties.message").isNotEmpty
             .returnResult()
             .responseBody!!
 
-        if (expectLobbyCreation) {
-            assertTrue(findGameSuccess is FindGameSuccess.LobbyCreated)
-        } else {
-            assertTrue(findGameSuccess is FindGameSuccess.GameMatch)
-        }
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(findGameSuccess)
 
-        val id = findGameSuccess.id
+        val id = jsonNode.path("properties").path("id").asInt()
+        val message = jsonNode.path("properties").path("message").asText()
+
         assertTrue(id > 0)
         assertEquals(
             if (expectLobbyCreation) "Lobby created successfully with id=$id" else "Joined the game successfully with id=$id",
-            findGameSuccess.message
+            message
         )
         return id
     }
@@ -94,11 +92,19 @@ object HttpTestAssistant {
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
-            .expectBody(GameExitOutputModel::class.java)
+            .expectBody()
+            .jsonPath("$.properties.gameId").isEqualTo(gameId)
+            .jsonPath("$.properties.message").isEqualTo("Game was exited successfully.")
             .returnResult()
             .responseBody!!
 
-        assertEquals(exitGameModel.gameId, gameId)
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(exitGameModel)
+
+        val gameIdRead = jsonNode.path("properties").path("gameId").asInt()
+
+        assertEquals(gameIdRead, gameId)
     }
 
     /**

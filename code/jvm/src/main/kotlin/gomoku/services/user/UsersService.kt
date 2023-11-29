@@ -13,6 +13,7 @@ import gomoku.domain.user.components.Password
 import gomoku.domain.user.components.Username
 import gomoku.repository.transaction.TransactionManager
 import gomoku.utils.failure
+import gomoku.utils.get
 import gomoku.utils.success
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
@@ -102,7 +103,10 @@ class UsersService(
         }
     }
 
-    fun getUsersStats(page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo> =
+    fun getUsersStats(
+        page: PositiveValue = PositiveValue(1).get(),
+        itemsPerPage: PositiveValue = PositiveValue(1).get()
+    ): PaginatedResult<UserStatsInfo> =
         transactionManager.run {
             it.usersRepository.getUsersStats(page, itemsPerPage)
         }

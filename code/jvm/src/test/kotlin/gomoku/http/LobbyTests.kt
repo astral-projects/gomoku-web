@@ -1,11 +1,10 @@
 package gomoku.http
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import gomoku.http.media.Problem
-import gomoku.http.model.lobby.LobbyExitOutputModel
 import gomoku.http.utils.HttpTestAssistant.createRandomUser
 import gomoku.http.utils.HttpTestAssistant.createToken
 import gomoku.http.utils.HttpTestAssistant.findGame
-import gomoku.services.game.WaitForGameSuccess
 import gomoku.utils.IntrusiveTests
 import gomoku.utils.RequiresDatabaseConnection
 import gomoku.utils.TestDataGenerator.newTestId
@@ -46,13 +45,12 @@ class LobbyTests {
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
-            .expectBody(WaitForGameSuccess.WaitingInLobby::class.java)
+            .expectBody()
+            .jsonPath("$.properties.id").isEqualTo(lobbyId)
+            .jsonPath("$.properties.message").isEqualTo("Waiting in lobby with id <$lobbyId>")
+            .jsonPath("$.actions").isNotEmpty
             .returnResult()
             .responseBody!!
-
-        // and: the lobby has valid id and message
-        assertEquals(lobbyId, waitingInLobby.id)
-        assertEquals("Waiting in lobby with id=$lobbyId", waitingInLobby.message)
 
         // given: a random user to be the guest
         val (guestId, guestRegistrationCredentials) = createRandomUser(client)
@@ -71,8 +69,8 @@ class LobbyTests {
             .responseBody!!
 
         assertEquals(Problem.userDoesntBelongToAnyGameOrLobby, waitingInNoLobbyOrInGame.type)
-        assertEquals("User doesn't belong to any game or lobby", waitingInNoLobbyOrInGame.title)
-        assertEquals("The user with id <$guestId> doesn't belong to any game or lobby", waitingInNoLobbyOrInGame.detail)
+        assertEquals("User doesn't belong to lobby <$lobbyId>", waitingInNoLobbyOrInGame.title)
+        assertEquals("The user with id <$guestId> doesn't belong to lobby <$lobbyId>", waitingInNoLobbyOrInGame.detail)
         val waitingInNoLobbyOrInGameInstance = assertNotNull(waitingInNoLobbyOrInGame.instance)
         assertEquals(URI("/api/lobby/$lobbyId"), waitingInNoLobbyOrInGameInstance)
         assertEquals(403, waitingInNoLobbyOrInGame.status)
@@ -86,13 +84,20 @@ class LobbyTests {
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
-            .expectBody(WaitForGameSuccess.GameMatch::class.java)
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
+            .expectBody()
+            .jsonPath("$.properties.id").isEqualTo(gameId)
+            .jsonPath("$.properties.message").isEqualTo("Already in game with id <$gameId>")
             .returnResult()
             .responseBody!!
 
-        // and: the lobby has valid id and message
-        assertEquals(gameId, waitingInLobbyAfterGuestJoined.id)
-        assertEquals("Joined the game successfully with id=$gameId", waitingInLobbyAfterGuestJoined.message)
+        // and: creating a json node from the response body
+        val objectMapper = ObjectMapper()
+        val jsonNode = objectMapper.readTree(waitingInLobbyAfterGuestJoined)
+
+        val message = jsonNode.path("properties").path("message").asText()
 
         // when: waiting in an invalid lobby
         val invalidLobbyId = "-1"
@@ -136,25 +141,29 @@ class LobbyTests {
 
         // and: exiting the lobby
         // then: the response is a 200 with the proper representation
-        val lobbyExit = client.delete().uri("/lobby/$lobbyId")
+        val lobbyExit = client.delete().uri("/lobby/$lobbyId/exit")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
-            .expectBody(LobbyExitOutputModel::class.java)
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
+            .expectBody()
+            .jsonPath("$.properties.lobbyId").isEqualTo(lobbyId)
+            .jsonPath("$.properties.message").isEqualTo("Lobby was exited successfully.")
             .returnResult()
             .responseBody!!
-
-        // and: the lobby has valid id and message
-        assertEquals(lobbyId, lobbyExit.lobbyId)
-        assertEquals("Lobby was exited successfully.", lobbyExit.message)
 
         // when: exiting an invalid lobby
         val invalidLobbyId = "-1"
         // then: the response is a 404 with a proper problem
-        val invalidLobbyIdProblem = client.delete().uri("/lobby/$invalidLobbyId")
+        val invalidLobbyIdProblem = client.delete().uri("/lobby/$invalidLobbyId/exit")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isNotFound
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/problem+json", it)
+            }
             .expectBody(Problem::class.java)
             .returnResult()
             .responseBody!!
@@ -162,13 +171,13 @@ class LobbyTests {
         assertEquals(Problem.invalidId, invalidLobbyIdProblem.type)
         assertEquals("Invalid lobby id", invalidLobbyIdProblem.title)
         assertEquals("The lobby id must be a positive integer", invalidLobbyIdProblem.detail)
-        assertEquals(URI("/api/lobby/$invalidLobbyId"), invalidLobbyIdProblem.instance)
+        assertEquals(URI("/api/lobby/$invalidLobbyId/exit"), invalidLobbyIdProblem.instance)
         assertEquals(404, invalidLobbyIdProblem.status)
 
         // when: exiting a lobby that doesn't exist
         val randomLobbyId = newTestId().value
         // then: the response is a 404 with a proper problem
-        val nonExistingLobbyProblem = client.delete().uri("/lobby/$randomLobbyId")
+        val nonExistingLobbyProblem = client.delete().uri("/lobby/$randomLobbyId/exit")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isNotFound
@@ -179,12 +188,12 @@ class LobbyTests {
         assertEquals(Problem.lobbyNotFound, nonExistingLobbyProblem.type)
         assertEquals("Requested lobby was not found", nonExistingLobbyProblem.title)
         assertEquals("The lobby with id <$randomLobbyId> was not found", nonExistingLobbyProblem.detail)
-        assertEquals(URI("/api/lobby/$randomLobbyId"), nonExistingLobbyProblem.instance)
+        assertEquals(URI("/api/lobby/$randomLobbyId/exit"), nonExistingLobbyProblem.instance)
         assertEquals(404, nonExistingLobbyProblem.status)
 
         // when: exiting a lobby without authentication
         // then: the response is a 401 with a proper problem
-        client.delete().uri("/lobby/$lobbyId")
+        client.delete().uri("/lobby/$lobbyId/exit")
             .exchange()
             .expectStatus().isUnauthorized
             .expectHeader().valueEquals("WWW-Authenticate", "bearer")

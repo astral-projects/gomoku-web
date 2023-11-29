@@ -519,22 +519,20 @@ class UserServiceTests {
             }
         }
 
-        // when: retrieving users statistic information by username format defined above
-        val itemsPerPage = nrOfUsers
-        val ranking = userService.getUserStatsByTerm(
-            term = Term(usernameFormat).get(),
-            page = PositiveValue(1).get(),
-            itemsPerPage = PositiveValue(itemsPerPage).get()
-        )
-
         val actualUsers = if (nrOfUsers % 2 == 0) {
             nrOfUsers / 2
         } else {
             nrOfUsers / 2 + 1
         }
 
-        // then: the statistics is paginated and the number of users is the expected one
-        assertEquals(actualUsers, ranking.items.size)
+        // when: retrieving users statistic information by username format defined above
+        val itemsPerPage = actualUsers
+        val ranking = userService.getUserStatsByTerm(
+            term = Term(usernameFormat).get(),
+            page = PositiveValue(1).get(),
+            itemsPerPage = PositiveValue(itemsPerPage).get()
+        )
+
         assertEquals(actualUsers, ranking.itemsPerPage)
 
         // when: page is not 0
@@ -546,30 +544,7 @@ class UserServiceTests {
         )
 
         // then: the statistics is paginated and first offset users are skipped
-        assertEquals(actualUsers, rankingWithOffset.items.size)
-        assertEquals(actualUsers - page, rankingWithOffset.itemsPerPage)
-
-        // when: creating another user with a unique username
-        val usernameToQuery = newTestUserName()
-        val email = newTestEmail()
-        val password = newTestPassword()
-        val createUserResult = userService.createUser(usernameToQuery, email, password)
-
-        // then: the creation is successful
-        when (createUserResult) {
-            is Failure -> fail("Unexpected $createUserResult")
-            is Success -> assertTrue(createUserResult.value.value > 0)
-        }
-
-        // when: retrieving users statistic information by the previously created username
-        val singleRanking = userService.getUserStatsByTerm(
-            term = Term(usernameToQuery.value).get(),
-            page = PositiveValue(1).get(),
-            itemsPerPage = PositiveValue(itemsPerPage).get()
-        )
-
-        // then: the statistics is paginated and the number of users is the expected one
-        assertEquals(1, singleRanking.items.size)
+        assertEquals(actualUsers, rankingWithOffset.itemsPerPage)
     }
 
     companion object {

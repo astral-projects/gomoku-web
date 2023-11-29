@@ -27,7 +27,7 @@ object Uris {
         fun byIdStats(id: Int) = UriTemplate(STATS_BY_ID).expand(id)
         fun login(): URI = URI(TOKEN)
         fun home(): URI = URI(HOME)
-        fun stats(page: Int, itemsPerPage: Int): URI = URI("$STATS?page=$page&itemsPerPage=$itemsPerPage")
+        fun stats(page: Int = 1, itemsPerPage: Int = 1): URI = URI("$STATS?page=$page&itemsPerPage=$itemsPerPage")
         fun statsByTerm(term: String, page: Int, itemsPerPage: Int): URI =
             URI("$STATS_BY_TERM?term=$term&page=$page&itemsPerPage=$itemsPerPage")
         fun register(): URI = URI(REGISTER)
@@ -50,6 +50,7 @@ object Uris {
         fun deleteById(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun exitGame(id: Int) = UriTemplate(EXIT_GAME).expand(id)
         fun findGame() = URI(FIND_GAME)
+        fun getVariants() = URI(GET_VARIANTS)
     }
 
     /**
@@ -57,7 +58,7 @@ object Uris {
      */
     object Lobby {
         const val GET_IS_IN_LOBBY = "$PREFIX/lobby/{id}"
-        const val EXIT_LOBBY = "$PREFIX/lobby/{id}"
+        const val EXIT_LOBBY = "$PREFIX/lobby/{id}/exit"
         fun isInLobby(id: Int) = UriTemplate(GET_IS_IN_LOBBY).expand(id)
         fun exitLobby(id: Int) = UriTemplate(EXIT_LOBBY).expand(id)
     }

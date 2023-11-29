@@ -37,7 +37,8 @@ data class ActionModel(
     val href: String,
     val method: String,
     val type: String,
-    val fields: List<FieldModel>
+    val fields: List<FieldModel>,
+    val requireAuth: List<Boolean>
 )
 
 data class FieldModel(
@@ -69,8 +70,15 @@ class SirenBuilderScope<T>(
         entities.add(scope.build())
     }
 
-    fun action(name: String, href: URI, method: HttpMethod, type: String, block: ActionBuilderScope.() -> Unit) {
-        val scope = ActionBuilderScope(name, href, method, type)
+    fun action(
+        name: String,
+        href: URI,
+        method: HttpMethod,
+        type: String,
+        requireAuth: MutableList<Boolean> = mutableListOf(false),
+        block: ActionBuilderScope.() -> Unit
+    ) {
+        val scope = ActionBuilderScope(name, href, method, type, requireAuth)
         scope.block()
         actions.add(scope.build())
     }
@@ -111,7 +119,8 @@ class ActionBuilderScope(
     private val name: String,
     private val href: URI,
     private val method: HttpMethod,
-    private val type: String
+    private val type: String,
+    private val requireAuth: MutableList<Boolean>
 ) {
     private val fields = mutableListOf<FieldModel>()
 
@@ -127,7 +136,12 @@ class ActionBuilderScope(
         fields.add(FieldModel(name, "hidden", value))
     }
 
-    fun build() = ActionModel(name, href.toASCIIString(), method.name(), type, fields)
+    fun requireAuth() {
+        requireAuth.removeLast()
+        requireAuth.add(true)
+    }
+
+    fun build() = ActionModel(name, href.toASCIIString(), method.name(), type, fields, requireAuth)
 }
 
 fun <T> siren(value: T, block: SirenBuilderScope<T>.() -> Unit): SirenModel<T> {
