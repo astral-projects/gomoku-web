@@ -6,8 +6,25 @@ export function Home() {
     <div>
       <h1>Home</h1>
       <p>Welcome to the Gomoku game!</p>
+      <p> 
+        <Link to= "/rankigs">
+          <button>Rankings</button>
+        </Link>
+      </p>
       <p>
-        Please <Link to="/login">Login</Link> to play.
+        <Link to="/login">
+          <button>Login</button>
+        </Link>
+      </p>
+      <p>
+        <Link to="/register">
+          <button>Create Account</button>
+        </Link>
+      </p>
+      <p>
+        <Link to="/about">
+          <button>About</button>
+        </Link>
       </p>
     </div>
   );
