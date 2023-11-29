@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSetUser } from './Authn';
 
 type State =
-  | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
-  | { tag: 'submitting'; username: string }
+  | { tag: 'editing'; error?: string; inputs: { username: string; email:string, password: string, confirmPassword: string } }
+  | { tag: 'submitting'; username: string, email: string}
   | { tag: 'redirect' };
 
 type Action =
@@ -23,7 +22,7 @@ function reduce(state: State, action: Action): State {
       if (action.type === 'edit') {
         return { tag: 'editing', error: undefined, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
       } else if (action.type === 'submit') {
-        return { tag: 'submitting', username: state.inputs.username };
+        return { tag: 'submitting', username: state.inputs.username, email: state.inputs.email };
       } else {
         logUnexpectedAction(state, action);
         return state;
@@ -33,7 +32,7 @@ function reduce(state: State, action: Action): State {
       if (action.type === 'success') {
         return { tag: 'redirect' };
       } else if (action.type === 'error') {
-        return { tag: 'editing', error: action.message, inputs: { username: state.username, password: '' } };
+        return { tag: 'editing', error: action.message, inputs: { username: state.username, email: state.email, password: '', confirmPassword:'', } };
       } else {
         logUnexpectedAction(state, action);
         return state;
@@ -51,21 +50,35 @@ function delay(delayInMs: number) {
   });
 }
 
-export async function authenticate(username: string, password: string): Promise<string | undefined> {
+export async function validateCredentials(username: string, email: string, password: string, confirmPassword:string): Promise<string | undefined> {
   await delay(5000);
-  if ((username == 'alice' || username == 'bob') && password == '1234') {
-    return username;
+
+  if (username.length < 8) {
+    return 'Username must be at least 8 characters long.';
   }
+
+  if (!email.includes('@') || !email.endsWith('.com')) {
+    return 'Email must contain "@" and end with ".com".';
+  }
+
+  if (password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+
+  if (password !== confirmPassword) {
+    return 'Password and confirm password must match.';
+  }
+
   return undefined;
 }
 
-export function Login() {
-  console.log('Login');
-  const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
-  const setUser = useSetUser();
+
+export function Register() {
+  console.log('Register');
+  const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '',email: '', password: '', confirmPassword:' ' } });
   const location = useLocation();
   if (state.tag === 'redirect') {
-    return <Navigate to={location.state?.source?.pathname || '/me'} replace={true} />;
+    return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
   }
   function handleChange(ev: React.FormEvent<HTMLInputElement>) {
     dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: ev.currentTarget.value });
@@ -77,15 +90,15 @@ export function Login() {
     }
     dispatch({ type: 'submit' });
     const username = state.inputs.username;
+    const email = state.inputs.email;
     const password = state.inputs.password;
-    authenticate(username, password)
+    const confirmPassword = state.inputs.password;
+    validateCredentials(username,email, password, confirmPassword)
       .then(res => {
-        if (res) {
-          console.log(`setUser(${res})`);
-          setUser(res);
+        if (res===undefined) {
           dispatch({ type: 'success' });
         } else {
-          dispatch({ type: 'error', message: 'Invalid username or password' });
+          dispatch({ type: 'error', message: res});
         }
       })
       .catch(error => {
@@ -94,7 +107,9 @@ export function Login() {
   }
 
   const username = state.tag === 'submitting' ? state.username : state.inputs.username
+  const email = state.tag === 'submitting' ? state.email : state.inputs.email
   const password = state.tag === 'submitting' ? "" : state.inputs.password
+    const confirmPassword = state.tag === 'submitting' ? "" : state.inputs.confirmPassword
   return (
     <form onSubmit={handleSubmit}>
       <fieldset disabled={state.tag !== 'editing'}>
@@ -103,32 +118,22 @@ export function Login() {
           <input id="username" type="text" name="username" value={username} onChange={handleChange} />
         </div>
         <div>
+          <label htmlFor="email">Email</label>
+          <input id="email" type="text" name="email" value={email} onChange={handleChange} />
+        </div>
+        <div>
           <label htmlFor="password">Password</label>
           <input id="password" type="text" name="password" value={password} onChange={handleChange} />
         </div>
         <div>
-          <button type="submit">Login</button>
+          <label htmlFor="confirmPassword">Confirm Password</label>
+          <input id="confirmPassword" type="text" name="confirmPassword" value={confirmPassword} onChange={handleChange} />
+        </div>
+        <div>
+          <button type="submit">Register</button>
         </div>
       </fieldset>
       {state.tag === 'editing' && state.error}
     </form>
   );
 }
-
-
-/**import * as React from "react";
-
-export function Login() {
-  return (
-    <div>
-      <form action="GET">
-        <label htmlFor="username">Username</label>
-        <input type="text" name="username" id="username" />
-        <label htmlFor="password">Password</label>
-        <input type="password" name="password" id="password" />
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
-}
-*/
