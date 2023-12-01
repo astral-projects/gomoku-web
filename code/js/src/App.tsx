@@ -5,6 +5,7 @@ import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Me } from "./me/Me";
 import { Register } from "./register/Register";
+import { Rankings } from "./Rankings/Rankings";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path:"/register",
         element: <Register />,
+      },
+      {
+        path: "/rankings",
+        element: <Rankings />,
       },
       {
         path: "/logout",

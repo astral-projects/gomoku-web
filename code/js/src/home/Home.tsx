@@ -7,7 +7,7 @@ export function Home() {
       <h1>Home</h1>
       <p>Welcome to the Gomoku game!</p>
       <p> 
-        <Link to= "/rankigs">
+        <Link to= "/rankings">
           <button>Rankings</button>
         </Link>
       </p>
