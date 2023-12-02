@@ -1,0 +1,23 @@
+.board {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 1px;
+    background-color: #333; /* Cor entre as células */
+  }
+  
+  .board-row {
+    display: contents; /* Faz com que o `.board-row` não interfira no layout de grid */
+  }
+  
+  .cell {
+    width: 20px; /* Largura das células */
+    height: 20px; /* Altura das células */
+    background-color: #fff; /* Cor de fundo das células */
+    border: 1px solid #000; /* Borda das células */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  
+  

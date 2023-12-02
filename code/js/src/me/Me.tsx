@@ -7,7 +7,7 @@ export function Me() {
       <h1>Me</h1>
       <p>Me</p>
       <p>
-        <Link to="/findGame">
+        <Link to="/game">
           <button>Search For Opponnet</button>
         </Link>
       </p>

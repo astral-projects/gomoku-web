@@ -6,6 +6,8 @@ import { Login } from "./login/Login";
 import { Me } from "./me/Me";
 import { Register } from "./register/Register";
 import { Rankings } from "./Rankings/Rankings";
+import { FindGame } from "./findGame/FindGame";
+import { Game } from "./game/Game";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +37,14 @@ const router = createBrowserRouter([
       {
         path: "/rankings",
         element: <Rankings />,
+      },
+      {
+        path: "/game",
+        element: <FindGame />,
+      },
+      {
+        path: "/game/:gameId",
+        element: <Game />,
       },
       {
         path: "/logout",
