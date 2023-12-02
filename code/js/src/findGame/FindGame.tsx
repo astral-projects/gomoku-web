@@ -29,7 +29,7 @@ function findGameReducer(state: FindGameState, action: FindGameAction): FindGame
         case 'start-game':
             return { tag: 'in-game' };
         default:
-            return state; // Retornar o estado atual para qualquer outra ação não tratada
+            return state; 
     }
 }
 
@@ -40,15 +40,12 @@ export function FindGame() {
         return new Promise(resolve => setTimeout(resolve, delayInMs));
     }
 
-    // Efeito para simular a busca de um jogo e a transição para o estado 'in-lobby'
     React.useEffect(() => {
         delay(5000).then(() => {
-            // Suponha que o jogo foi encontrado, agora mudamos para o lobby
             dispatch({ type: 'join-lobby' });
         });
-    }, []); // Array de dependências vazio significa que este efeito rodará apenas uma vez após o componente montar
-
-    // Efeito para iniciar o jogo automaticamente quando estiver no estado 'in-lobby'
+    }, []); 
+    
     React.useEffect(() => {
         let isCancelled = false;
 
@@ -60,14 +57,12 @@ export function FindGame() {
             });
         }
 
-        // Função de limpeza que define a flag de cancelamento
         return () => {
             isCancelled = true;
         };
     }, [state.tag]);
 
     const leaveLobby = () => {
-        // Pode fazer qualquer limpeza necessária aqui
         dispatch({ type: 'error', message: 'Left the lobby' });
     };
 
