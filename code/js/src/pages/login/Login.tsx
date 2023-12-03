@@ -45,20 +45,6 @@ function reduce(state: State, action: Action): State {
   }
 }
 
-function delay(delayInMs: number) {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(undefined), delayInMs);
-  });
-}
-
-export async function authenticate(username: string, password: string): Promise<string | undefined> {
-  await delay(5000);
-  if ((username == 'alice' || username == 'bob') && password == '1234') {
-    return username;
-  }
-  return undefined;
-}
-
 export function Login() {
   console.log('Login');
   const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
@@ -78,7 +64,7 @@ export function Login() {
     dispatch({ type: 'submit' });
     const username = state.inputs.username;
     const password = state.inputs.password;
-    authenticate(username, password)
+    authenticate(username, password)  // do the api request
       .then(res => {
         if (res) {
           console.log(`setUser(${res})`);

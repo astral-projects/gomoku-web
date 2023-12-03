@@ -106,6 +106,13 @@ class UserOutputModels {
             clazz("home")
             requireAuth()
             link(Uris.Users.home(), Rels.SELF)
+            receiptLink(Uris.Games.GET_BY_ID, Rels.GAME_RECEIPT)
+            receiptLink(Uris.Games.GET_VARIANTS, Rels.GAME_VARIANTS_RECEIPT)
+            receiptLink(Uris.Lobby.GET_IS_IN_LOBBY, Rels.GET_IS_IN_LOBBY_RECEIPT)
+            receiptLink(Uris.Users.GET_BY_ID, Rels.USER_RECEIPT)
+            receiptLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_RECEIPT)
+            receiptLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_RECEIPT)
+
             entity(
                 usersStats,
                 Rels.USERS_STATS

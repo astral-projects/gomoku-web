@@ -1,13 +1,13 @@
 import * as React from "react";
 import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
-import { GomokuContainer } from "./gomokuContainer/GomokuContainer";
-import { Home } from "./home/Home";
-import { Login } from "./login/Login";
-import { Me } from "./me/Me";
-import { Register } from "./register/Register";
-import { Rankings } from "./Rankings/Rankings";
-import { FindGame } from "./findGame/FindGame";
-import { Game } from "./game/Game";
+import { GomokuContainer } from "./pages/gomokuContainer/GomokuContainer";
+import { Home } from "./pages/home/Home";
+import { Login } from "./pages/login/Login";
+import { Me } from "./pages/me/Me";
+import { Register } from "./pages/register/Register";
+import { Rankings } from "./pages/Rankings/Rankings";
+import { FindGame } from "./pages/findGame/FindGame";
+import { Game } from "./pages/game/Game";
 
 const router = createBrowserRouter([
   {
