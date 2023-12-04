@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "add.js",
+  "proxy": "http://localhost:8080",
   "scripts": {
     "build": "webpack build",
     "start": "webpack serve",
@@ -33,7 +34,10 @@
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.18",
     "@mui/styled-engine-sc": "^6.0.0-alpha.6",
+    "@types/js-cookie": "^3.0.6",
+    "js-cookie": "^3.0.5",
     "react": "^17.0.0 || ^18.0.0",
+    "react-cookie": "^6.1.1",
     "react-dom": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.18.0",
     "styled-components": "^6.1.1"

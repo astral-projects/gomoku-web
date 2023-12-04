@@ -94,6 +94,20 @@ tasks.named("check") {
     dependsOn("dbTestsWait")
     finalizedBy("dbTestsDown")
 }
+
+task<Copy>("extractUberJar") {
+    dependsOn("assemble")
+    // opens the JAR containing everything...
+    from(zipTree("$buildDir/libs/jvm-$version.jar"))
+    // ... into the 'build/dependency' folder
+    into("build/dependency")
+}
+
+task<Exec>("composeUp") {
+    commandLine("docker-compose", "up", "--build", "--force-recreate")
+    dependsOn("extractUberJar")
+}
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     languageVersion = "1.9"
