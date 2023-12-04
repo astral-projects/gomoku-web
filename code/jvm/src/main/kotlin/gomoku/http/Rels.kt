@@ -25,4 +25,16 @@ object Rels {
     val USER_STATS = LinkRelation("$BASE/user-stats")
 
     val USERS_STATS = LinkRelation("$BASE/users-stats")
+
+    val USER_RECEIPT = LinkRelation("$BASE/user/{id}")
+
+    val GAME_RECEIPT = LinkRelation("$BASE/game/{id}")
+
+    val GAME_VARIANTS_RECEIPT = LinkRelation("$BASE/game/variants")
+
+    val GET_IS_IN_LOBBY_RECEIPT = LinkRelation("$BASE/lobby/{id}")
+
+    val GET_USERS_STATS_RECEIPT = LinkRelation("$BASE/users/stats/search")
+
+    val GET_USER_STATS_RECEIPT = LinkRelation("$BASE/users/{id}/stats")
 }

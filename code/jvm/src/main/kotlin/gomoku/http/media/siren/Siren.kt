@@ -64,6 +64,10 @@ class SirenBuilderScope<T>(
         links.add(LinkModel(listOf(rel.value), href.toASCIIString()))
     }
 
+    fun receiptLink(receipt: String, rel: LinkRelation) {
+        links.add(LinkModel(listOf(rel.value), receipt))
+    }
+
     fun <U> entity(value: U, rel: LinkRelation, block: EntityBuilderScope<U>.() -> Unit) {
         val scope = EntityBuilderScope(value, listOf(rel.value))
         scope.block()
