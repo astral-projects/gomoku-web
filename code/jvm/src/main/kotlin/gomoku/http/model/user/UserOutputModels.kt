@@ -52,7 +52,7 @@ class UserOutputModels {
         }
 
     /**
-     * Output model for the user registration using media type application/vnd.siren+json
+     * Output model for the user login using media type application/vnd.siren+json
      * implemented using [SirenModel].
      *
      * @param loggedUser The logged user.

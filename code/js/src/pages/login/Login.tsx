@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSetUser } from './Authn';
+import { useCurrentUser, useSetUser } from './Authn';
 import { login } from '../../services/usersServices';
-import { useCookies } from 'react-cookie';
+import { SirenModel } from '../../services/media/siren/SirenModel';
+import { ProblemModel } from '../../services/media/ProblemModel';
+import { User } from '../../domain/User';
+import { LoginOutput } from '../../services/users/models/LoginOuputModel';
 
 type State =
   | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
@@ -55,24 +58,28 @@ function reduce(state: State, action: Action): State {
 export function Login() {
   const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
   const setUser = useSetUser();
+  const user = useCurrentUser();
   const location = useLocation();
-  const [cookies, setCookie] = useCookies(['token']);
 
   useEffect(() => {
     if (state.tag !== 'submitting') {
       return;
     }
-    login(state.username, state.password)
-      .then(res => {
-        // TODO: How to avoid cors without load balancer in a simple way?
-        console.log(res);
-        console.log('Login success');
-        setCookie('token', res.data.token, { httpOnly: true, sameSite: 'strict', secure: true });
-        setUser(res.data);
-        dispatch({ type: 'success' });
+    login({ username: state.username, password: state.password })
+      .then(async result => {
+        const errorData = result.json as ProblemModel;
+        const successData = result.json as SirenModel<LoginOutput>;
+        if (result.contentType === 'application/problem+json') {
+          dispatch({ type: 'error', message: errorData.detail });
+        } else if (result.contentType === 'application/vnd.siren+json') {
+          const properties = successData.entities[0].properties;
+          const loggedUser: User = properties as User;
+          setUser(loggedUser);
+          console.log('User: ' + user);
+          dispatch({ type: 'success' });
+        }
       })
-      .catch(err => {
-        console.log('Login error');
+      .catch((err: { message: string }) => {
         dispatch({ type: 'error', message: err.message });
       });
   });
@@ -97,7 +104,6 @@ export function Login() {
   const password = state.tag === 'submitting' ? '' : state.inputs.password;
   return (
     <form onSubmit={handleSubmit}>
-      {state.tag === 'submitting' && cookies.token}
       <fieldset disabled={state.tag !== 'editing'}>
         <div>
           <label htmlFor="username">Username</label>

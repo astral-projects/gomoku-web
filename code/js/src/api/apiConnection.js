@@ -12,8 +12,8 @@ export default function () {
    * @param path - The path to the API
    * @param options - The options for the fetch
    */
-  function fetchApi(path, options) {
-    return fetch(path, options).then(res => res.json());
+  async function fetchApi(path, options) {
+    return await fetch(path, options);
   }
 
   /**
@@ -24,7 +24,7 @@ export default function () {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Accept': 'application/json',
       },
     };
     return fetchApi(path, options);
@@ -40,9 +40,9 @@ export default function () {
     const options = {
       method: 'GET',
       headers: {
-        Authorization: token,
+        'Authorization': token,
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Accept': 'application/json',
       },
     };
     return fetchApi(path, options);
@@ -58,9 +58,8 @@ export default function () {
     const options = {
       method: 'POST',
       headers: {
-        Authorization: token,
+        'Authorization': token,
         'Content-Type': 'application/json',
-        Accept: 'application/json',
       },
       body: JSON.stringify(body),
     };
@@ -76,7 +75,7 @@ export default function () {
     const options = {
       method: 'Delete',
       headers: {
-        Authorization: token,
+        'Authorization': token,
         'Content-Type': 'application/json',
       },
     };
@@ -94,7 +93,7 @@ export default function () {
     const options = {
       method: 'PUT',
       headers: {
-        Authorization: token,
+        'Authorization': token,
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },

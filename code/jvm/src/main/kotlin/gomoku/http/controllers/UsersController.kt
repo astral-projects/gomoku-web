@@ -43,14 +43,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class UsersController(
     private val userService: UsersService,
-    private val systemService: SystemService,
+    private val systemService: SystemService
 ) {
 
     companion object {
         private val userOutputModels = UserOutputModels()
         const val DEFAULT_ITEMS_PER_PAGE = "10"
         const val DEFAULT_PAGE = "1"
-        const val FIRST_PAGE = 1
     }
 
     /**
@@ -163,11 +162,11 @@ class UsersController(
                                 val loggedUser = userService.getUserByToken(tokenCreationResult.value.tokenValue)
                                     ?: return Problem.invalidToken(instance)
 
-                                ResponseEntity.ok().sirenResponse(
-                                    userOutputModels.tokenCreation(
-                                        loggedUser = loggedUser,
-                                        tokenCreationResult = tokenCreationResult.value
-                                    )
+                                ResponseEntity.ok().header(
+                                    "Set-Cookie",
+                                    "Authorization=${tokenCreationResult.value.tokenValue}; HttpOnly; SameSite=Strict;"
+                                ).sirenResponse(
+                                    userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
                                 )
                             }
                         }
@@ -193,9 +192,15 @@ class UsersController(
                 TokenRevocationError.TokenIsInvalid -> Problem.invalidToken(instance)
             }
 
-            is Success -> ResponseEntity.ok().sirenResponse(
-                userOutputModels.logout()
-            )
+            is Success -> {
+                // remove the cookie,
+                val cookie = "Authorization=; max-age=0;"
+                ResponseEntity.ok()
+                    .header("Set-Cookie", cookie)
+                    .sirenResponse(
+                        userOutputModels.logout()
+                    )
+            }
         }
     }
 

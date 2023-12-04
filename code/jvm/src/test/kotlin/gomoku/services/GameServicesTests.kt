@@ -104,7 +104,7 @@ class GameServicesTests {
         // then: the join is successful
         when (gameCreationResult2) {
             is Failure -> fail("Unexpected $gameCreationResult2")
-            is Success -> when(gameCreationResult2.value) {
+            is Success -> when (gameCreationResult2.value) {
                 is FindGameSuccess.GameMatch -> {
                     assertIs<FindGameSuccess.GameMatch>(gameCreationResult2.value)
                     assertEquals("Joined the game successfully with id=${gameCreationResult2.value.id}", gameCreationResult2.value.message)
