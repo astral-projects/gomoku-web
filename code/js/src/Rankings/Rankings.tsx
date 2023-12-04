@@ -187,5 +187,4 @@ export function Rankings() {
             return <div>Unexpected state</div>;
             
     }
-
 }
