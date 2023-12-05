@@ -112,7 +112,6 @@ class UserOutputModels {
             receiptLink(Uris.Users.GET_BY_ID, Rels.USER_RECEIPT)
             receiptLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_RECEIPT)
             receiptLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_RECEIPT)
-
             entity(
                 usersStats,
                 Rels.USERS_STATS

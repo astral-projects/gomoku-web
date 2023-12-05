@@ -28,19 +28,21 @@ class AuthenticationInterceptor(
             // process token in authentication schema
             val authUser = authorizationHeaderProcessor
                 .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
-            return if (authUser == null) {
+            // process token in cookie
+            val authUserCookie = authorizationHeaderProcessor
+                .processCookieValue(request.cookies?.find { it.name == NAME_AUTHORIZATION_HEADER }?.value)
+            return if (authUser == null && authUserCookie == null) {
                 // short-circuit this request since the client is not authenticated
                 response.status = 401
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
                 logger.info("User not authenticated")
                 false
             } else {
-                AuthenticatedUserArgumentResolver.addUserTo(authUser, request)
+                (authUser ?: authUserCookie)?.let { AuthenticatedUserArgumentResolver.addUserTo(it, request) }
                 logger.info("User authenticated")
                 true
             }
         }
-
         return true
     }
 
