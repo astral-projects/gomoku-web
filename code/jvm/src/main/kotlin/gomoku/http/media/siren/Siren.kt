@@ -11,6 +11,7 @@ data class SirenModel<T>(
     val clazz: List<String>,
     val properties: T,
     val links: List<LinkModel>,
+    val receiptLinks: List<LinkModel>,
     val actions: List<ActionModel>,
     val entities: List<EntityModel<*>>,
     val requireAuth: List<Boolean>
@@ -54,6 +55,7 @@ class SirenBuilderScope<T>(
     private val entities = mutableListOf<EntityModel<*>>()
     private val classes = mutableListOf<String>()
     private val actions = mutableListOf<ActionModel>()
+    private val receiptLinks = mutableListOf<LinkModel>()
     private val requireAuth = mutableListOf(false)
 
     fun clazz(value: String) {
@@ -65,7 +67,7 @@ class SirenBuilderScope<T>(
     }
 
     fun receiptLink(receipt: String, rel: LinkRelation) {
-        links.add(LinkModel(listOf(rel.value), receipt))
+        receiptLinks.add(LinkModel(listOf(rel.value), receipt))
     }
 
     fun <U> entity(value: U, rel: LinkRelation, block: EntityBuilderScope<U>.() -> Unit) {
@@ -98,7 +100,8 @@ class SirenBuilderScope<T>(
         links = links,
         entities = entities,
         actions = actions,
-        requireAuth = requireAuth
+        requireAuth = requireAuth,
+        receiptLinks = receiptLinks
     )
 }
 
