@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
@@ -50,6 +51,19 @@ class UsersController(
         private val userOutputModels = UserOutputModels()
         const val DEFAULT_ITEMS_PER_PAGE = "10"
         const val DEFAULT_PAGE = "1"
+        const val HEADER_SET_COOKIE_NAME = "Set-Cookie"
+        const val AUTHORIZATION_COOKIE_NAME = "_autho"
+        const val AUTHORIZATION_COOKIE_PROPS = "HttpOnly; SameSite=Strict;"
+        const val AUTHORIZATION_COOKIE_DELETE_PROPS = "Expires=0;"
+        private const val MOZILLA_USER_AGENT = "Mozilla"
+        private const val CHROME_USER_AGENT = "Chrome"
+        private const val SAFARI_USER_AGENT = "Safari"
+
+        private fun isWeb(userAgent: String): Boolean {
+            return userAgent.contains(MOZILLA_USER_AGENT) || userAgent.contains(CHROME_USER_AGENT) || userAgent.contains(
+                SAFARI_USER_AGENT
+            )
+        }
     }
 
     /**
@@ -127,7 +141,8 @@ class UsersController(
     @PostMapping(Uris.Users.TOKEN)
     fun createToken(
         @RequestBody
-        input: UserCreateTokenInputModel
+        input: UserCreateTokenInputModel,
+        @RequestHeader("User-Agent") userAgent: String
     ): ResponseEntity<*> {
         val instance = Uris.Users.login()
         return when (val usernameResult = Username(input.username)) {
@@ -162,12 +177,19 @@ class UsersController(
                                 val loggedUser = userService.getUserByToken(tokenCreationResult.value.tokenValue)
                                     ?: return Problem.invalidToken(instance)
 
-                                ResponseEntity.ok().header(
-                                    "Set-Cookie",
-                                    "Authorization=${tokenCreationResult.value.tokenValue}; HttpOnly; SameSite=Strict;"
-                                ).sirenResponse(
-                                    userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
-                                )
+                                // evaluate if the user agent is web or not and set the cookie accordingly
+                                if (isWeb(userAgent)) {
+                                    ResponseEntity.ok().header(
+                                        HEADER_SET_COOKIE_NAME,
+                                        "$AUTHORIZATION_COOKIE_NAME=${tokenCreationResult.value.tokenValue}; $AUTHORIZATION_COOKIE_PROPS"
+                                    ).sirenResponse(
+                                        userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
+                                    )
+                                } else {
+                                    ResponseEntity.ok().sirenResponse(
+                                        userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
+                                    )
+                                }
                             }
                         }
                     }
@@ -193,10 +215,10 @@ class UsersController(
             }
 
             is Success -> {
-                // remove the cookie,
-                val cookie = "Authorization=; max-age=0;"
+                // remove the cookie from the client
+                val cookie = "$AUTHORIZATION_COOKIE_NAME=; $AUTHORIZATION_COOKIE_DELETE_PROPS"
                 ResponseEntity.ok()
-                    .header("Set-Cookie", cookie)
+                    .header(HEADER_SET_COOKIE_NAME, cookie)
                     .sirenResponse(
                         userOutputModels.logout()
                     )
