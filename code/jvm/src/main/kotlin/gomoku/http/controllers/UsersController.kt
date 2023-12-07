@@ -67,6 +67,17 @@ class UsersController(
     }
 
     /**
+     * Retrieves all the recipes of the API.
+     * @return A [ResponseEntity] containing the [siren] representation of the recipes.
+     */
+    @GetMapping(Uris.Users.HOME)
+    fun getHome(): ResponseEntity<*> {
+        return ResponseEntity.ok().sirenResponse(
+            userOutputModels.home()
+        )
+    }
+
+    /**
      * Creates a new user.
      * @param input the user input with registration data.
      * @return A [ResponseEntity] containing the [siren] result of the user or an
@@ -232,12 +243,12 @@ class UsersController(
      * @return A [ResponseEntity] containing the [siren] representation of the user or an
      * appropriate [Problem] response.
      */
-    @GetMapping(Uris.Users.HOME)
+    @GetMapping(Uris.Users.ME)
     fun getUserHome(
         authenticatedUser: AuthenticatedUser
     ): ResponseEntity<*> {
         return ResponseEntity.ok().sirenResponse(
-            userOutputModels.home(
+            userOutputModels.homeAuthenticated(
                 authenticatedUser = authenticatedUser,
                 usersStats = userService.getUsersStats(),
                 userStats = userService.getUserStats(authenticatedUser.user.id),

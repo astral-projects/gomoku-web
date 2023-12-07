@@ -26,15 +26,23 @@ object Rels {
 
     val USERS_STATS = LinkRelation("$BASE/users-stats")
 
-    val USER_RECEIPT = LinkRelation("$BASE/users/userId")
+    val USER_RECIPE = LinkRelation("$BASE/users/{/user_id}")
 
-    val GAME_RECEIPT = LinkRelation("$BASE/games/gameId")
+    val GAME_RECIPE = LinkRelation("$BASE/games/{/game_id}")
 
-    val GAME_VARIANTS_RECEIPT = LinkRelation("$BASE/games/variants")
+    val GAME_VARIANTS_RECIPE = LinkRelation("$BASE/games/variants")
 
-    val GET_IS_IN_LOBBY_RECEIPT = LinkRelation("$BASE/lobbies/lobbyId")
+    val GET_IS_IN_LOBBY_RECIPE = LinkRelation("$BASE/lobbies/{/lobby_id}")
 
-    val GET_USERS_STATS_RECEIPT = LinkRelation("$BASE/users/stats/search")
+    val GET_USERS_STATS_RECIPE = LinkRelation("$BASE/users/stats/search")
 
-    val GET_USER_STATS_RECEIPT = LinkRelation("$BASE/users/{id}/stats")
+    val GET_USER_STATS_RECIPE = LinkRelation("$BASE/users/{/user_id}/stats")
+
+    val REGISTER_RECIPE = LinkRelation("$BASE/users")
+
+    val LOGIN_RECIPE = LinkRelation("$BASE/users/token")
+
+    val LOGOUT_RECIPE = LinkRelation("$BASE/users/logout")
+
+    val FIND_GAME_RECIPE = LinkRelation("$BASE/games")
 }

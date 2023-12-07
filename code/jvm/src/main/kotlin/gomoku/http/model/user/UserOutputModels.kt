@@ -22,12 +22,25 @@ class UserOutputModels {
 
     companion object {
         const val FIRST_PAGE = 1
-        data class UserLogoutOutputModel(
-            val message: String = "User logged out successfully, token was revoked."
-        )
     }
 
-    /**œ
+    fun home(): SirenModel<HomeOutputModel> =
+        siren(HomeOutputModel()) {
+            clazz("home")
+            link(Uris.Users.home(), Rels.SELF)
+            recipeLink(Uris.Users.REGISTER, Rels.REGISTER_RECIPE)
+            recipeLink(Uris.Users.TOKEN, Rels.LOGIN_RECIPE)
+            recipeLink(Uris.Users.LOGOUT, Rels.LOGOUT_RECIPE)
+            recipeLink(Uris.Games.FIND_GAME, Rels.FIND_GAME_RECIPE)
+            recipeLink(Uris.Games.GET_BY_ID, Rels.GAME_RECIPE)
+            recipeLink(Uris.Games.GET_VARIANTS, Rels.GAME_VARIANTS_RECIPE)
+            recipeLink(Uris.Lobby.GET_IS_IN_LOBBY, Rels.GET_IS_IN_LOBBY_RECIPE)
+            recipeLink(Uris.Users.GET_BY_ID, Rels.USER_RECIPE)
+            recipeLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_RECIPE)
+            recipeLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_RECIPE)
+        }
+
+    /**
      * Output model for the user registration using media type application/vnd.siren+json
      * implemented using [SirenModel].
      *
@@ -96,7 +109,7 @@ class UserOutputModels {
      * @param systemInfo The system information.
      * @return A [SirenModel] containing the [authenticatedUser], [usersStats], [userStats] and [systemInfo] representation.
      */
-    fun home(
+    fun homeAuthenticated(
         authenticatedUser: AuthenticatedUser,
         usersStats: PaginatedResult<UserStatsInfo>,
         userStats: UserStatsInfo?,
@@ -106,12 +119,6 @@ class UserOutputModels {
             clazz("home")
             requireAuth()
             link(Uris.Users.home(), Rels.SELF)
-            receiptLink(Uris.Games.GET_BY_ID, Rels.GAME_RECEIPT)
-            receiptLink(Uris.Games.GET_VARIANTS, Rels.GAME_VARIANTS_RECEIPT)
-            receiptLink(Uris.Lobby.GET_IS_IN_LOBBY, Rels.GET_IS_IN_LOBBY_RECEIPT)
-            receiptLink(Uris.Users.GET_BY_ID, Rels.USER_RECEIPT)
-            receiptLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_RECEIPT)
-            receiptLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_RECEIPT)
             entity(
                 usersStats,
                 Rels.USERS_STATS

@@ -30,7 +30,7 @@ class AuthenticationInterceptor(
                 .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
             // process token in cookie
             val authUserCookie = authorizationHeaderProcessor
-                .processCookieValue(request.cookies?.find { it.name == NAME_AUTHORIZATION_HEADER }?.value)
+                .processCookieValue(request.cookies?.find { it.name == NAME_COOKIE }?.value)
             return if (authUser == null && authUserCookie == null) {
                 // short-circuit this request since the client is not authenticated
                 response.status = 401
@@ -48,6 +48,7 @@ class AuthenticationInterceptor(
 
     companion object {
         private val logger = LoggerFactory.getLogger(AuthenticationInterceptor::class.java)
+        const val NAME_COOKIE = "_autho"
         const val NAME_AUTHORIZATION_HEADER = "Authorization"
         const val NAME_WWW_AUTHENTICATE_HEADER = "WWW-Authenticate"
     }
