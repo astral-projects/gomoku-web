@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useCurrentUser, useSetUser } from './Authn';
 import { login } from '../../services/usersServices';
-import { SirenModel } from '../../services/media/siren/SirenModel';
 import { ProblemModel } from '../../services/media/ProblemModel';
-import { User } from '../../domain/User';
 import { LoginOutput } from '../../services/users/models/LoginOuputModel';
+import { Email, Id, User, Username } from '../../domain/User';
+import { Entity } from '../../services/media/siren/Entity';
+import { useSetUser } from '../gomokuContainer/GomokuContainer';
+import { logUnexpectedAction } from '../utils/logUnexpetedAction';
+import { isSuccessful } from '../utils/responseData';
 
 type State =
   | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
@@ -18,10 +20,6 @@ type Action =
   | { type: 'submit' }
   | { type: 'error'; message: string }
   | { type: 'success' };
-
-function logUnexpectedAction(state: State, action: Action) {
-  console.log(`Unexpected action '${action.type} on state '${state.tag}'`);
-}
 
 function reduce(state: State, action: Action): State {
   switch (state.tag) {
@@ -58,31 +56,32 @@ function reduce(state: State, action: Action): State {
 export function Login() {
   const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
   const setUser = useSetUser();
-  const user = useCurrentUser();
   const location = useLocation();
 
   useEffect(() => {
     if (state.tag !== 'submitting') {
       return;
     }
+
     login({ username: state.username, password: state.password })
-      .then(async result => {
-        const errorData = result.json as ProblemModel;
-        const successData = result.json as SirenModel<LoginOutput>;
-        if (result.contentType === 'application/problem+json') {
+      .then(result => {
+        if (!isSuccessful(result.contentType)) {
+          const errorData = result.json as ProblemModel;
           dispatch({ type: 'error', message: errorData.detail });
-        } else if (result.contentType === 'application/vnd.siren+json') {
-          const properties = successData.entities[0].properties;
-          const loggedUser: User = properties as User;
-          setUser(loggedUser);
-          console.log('User: ' + user);
+        } else {
+          const successData = result.json as LoginOutput;
+          const properties = successData.entities[0] as Entity<User>;
+          const id = properties.properties.id as Id;
+          const username = properties.properties.username as Username;
+          const email = properties.properties.email as Email;
+          setUser({ id: id.value, username: username.value, email:  email.value});
           dispatch({ type: 'success' });
         }
       })
       .catch((err: { message: string }) => {
         dispatch({ type: 'error', message: err.message });
       });
-  });
+  }, [state, setUser]);
 
   if (state.tag === 'redirect') {
     return <Navigate to={location.state?.source?.pathname || '/me'} replace={true} />;
@@ -98,26 +97,33 @@ export function Login() {
       return;
     }
     dispatch({ type: 'submit' });
+    // 3 açoes distintas (3 dispatches)
+    // 1 - submeter o form
+    // --- pedido (await login) -----
+    // 2 - sucesso
+    // 3 - erro
   }
 
   const username = state.tag === 'submitting' ? state.username : state.inputs.username;
   const password = state.tag === 'submitting' ? '' : state.inputs.password;
   return (
-    <form onSubmit={handleSubmit}>
-      <fieldset disabled={state.tag !== 'editing'}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input id="username" type="text" name="username" value={username} onChange={handleChange} />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input id="password" type="text" name="password" value={password} onChange={handleChange} />
-        </div>
-        <div>
-          <button type="submit">Login</button>
-        </div>
-      </fieldset>
-      {state.tag === 'editing' && state.error}
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <fieldset disabled={state.tag !== 'editing'}>
+          <div>
+            <label htmlFor="username">Username</label>
+            <input id="username" type="text" name="username" value={username} onChange={handleChange} />
+          </div>
+          <div>
+            <label htmlFor="password">Password</label>
+            <input id="password" type="text" name="password" value={password} onChange={handleChange} />
+          </div>
+          <div>
+            <button type="submit">Login</button>
+          </div>
+        </fieldset>
+        {state.tag === 'editing' && state.error}
+      </form>
+    </div>
   );
 }

@@ -8,4 +8,5 @@ export class SirenModel<T> {
   entities: Entity<unknown>[];
   actions: Action[];
   links: Link[];
+  receiptLinks: Link[];
 }

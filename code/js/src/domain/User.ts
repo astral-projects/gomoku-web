@@ -1,22 +1,17 @@
 export type User = {
-    id: number
-    username: string,
-    email: string,
-    password: string,
+    id: Id
+    username: Username,
+    email: Email
 }
 
 export type Id = {
-    id: number
+    value: number
 }
 
 export type Username = {
-    username: string
+    value: string
 }
 
 export type Email = {
-    email: string
-}
-
-export type Password = {
-    password: string
+    value: string
 }

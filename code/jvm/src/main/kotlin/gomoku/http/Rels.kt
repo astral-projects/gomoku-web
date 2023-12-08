@@ -40,9 +40,11 @@ object Rels {
 
     val REGISTER_RECIPE = LinkRelation("$BASE/users")
 
-    val LOGIN_RECIPE = LinkRelation("$BASE/users/token")
+    val LOGIN_RECIPE = LinkRelation("$BASE/login")
 
     val LOGOUT_RECIPE = LinkRelation("$BASE/users/logout")
 
     val FIND_GAME_RECIPE = LinkRelation("$BASE/games")
+
+    val ME_RECIPE = LinkRelation("$BASE/users/home")
 }

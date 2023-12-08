@@ -1,19 +1,31 @@
-import API from '../api/apiConnection.js';
-import apiRoutes from '../api/routes.js';
-import { FetchResponse } from './fetchResponse';
-import { LoginOutput } from './users/models/LoginOuputModel.js';
+import API from '../api/apiConnection';
+import { LoginInputModel } from './users/models/LoginInputModel';
+import { ApiResponse } from '../api/apiConnection';
+import { LoginOutput } from './users/models/LoginOuputModel';
+import { HomeOutput } from './users/models/HomeOutputModel';
+import { ProblemModel } from './media/ProblemModel';
+import { findUri } from '../api/recipes';
 
 const apiConnection = API();
 
-export async function login(body: { username: string; password: string; }): Promise<FetchResponse<LoginOutput>> {
-  const response = await apiConnection.postApi(apiRoutes.login, '', body);
-  return {
-    contentType: response.headers.get('Content-Type'),
-    json: await response.json(),
-  };
+export async function login(body: LoginInputModel) {
+  try {
+    const response =  await apiConnection.postApi(findUri("login"), body) as ApiResponse<LoginOutput>;
+    return response;
+  } catch (error) {
+    const response = await error as ApiResponse<ProblemModel>;
+    return response;
+  }
+  
 }
 
-export async function logout(token: string) {
-  const response = await apiConnection.postApi(apiRoutes.logout, token);
-  return await response.json();
+export async function me() {
+  try {
+    const uri = findUri("me");
+    const response = await apiConnection.getApi(uri) as ApiResponse<HomeOutput>;
+    return response;
+  } catch (error) {
+    const response = error as ApiResponse<ProblemModel>;
+    return response;
+  }
 }
