@@ -16,6 +16,13 @@ class LoggingFilter : HttpFilter() {
 
     override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
         val stopWatch = StopWatch().apply { start() }
+        logger.info(
+                "method:{}, path:{}, status:{}, duration:{} ms",
+                request.method,
+                request.requestURI,
+                response.status,
+                0
+        )
         chain.doFilter(request, response)
         stopWatch.stop()
         logger.info(

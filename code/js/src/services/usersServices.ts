@@ -13,7 +13,7 @@ export async function register(body: RegisterInputModel) {
 }
 
 export async function login(body: LoginInputModel) {
-    return await callApi<LoginInputModel, LoginOutput>('login', Method.POST, body);
+    return await callApi<LoginInputModel, LoginOutput>('api/users/token', Method.POST, body);
 }
 
 export async function logout() {

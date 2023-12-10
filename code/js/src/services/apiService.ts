@@ -23,6 +23,7 @@ export enum Method {
  */
 export async function callApi<B, T>(uri: string, method: Method, body?: B, token?: string): Promise<ApiResponse<T | ProblemModel>> {
   let response: ApiResponse<T>;
+  console.log(token)
   try {
     // get the uri from the rel
     // const uriRecipe = findUri(rel);
@@ -30,7 +31,9 @@ export async function callApi<B, T>(uri: string, method: Method, body?: B, token
     console.log("Calling api with uri: " + uri);
     switch (method) {
       case Method.GET:
-        response = await apiConnection.getApi(uri, token);
+        console.log("Calling api with uri: insiede the method " + uri);
+        response = await apiConnection.getApi(uri);
+        console.log("Calling api with uri: the response  " + response);
         return response;
 
       case Method.POST:

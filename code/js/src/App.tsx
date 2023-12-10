@@ -6,7 +6,7 @@ import { Login } from './pages/login/Login';
 import { Me } from './pages/me/Me';
 import { Error } from './pages/error/Error';
 import { Register } from './pages/register/Register';
-import { Rankings } from './pages/rankings/Rankings';
+import { Rankings } from './pages/Rankings/Rankings';
 import { FindGame } from './pages/findGame/FindGame';
 import { Game } from './pages/game/Game';
 
