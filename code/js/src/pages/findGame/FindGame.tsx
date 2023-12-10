@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { getVariants, waittingInLobby, findGame, exitLobby } from "../../services/gameServices";
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { FindGameOutput } from "../../services/users/models/games/FindGameOutputModel";
@@ -39,7 +39,6 @@ function findGameReducer(state: State, action: Action): State {
         case 'leave-lobby':
             return { tag: 'selecting-variant' };
         case 'start-game':
-            console.log('start game aqewqeqwe');
             return { tag: 'in-game', gameId: action.gameId };
         default:
             return state;
@@ -51,12 +50,13 @@ function findGameReducer(state: State, action: Action): State {
 export function FindGame() {
     const [state, dispatch] = React.useReducer(findGameReducer, { tag: 'loading-variants' });
     const [variants, setVariants] = React.useState(null);
+    const [pollingFinished, setPollingFinished] = React.useState(false);
+    const location = useLocation();
     const setGameId = useSetGameId();
     const pollingIntervalRef = React.useRef(null);
 
     const fetchGame = (variantId) => {
         findGame({ variantId: variantId }).then(result => {
-            console.log(`Nao acredito que ele me faz isto fds`);
             const errorData = result.json as ProblemModel;
             const successData = result.json as unknown as FindGameOutput;
             if (result.contentType === 'application/problem+json') {
@@ -66,6 +66,7 @@ export function FindGame() {
                     dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
+                    stopPollingLobbyStatus();
                     setGameId(gameId);
                     dispatch({ type: 'start-game', gameId: gameId });
                 }
@@ -112,6 +113,7 @@ export function FindGame() {
                     dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
+                    setPollingFinished(true);
                     setGameId(gameId);
                     dispatch({ type: 'start-game', gameId: gameId });
                 }
@@ -135,15 +137,15 @@ export function FindGame() {
         if (state.tag === 'loading-variants') {
             fetchVariants();
         }
-        if (state.tag === 'in-lobby') {
-            console.log('start polling lobby status');
-            startPollingLobbyStatus(state.lobbyId);
-        } 
 
+        if (state.tag === 'in-lobby') {
+            startPollingLobbyStatus(state.lobbyId);
+        }
         return () => {
-            console.log('stop polling lobby status in the return');
             stopPollingLobbyStatus();
+            setPollingFinished(true);
         };
+
     }, [state, startPollingLobbyStatus, stopPollingLobbyStatus, pollLobbyStatus]);
 
     const handleLeaveLobby = (lobbyId) => {
@@ -188,8 +190,12 @@ export function FindGame() {
             );
         case 'in-game': {
             const gameId = state.gameId;
-            console.log('passou aquio fodsaew');
-            return <Navigate to={`/game/${gameId}`} replace />;
+            if (!pollingFinished) {
+                return <div>Preparing game...</div>;
+            }
+          
+            return <Navigate to={location.state?.source?.pathname ||`/games/${gameId}`} replace={true}/>;
+       
         }
 
         case 'error':

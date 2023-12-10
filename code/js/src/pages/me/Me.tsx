@@ -83,7 +83,7 @@ export function Me() {
   }
 
   if (state.tag === 'redirect') {
-    return <Navigate to={location.state?.source?.pathname || '/game'} replace={true} />;
+    return <Navigate to={location.state?.source?.pathname || '/games'} replace={true} />;
   }
 
   function onClick(ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
