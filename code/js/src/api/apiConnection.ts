@@ -26,13 +26,13 @@ export default function () {
       const response = await fetch(path, options);
       const contentType = response.headers.get('content-type');
       console.log("Calling API at: " + path);
-  
+
       // Check if the response status indicates an error
       if (!response.ok) {
         console.log("Response:", response.status);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const json = await response.json();
       console.log("Response:", json);
       return {
@@ -45,7 +45,7 @@ export default function () {
       throw error; // Rethrow the error if you want to handle it at a higher level
     }
   }
-    
+
     /*const response = await fetch(path, options);
     const contentType = response.headers.get('content-type');
     console.log("inside fetchApi" + path);
@@ -69,7 +69,7 @@ export default function () {
     console.log("inside getApi" + path);
     return fetchApi<T>(path, options);
   }
-
+  
   /**
    * Function that fetches the API for POST requests and returns the response as a json
    * @param path

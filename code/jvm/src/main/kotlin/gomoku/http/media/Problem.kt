@@ -36,10 +36,11 @@ data class Problem(
 
     companion object {
 
-        private const val BASE_URL = "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/"
+        const val BASE_URL = "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/"
         const val MEDIA_TYPE = APPLICATION_PROBLEM_JSON_VALUE
         const val LANGUAGE = "en"
 
+        val unauthorizedRequest = URI("${BASE_URL}unauthorized")
         val invalidRequestContent = URI("${BASE_URL}invalid-request-content")
         val insecurePassword = URI("${BASE_URL}insecure-password")
         val gameNotFound = URI("${BASE_URL}game-not-found")

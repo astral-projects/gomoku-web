@@ -21,9 +21,8 @@ export enum Method {
  * @param body - optional body for POST and PUT requests
  * @param token - optional token for authentication
  */
-export async function callApi<B, T>(uri: string, method: Method, body?: B, token?: string): Promise<ApiResponse<T | ProblemModel>> {
+export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
   let response: ApiResponse<T>;
-  console.log(token)
   try {
     // get the uri from the rel
     // const uriRecipe = findUri(rel);
