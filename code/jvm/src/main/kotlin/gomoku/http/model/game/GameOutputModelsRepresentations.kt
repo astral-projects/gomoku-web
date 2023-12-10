@@ -3,10 +3,12 @@ package gomoku.http.model.game
 import gomoku.domain.components.Id
 import gomoku.domain.game.Game
 import gomoku.domain.game.variant.GameVariant
+import gomoku.domain.user.User
 import gomoku.http.Rels
 import gomoku.http.Uris
 import gomoku.http.media.siren.SirenModel
 import gomoku.http.media.siren.siren
+import gomoku.http.model.user.UserOutputModel
 import gomoku.services.game.FindGameSuccess
 import org.springframework.http.HttpMethod
 
@@ -79,11 +81,19 @@ class GameOutputModelsRepresentations {
      * @param game The game to be represented.
      */
     fun gameById(
-        game: Game
+        game: Game,
+        host: User,
+        guest: User
     ): SirenModel<GameOutputModel> {
         return siren(GameOutputModel.serializeFrom(game)) {
             clazz("game")
             link(Uris.Games.byId(game.id.value), Rels.SELF)
+            entity(UserOutputModel.serializeFrom(host), Rels.USER) {
+                link(Uris.Users.byId(host.id.value), Rels.SELF)
+            }
+            entity(UserOutputModel.serializeFrom(guest), Rels.USER) {
+                link(Uris.Users.byId(guest.id.value), Rels.SELF)
+            }
             action(
                 name = "Make Move",
                 href = Uris.Games.makeMove(game.id.value),
@@ -94,6 +104,7 @@ class GameOutputModelsRepresentations {
                 requireAuth()
                 textField("col")
                 numberField("row")
+                requireAuth()
             }
             action(
                 name = "Exit Game",
@@ -157,4 +168,5 @@ class GameOutputModelsRepresentations {
             clazz("variants")
             link(Uris.Games.getVariants(), Rels.SELF)
         }
+
 }

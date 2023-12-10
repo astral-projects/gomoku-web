@@ -22,7 +22,7 @@ import java.net.URI
  */
 @Component
 class AuthenticationInterceptor(
-    private val authorizationHeaderProcessor: RequestTokenProcessor,
+    private val authorizationHeaderProcessor: RequestTokenProcessor
 ) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         logger.info("Authentication interceptor")

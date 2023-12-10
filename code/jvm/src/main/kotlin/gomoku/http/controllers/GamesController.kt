@@ -20,6 +20,7 @@ import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GameUpdateError
 import gomoku.services.game.GamesService
 import gomoku.services.game.GettingGameError
+import gomoku.services.user.UsersService
 import gomoku.utils.Failure
 import gomoku.utils.NotTested
 import gomoku.utils.Success
@@ -35,7 +36,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GamesController(
-    private val gamesService: GamesService
+    private val gamesService: GamesService,
+    private val userServices: UsersService
 ) {
 
     companion object {
@@ -117,9 +119,31 @@ class GamesController(
                     )
                 }
 
-                is Success -> ResponseEntity.ok().sirenResponse(
-                    gameOutputModels.gameById(gameResult.value)
-                )
+                is Success -> {
+                    when (val userHost = userServices.getUserById(gameResult.value.hostId)) {
+                        is Failure -> Problem.userNotFound(
+                            userId = gameResult.value.hostId,
+                            instance = instance
+                        )
+
+                        is Success -> {
+                            when (val userGuest = userServices.getUserById(gameResult.value.guestId)) {
+                                is Failure -> Problem.userNotFound(
+                                    userId = gameResult.value.guestId,
+                                    instance = instance
+                                )
+
+                                is Success -> ResponseEntity.ok().sirenResponse(
+                                    gameOutputModels.gameById(
+                                        game = gameResult.value,
+                                        host = userHost.value,
+                                        guest = userGuest.value
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

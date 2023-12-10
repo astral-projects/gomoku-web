@@ -1,6 +1,6 @@
 import { SirenModel } from "../../media/siren/SirenModel"
 
-type LoginOutputModel = {
+export type LoginOutputModel = {
     token: string
 }
 
