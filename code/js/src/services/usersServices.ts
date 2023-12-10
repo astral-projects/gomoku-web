@@ -7,6 +7,7 @@ import { HomeOutput } from './models/users/HomeOutputModel';
 import { RegisterOutput } from './models/users/RegisterOuputModel';
 import { PaginatedResult } from './models/users/PaginatedResultModel';
 import { UserStats } from '../domain/UserStats';
+import { UserStatsOutput } from './models/users/UserStatsOutputModel';
 
 export async function register(body: RegisterInputModel) {
     return await callApi<RegisterInputModel, RegisterOutput>('api/users/register', Method.POST, body);
@@ -24,12 +25,17 @@ export async function me() {
     return await callApi<unknown, HomeOutput>('api/users/home', Method.GET);
 }
 
+export async function fetchUserStatsByUserId(userId: string) {
+    const uri = `/api/users/${userId}/stats`;
+    return await callApi<unknown, UserStatsOutput>(uri, Method.GET, {});
+}
+
 export async function fetchUserStatsBySearchTerm(term: string) {
     const uri = `/api/users/stats/search?term=${term}`;
     return await callApi<unknown, PaginatedResult<UserStats>>(uri, Method.GET, {});
 }
 
-export async function fetchUserStats(uri?: string) {
+export async function fetchUsersStats(uri?: string) {
     const page = 1;
     const itemsPerPage = 10;
     const query = `page=${page}&itemsPerPage=${itemsPerPage}`;
