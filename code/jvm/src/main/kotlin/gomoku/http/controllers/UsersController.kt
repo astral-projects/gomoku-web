@@ -367,7 +367,6 @@ class UsersController(
      */
     @GetMapping(Uris.Users.STATS_BY_TERM)
     fun getUserStatsByTerm(
-        user: AuthenticatedUser,
         @Valid
         @Range(min = 1)
         @RequestParam(name = "page", defaultValue = DEFAULT_PAGE)
