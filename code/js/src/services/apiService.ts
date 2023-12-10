@@ -19,9 +19,8 @@ export enum Method {
  * @param uri - the uri to call
  * @param method - the method to use for the request
  * @param body - optional body for POST and PUT requests
- * @param token - optional token for authentication
  */
-export async function callApi<B, T>(uri: string, method: Method, body?: B, token?: string): Promise<ApiResponse<T | ProblemModel>> {
+export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
   let response: ApiResponse<T>;
   try {
     // get the uri from the rel
@@ -30,7 +29,7 @@ export async function callApi<B, T>(uri: string, method: Method, body?: B, token
     console.log("Calling api with uri: " + uri);
     switch (method) {
       case Method.GET:
-        response = await apiConnection.getApi(uri, token);
+        response = await apiConnection.getApi(uri);
         return response;
 
       case Method.POST:

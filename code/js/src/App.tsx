@@ -9,6 +9,7 @@ import { Register } from './pages/register/Register';
 import { Rankings } from './pages/rankings/Rankings';
 import { FindGame } from './pages/findGame/FindGame';
 import { Game } from './pages/game/Game';
+import { Logout } from './pages/logout/Logout';
 
 export const routes = {
   home: '/',
@@ -60,7 +61,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/logout',
-        element: <Home />,
+        element: <Logout />,
       },
       {
         path: '/error',

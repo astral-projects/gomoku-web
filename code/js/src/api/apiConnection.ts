@@ -34,15 +34,13 @@ export default function () {
   /**
    * Function that fetches the API with a token and returns the response as a json
    * @param path
-   * @param token
    */
-  function getApi<T>(path: string, token?: string): Promise<ApiResponse<T>> {
+  function getApi<T>(path: string): Promise<ApiResponse<T>> {
     const options = {
       // get method tag value
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
       },
     };
     return fetchApi<T>(path, options);
