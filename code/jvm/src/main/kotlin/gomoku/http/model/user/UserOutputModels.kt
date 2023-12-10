@@ -221,7 +221,7 @@ class UserOutputModels {
                 Rels.NEXT
             )
             link(
-                Uris.Users.stats(paginatedResult.totalPages, paginatedResult.itemsPerPage),
+                Uris.Users.stats(paginatedResult.totalPages - 1, paginatedResult.itemsPerPage),
                 Rels.LAST
             )
         }
@@ -275,7 +275,7 @@ class UserOutputModels {
                 link(
                     Uris.Users.statsByTerm(
                         termResult.value,
-                        paginatedResult.totalPages,
+                        paginatedResult.totalPages - 1,
                         paginatedResult.itemsPerPage
                     ),
                     Rels.LAST

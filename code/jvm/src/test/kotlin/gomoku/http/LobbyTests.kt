@@ -41,7 +41,7 @@ class LobbyTests {
 
         // and: waiting in the lobby
         // then: the response is a 200 with the proper representation
-        val waitingInLobby = client.get().uri("/lobby/$lobbyId")
+         client.get().uri("/lobby/$lobbyId")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
@@ -97,7 +97,7 @@ class LobbyTests {
         val objectMapper = ObjectMapper()
         val jsonNode = objectMapper.readTree(waitingInLobbyAfterGuestJoined)
 
-        val message = jsonNode.path("properties").path("message").asText()
+        jsonNode.path("properties").path("message").asText()
 
         // when: waiting in an invalid lobby
         val invalidLobbyId = "-1"
@@ -141,7 +141,7 @@ class LobbyTests {
 
         // and: exiting the lobby
         // then: the response is a 200 with the proper representation
-        val lobbyExit = client.delete().uri("/lobby/$lobbyId/exit")
+        client.delete().uri("/lobby/$lobbyId/exit")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk
