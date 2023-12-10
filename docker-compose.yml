@@ -12,19 +12,15 @@ services:
     ports:
       - "5432:5432"
 
-  # spring-service-1 and spring-service-2 are used to illustrate scenarios with a fixed number of servers
-  # with static and well know names.
-  spring-service-1:
-    container_name: spring-service-1
-    hostname: spring-service-1
+  # We will use docker compose scaling to create multiple instances of this service
+  spring-service:
     build:
       context: .
       dockerfile: code/jvm/tests/Dockerfile-spring
     environment:
-      PORT: 8081
+      PORT: 8080
       DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit"
-    ports:
-      - 8081:8081
+
 
   # The service running the load-balancer
   nginx:
@@ -35,8 +31,6 @@ services:
     ports:
       - 8080:8080
       - 8088:8088
-    depends_on:
-      - spring-service-1
 
   # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
   ubuntu:

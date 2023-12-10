@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/usersServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
-import { LoginOutput } from '../../services/users/models/LoginOuputModel';
+import { LoginOutput } from '../../services/models/users/LoginOuputModel';
 import { Email, Id, User, Username } from '../../domain/User';
 import { Entity } from '../../services/media/siren/Entity';
 import { useSetUser } from '../gomokuContainer/GomokuContainer';
