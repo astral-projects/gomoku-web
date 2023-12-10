@@ -53,7 +53,7 @@ class UsersController(
         const val DEFAULT_PAGE = "1"
         const val HEADER_SET_COOKIE_NAME = "Set-Cookie"
         const val AUTHORIZATION_COOKIE_NAME = "_autho"
-        const val AUTHORIZATION_COOKIE_PROPS = "HttpOnly; SameSite=Strict;"
+        const val AUTHORIZATION_COOKIE_PROPS = "HttpOnly; SameSite=Strict; Path=/"
         const val AUTHORIZATION_COOKIE_DELETE_PROPS = "Expires=0;"
         private const val MOZILLA_USER_AGENT = "Mozilla"
         private const val CHROME_USER_AGENT = "Chrome"

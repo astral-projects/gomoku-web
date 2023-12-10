@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { fetchUsersStats, fetchUserStatsBySearchTerm } from '../../services/usersServices';
 import { UserStats } from '../../domain/UserStats.js';
 import { ProblemModel } from '../../services/media/ProblemModel.js';
@@ -11,13 +11,11 @@ import { getHrefByRel } from '../../services/media/siren/Link';
 
 type State =
     | { tag: 'loading' }
-    | { tag: 'redirecting'; user: UserStats }
     | { tag: 'loaded'; data: PaginatedResult<UserStats> }
     | { tag: 'error'; message: string };
 
 type Action =
     | { type: 'load' }
-    | { type: 'rowClick'; user: UserStats }
     | { type: 'success'; data: PaginatedResult<UserStats> }
     | { type: 'error'; message: string };
 
@@ -26,8 +24,6 @@ function rankingsReducer(state: State, action: Action): State {
         case 'loaded':
             if (action.type === 'load') {
                 return { tag: 'loading' };
-            } else if (action.type === 'rowClick') {
-                return { tag: 'redirecting', user: action.user };
             }
             return state;
 
@@ -50,6 +46,7 @@ function rankingsReducer(state: State, action: Action): State {
 export function Rankings() {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [selectedUser, setSelectedUser] = useState<UserStats | null>(null);
     const [state, dispatch] = React.useReducer(rankingsReducer, { tag: 'loading' });
 
     const fetchPage = (relName: string) => {
@@ -127,7 +124,7 @@ export function Rankings() {
     }, [debouncedSearchTerm]);
 
     const handleUserClick = (user: UserStats) => {
-        dispatch({ type: 'rowClick', user: user });
+        setSelectedUser(user);
     };
 
     const goToFirstPage = () => {
@@ -143,12 +140,17 @@ export function Rankings() {
         fetchPage('last');
     };
 
+    if (selectedUser) {
+        return (
+            <div>
+                <h2>Statistics for {selectedUser.username.value}</h2>
+                <p>Points: {selectedUser.points.value}</p>
+                <button onClick={() => setSelectedUser(null)}>Back to Leaderboard</button>
+            </div>
+        );
+    }
+
     switch (state.tag) {
-        case 'redirecting' : {
-            const userId = state.user.id.value;
-            const uri = `/rankings/${userId}`;
-            return <Navigate to={uri} replace={true} />;
-        }
         case 'loaded':
             return (
                 <div>

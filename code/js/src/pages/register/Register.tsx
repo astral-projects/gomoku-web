@@ -72,7 +72,6 @@ export async function validateCredentials(username: string, email: string, passw
   return undefined;
 }
 
-
 export function Register() {
   console.log('Register');
   const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '',email: '', password: '', confirmPassword:' ' } });

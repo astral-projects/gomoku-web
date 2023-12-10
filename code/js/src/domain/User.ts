@@ -1,17 +1,17 @@
 export type User = {
-    id: Id
-    username: Username,
-    email: Email
-}
+  id: Id;
+  username: Username;
+  email: Email;
+};
 
 export type Id = {
-    value: number
-}
+  value: number;
+};
 
 export type Username = {
-    value: string
-}
+  value: string;
+};
 
 export type Email = {
-    value: string
-}
+  value: string;
+};

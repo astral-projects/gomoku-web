@@ -6,8 +6,7 @@ export type ApiResponse<T> = {
 type Options = {
   method: string;
   body?: BodyInit;
-} 
-
+}
 
 export default function () {
   return {
@@ -23,25 +22,51 @@ export default function () {
    * @param options - The options for the fetch
    */
   async function fetchApi<T>(path: string, options: Options): Promise<ApiResponse<T>> {
-    const response = await fetch(path, options);
+    try {
+      const response = await fetch(path, options);
+      const contentType = response.headers.get('content-type');
+      console.log("Calling API at: " + path);
+
+      // Check if the response status indicates an error
+      if (!response.ok) {
+        console.log("Response:", response.status);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const json = await response.json();
+      console.log("Response:", json);
+      return {
+        contentType: contentType,
+        json: json,
+      };
+    } catch (error) {
+      console.log(JSON.stringify(error));
+      console.error("Error during fetchApi call:", error);
+      throw error; // Rethrow the error if you want to handle it at a higher level
+    }
+  }
+
+    /*const response = await fetch(path, options);
     const contentType = response.headers.get('content-type');
+    console.log("inside fetchApi" + path);
     const json = await response.json();
-    
+    console.log(response);
     return {
       contentType: contentType,
       json: json,
-    };
-  }
-  
+    };*/
+
+
   /**
    * Function that fetches the API with a token and returns the response as a json
-   * This is used for GET requests
    * @param path
+   * @param token
    */
   function getApi<T>(path: string): Promise<ApiResponse<T>> {
     const options = {
       method: 'GET',
     };
+    console.log("inside getApi" + path);
     return fetchApi<T>(path, options);
   }
   
@@ -60,7 +85,7 @@ export default function () {
     };
     return fetchApi<R>(path, options);
   }
-  
+
   /**
    * Function that fetches the API for DELETE requests and returns the response as a json
    * @param path
@@ -71,7 +96,7 @@ export default function () {
     };
     return fetchApi<T>(path, options);
   }
-  
+
   /**
    * Function that fetches the API for PUT requests and returns the response as a json
    * @param path
@@ -84,5 +109,5 @@ export default function () {
     };
     return fetchApi<R>(path, options);
   }
-  
+
 }
