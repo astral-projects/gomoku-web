@@ -19,9 +19,9 @@ const GomokuContext = createContext<ContextType>({
 
 export function GomokuContainer({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState(undefined);
-  console.log(`AuthnContainer: ${user}`);
+  console.log(`AuthnContainer: `);
+  console.log(user);
   return <GomokuContext.Provider value={{ user: user, setUser: setUser }}>{children}</GomokuContext.Provider>;
-  
 }
 
 export function useCurrentUser() {

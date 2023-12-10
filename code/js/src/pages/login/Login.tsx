@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/usersServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
@@ -58,31 +57,6 @@ export function Login() {
   const setUser = useSetUser();
   const location = useLocation();
 
-  useEffect(() => {
-    if (state.tag !== 'submitting') {
-      return;
-    }
-
-    login({ username: state.username, password: state.password })
-      .then(result => {
-        if (!isSuccessful(result.contentType)) {
-          const errorData = result.json as ProblemModel;
-          dispatch({ type: 'error', message: errorData.detail });
-        } else {
-          const successData = result.json as LoginOutput;
-          const properties = successData.entities[0] as Entity<User>;
-          const id = properties.properties.id as Id;
-          const username = properties.properties.username as Username;
-          const email = properties.properties.email as Email;
-          setUser({ id: id.value, username: username.value, email:  email.value});
-          dispatch({ type: 'success' });
-        }
-      })
-      .catch((err: { message: string }) => {
-        dispatch({ type: 'error', message: err.message });
-      });
-  }, [state, setUser]);
-
   if (state.tag === 'redirect') {
     return <Navigate to={location.state?.source?.pathname || '/me'} replace={true} />;
   }
@@ -96,12 +70,26 @@ export function Login() {
     if (state.tag !== 'editing') {
       return;
     }
+
     dispatch({ type: 'submit' });
-    // 3 açoes distintas (3 dispatches)
-    // 1 - submeter o form
-    // --- pedido (await login) -----
-    // 2 - sucesso
-    // 3 - erro
+    login({ username: state.inputs.username, password: state.inputs.password })
+      .then(result => {
+        if (!isSuccessful(result.contentType)) {
+          const errorData = result.json as ProblemModel;
+          dispatch({ type: 'error', message: errorData.detail });
+        } else {
+          const successData = result.json as LoginOutput;
+          const properties = successData.entities[0] as Entity<User>;
+          const id = properties.properties.id as Id;
+          const username = properties.properties.username as Username;
+          const email = properties.properties.email as Email;
+          setUser({ id: id.value, username: username.value, email: email.value });
+          dispatch({ type: 'success' });
+        }
+      })
+      .catch((err: { message: string }) => {
+        dispatch({ type: 'error', message: err.message });
+      });
   }
 
   const username = state.tag === 'submitting' ? state.username : state.inputs.username;

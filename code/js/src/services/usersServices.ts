@@ -10,7 +10,7 @@ const apiConnection = API();
 
 export async function login(body: LoginInputModel) {
   try {
-    const response =  await apiConnection.postApi(findUri("login"), body) as ApiResponse<LoginOutput>;
+    const response =  await apiConnection.postApi(findUri('login'), body) as ApiResponse<LoginOutput>;
     return response;
   } catch (error) {
     const response = await error as ApiResponse<ProblemModel>;
