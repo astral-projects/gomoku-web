@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUser, useSetUser } from '../gomokuContainer/GomokuContainer';
 import { me } from '../../services/usersServices';
-import { HomeOutput } from '../../services/users/models/HomeOutputModel';
+import { HomeOutput } from '../../services/models/users/HomeOutputModel';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { isSuccessful } from '../utils/responseData';
 import { Email, Id, Username } from '../../domain/User';
@@ -21,7 +21,7 @@ function reduce(state: State, action: Action): State {
   switch (state.tag) {
     case 'loading':
       if (action.type === 'success') {
-        return { tag: 'idle', button: 'Find Match', user:  action.user};
+        return { tag: 'idle', button: 'Find Match', user: action.user };
       } else if (action.type === 'error') {
         return { tag: 'notLoggedIn' };
       } else {
@@ -44,39 +44,39 @@ function reduce(state: State, action: Action): State {
 }
 
 export function Me() {
-  const [state, dispatch] = React.useReducer(reduce, { tag: 'idle', button: 'Find Match', user: "" });
+  const [state, dispatch] = React.useReducer(reduce, { tag: 'idle', button: 'Find Match', user: '' });
   const user = useCurrentUser();
   const setUser = useSetUser();
   const location = useLocation();
 
   React.useEffect(() => {
-  if (!user) {
-    if (state.tag !== 'idle') {
-      return;
-    }
+    if (!user) {
+      if (state.tag !== 'idle') {
+        return;
+      }
 
-    me()
-      .then(result => {
-        const errorData = result.json as ProblemModel;
-        const SuccessData = result.json as unknown as HomeOutput;
-        if (!isSuccessful(result.contentType)) {
-          console.log(`Error: ${errorData.detail}`);
-          dispatch({ type: 'error', message: errorData.detail });
-        } else {
-          console.log(`Success: ${SuccessData.properties}`);
-          const id = SuccessData.properties.id as unknown as Id;
-          const username = SuccessData.properties.username as unknown as Username;
-          const email = SuccessData.properties.email as unknown as Email;
-          setUser({ id: id.value, username: username.value, email: email.value });
-          dispatch({ type: 'success', user: username.value });
-        }
-      })
-      .catch(error => {
-        console.log(`Error: ${error}`);
-        dispatch({ type: 'error', message: error });
-      });
-  }
-}, [state, setUser, user]);
+      me()
+        .then(result => {
+          const errorData = result.json as ProblemModel;
+          const SuccessData = result.json as unknown as HomeOutput;
+          if (!isSuccessful(result.contentType)) {
+            console.log(`Error: ${errorData.detail}`);
+            dispatch({ type: 'error', message: errorData.detail });
+          } else {
+            console.log(`Success: ${SuccessData.properties}`);
+            const id = SuccessData.properties.id as unknown as Id;
+            const username = SuccessData.properties.username as unknown as Username;
+            const email = SuccessData.properties.email as unknown as Email;
+            setUser({ id: id.value, username: username.value, email: email.value });
+            dispatch({ type: 'success', user: username.value });
+          }
+        })
+        .catch(error => {
+          console.log(`Error: ${error}`);
+          dispatch({ type: 'error', message: error });
+        });
+    }
+  }, [state, setUser, user]);
 
   if (state.tag === 'notLoggedIn') {
     return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
@@ -101,7 +101,7 @@ export function Me() {
           Hello {user?.username}! <Link to={'/logout'}>Logout</Link>
         </p>
         <div>
-          <Button onClick={onClick}>{state.tag === 'idle' ? state.button : "Loading"}</Button>
+          <Button onClick={onClick}>{state.tag === 'idle' ? state.button : 'Loading'}</Button>
         </div>
       </fieldset>
     </div>

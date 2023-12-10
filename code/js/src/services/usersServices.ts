@@ -1,31 +1,41 @@
-import API from '../api/apiConnection';
-import { LoginInputModel } from './users/models/LoginInputModel';
-import { ApiResponse } from '../api/apiConnection';
-import { LoginOutput } from './users/models/LoginOuputModel';
-import { HomeOutput } from './users/models/HomeOutputModel';
-import { ProblemModel } from './media/ProblemModel';
-import { findUri } from '../api/recipes';
+import { callApi } from './apiService';
+import { Method } from './apiService';
+import { LoginInputModel } from './models/users/LoginInputModel';
+import { RegisterInputModel } from './models/users/RegisterInputModel';
+import { LoginOutput } from './models/users/LoginOuputModel';
+import { HomeOutput } from './models/users/HomeOutputModel';
+import { RegisterOutput } from './models/users/RegisterOuputModel';
+import { PaginatedResult } from './models/users/PaginatedResultModel';
+import { UserStats } from '../domain/UserStats';
 
-const apiConnection = API();
+export async function register(body: RegisterInputModel) {
+    return await callApi<RegisterInputModel, RegisterOutput>('register', Method.POST, body);
+}
 
 export async function login(body: LoginInputModel) {
-  try {
-    const response =  await apiConnection.postApi(findUri("login"), body) as ApiResponse<LoginOutput>;
-    return response;
-  } catch (error) {
-    const response = await error as ApiResponse<ProblemModel>;
-    return response;
-  }
-  
+    return await callApi<LoginInputModel, LoginOutput>('login', Method.POST, body);
+}
+
+export async function logout() {
+    return await callApi('logout', Method.POST);
 }
 
 export async function me() {
-  try {
-    const uri = findUri("me");
-    const response = await apiConnection.getApi(uri) as ApiResponse<HomeOutput>;
-    return response;
-  } catch (error) {
-    const response = error as ApiResponse<ProblemModel>;
-    return response;
-  }
+    return await callApi<unknown, HomeOutput>('me', Method.GET);
+}
+
+export async function fetchUserStatsBySearchTerm(term: string) {
+    const uri = `/api/users/stats/search?term=${term}`;
+    const token = "HbwDxIBtw4D7t6VNkiA8cOuGqzNF1NZkITT6wOUCuDc="
+    return await callApi<unknown, PaginatedResult<UserStats>>(uri, Method.GET, {}, token);
+}
+
+export async function fetchUserStats(uri?: string) {
+    const page = 1;
+    const itemsPerPage = 10;
+    const query = `page=${page}&itemsPerPage=${itemsPerPage}`;
+    const base = `api/users/stats`;
+    const defaultUri = `${base}?${query}`;
+    const actualUri = uri ? uri : defaultUri;
+    return await callApi<unknown, PaginatedResult<UserStats>>(actualUri, Method.GET, {});
 }

@@ -1,53 +1,26 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchUserStats, fetchUserStatsBySearchTerm } from '../../services/usersServices';
+import { UserStats } from '../../domain/UserStats.js';
+import { ProblemModel } from '../../services/media/ProblemModel.js';
+import { isSuccessful } from '../utils/responseData';
+import { PaginatedResult } from '../../services/models/users/PaginatedResultModel.js';
 import './Rankings.css';
+import { getHrefByRel } from '../../services/media/siren/Link';
 
-interface User {
-    id: number;
-    name: string;
-    score: number;
-}
-
-const users: User[] = [
-    { id: 1, name: 'Alice', score: 100 },
-    { id: 2, name: 'Bob', score: 95 },
-    { id: 3, name: 'Charlie', score: 90 },
-    { id: 4, name: 'David', score: 85 },
-    { id: 5, name: 'Eve', score: 80 },
-    { id: 6, name: 'Frank', score: 75 },
-    { id: 7, name: 'Grace', score: 70 },
-    { id: 8, name: 'Heidi', score: 65 },
-    { id: 9, name: 'Ivan', score: 60 },
-    { id: 10, name: 'Judy', score: 55 },
-    { id: 11, name: 'Mallory', score: 50 },
-    { id: 12, name: 'Oscar', score: 45 },
-    { id: 13, name: 'Peggy', score: 40 },
-    { id: 14, name: 'Rupert', score: 35 },
-    { id: 15, name: 'Sybil', score: 30 },
-    { id: 16, name: 'Trudy', score: 25 },
-    { id: 17, name: 'Victor', score: 20 },
-    { id: 18, name: 'Walter', score: 15 },
-    { id: 19, name: 'Wendy', score: 10 },
-    { id: 20, name: 'Zoe', score: 5 },
-];
-
-const ITEMS_PER_PAGE = 5;
-
-type RankingsState =
-    | { tag: 'idle'; users: User[]; error?: string }
+type State =
     | { tag: 'loading' }
-    | { tag: 'loaded'; users: User[] }
+    | { tag: 'loaded'; data: PaginatedResult<UserStats> }
     | { tag: 'error'; message: string };
 
-type RankingsAction =
+type Action =
     | { type: 'load' }
-    | { type: 'success'; users: User[] }
+    | { type: 'success'; data: PaginatedResult<UserStats> }
     | { type: 'error'; message: string };
 
-function rankingsReducer(state: RankingsState, action: RankingsAction): RankingsState {
+function rankingsReducer(state: State, action: Action): State {
     switch (state.tag) {
-        case 'idle':
         case 'loaded':
             if (action.type === 'load') {
                 return { tag: 'loading' };
@@ -56,7 +29,7 @@ function rankingsReducer(state: RankingsState, action: RankingsAction): Rankings
 
         case 'loading':
             if (action.type === 'success') {
-                return { tag: 'loaded', users: action.users };
+                return { tag: 'loaded', data: action.data };
             } else if (action.type === 'error') {
                 return { tag: 'error', message: action.message };
             }
@@ -67,76 +40,117 @@ function rankingsReducer(state: RankingsState, action: RankingsAction): Rankings
                 return { tag: 'loading' };
             }
             return state;
-
-        default:
-            return state;
     }
 }
 
-function delay(delayInMs: number) {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(undefined), delayInMs);
-    });
-}
-
-async function simulateApiCall(): Promise<User[]> {
-    await delay(1000);
-    return users;
-}
-
-
 export function Rankings() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [state, dispatch] = React.useReducer(rankingsReducer, { tag: 'idle', users: [] });
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [selectedUser, setSelectedUser] = useState<UserStats | null>(null);
+    const [state, dispatch] = React.useReducer(rankingsReducer, { tag: 'loading' });
+
+    const fetchPage = (relName: string) => {
+        if (state.tag === 'loaded') {
+            dispatch({ type: 'load' });
+            const href = getHrefByRel(state.data.links, relName);
+            fetchUserStats(href)
+                .then(result => {
+                    if (!isSuccessful(result.contentType)) {
+                        const errorData = result.json as ProblemModel;
+                        dispatch({ type: 'error', message: errorData.detail });
+                    } else {
+                        const successData = result.json as PaginatedResult<UserStats>;
+                        dispatch({ type: 'success', data: successData });
+                    }
+                })
+                .catch((err: { message: string }) => {
+                    dispatch({ type: 'error', message: err.message });
+                });
+        }
+    };
 
     React.useEffect(() => {
-        dispatch({ type: 'load' });
-        simulateApiCall()
-            .then(users => {
-                dispatch({ type: 'success', users });
-            })
-            .catch(error => {
-                dispatch({ type: 'error', message: error.message || 'An unexpected error occurred' });
-            });
+        if (state.tag === 'loading') {
+            dispatch({ type: 'load' });
+            fetchUserStats()
+                .then(result => {
+                    if (!isSuccessful(result.contentType)) {
+                        const errorData = result.json as ProblemModel;
+                        dispatch({ type: 'error', message: errorData.detail });
+                    } else {
+                        const successData = result.json as PaginatedResult<UserStats>;
+                        dispatch({ type: 'success', data: successData });
+                    }
+                })
+                .catch((err: { message: string }) => {
+                    dispatch({ type: 'error', message: err.message });
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    React.useEffect(() => {
+        // Set a timer to update debouncedSearchTerm after x milliseconds of no changes
+        const timerId = setTimeout(() => {
+            if (searchTerm.length >= 4) {
+                setDebouncedSearchTerm(searchTerm);
+            }
+        }, 1000);
 
-    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE) || 1;
+        return () => {
+            clearTimeout(timerId);
+        };
+    }, [searchTerm]);
 
-    const handleUserClick = (user: User) => {
+    React.useEffect(() => {
+        if (state.tag === 'loaded') {
+            dispatch({ type: 'load' });
+            fetchUserStatsBySearchTerm(debouncedSearchTerm)
+                .then(result => {
+                    if (!isSuccessful(result.contentType)) {
+                        const errorData = result.json as ProblemModel;
+                        console.log(result.json);
+                        dispatch({ type: 'error', message: errorData.detail });
+                    } else {
+                        const successData = result.json as PaginatedResult<UserStats>;
+                        dispatch({ type: 'success', data: successData });
+                    }
+                })
+                .catch((err: { message: string }) => {
+                    dispatch({ type: 'error', message: err.message });
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedSearchTerm]);
+
+    const handleUserClick = (user: UserStats) => {
         setSelectedUser(user);
     };
 
+    const goToFirstPage = () => {
+        fetchPage('first');
+    };
     const goToPrevPage = () => {
-        setCurrentPage((prev) => (prev > 0 ? prev - 1 : 0));
+        fetchPage('prev');
     };
-
     const goToNextPage = () => {
-        setCurrentPage((prev) => (prev < totalPages - 1 ? prev + 1 : totalPages - 1));
+        fetchPage('next');
+    };
+    const goToLastPage = () => {
+        fetchPage('last');
     };
 
-    const getCurrentPageItems = () => {
-        const start = currentPage * ITEMS_PER_PAGE;
-        return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
-    };
-    
     if (selectedUser) {
         return (
-          <div>
-            <h2>Statistics for {selectedUser.name}</h2>
-            <p>Score: {selectedUser.score}</p>
-            <button onClick={() => setSelectedUser(null)}>Back to Leaderboard</button>
-          </div>
+            <div>
+                <h2>Statistics for {selectedUser.username.value}</h2>
+                <p>Points: {selectedUser.points.value}</p>
+                <button onClick={() => setSelectedUser(null)}>Back to Leaderboard</button>
+            </div>
         );
-      }
+    }
 
     switch (state.tag) {
-        case 'idle':
         case 'loaded':
             return (
                 <div>
@@ -145,29 +159,59 @@ export function Rankings() {
                         type="text"
                         placeholder="Search User"
                         value={searchTerm}
-                        onChange={(e) => {
+                        onChange={e => {
                             setSearchTerm(e.target.value);
-                            setCurrentPage(0);
                         }}
                     />
                     <div>
-                        {getCurrentPageItems().map(user => (
-                            <div key={user.id} onClick={() => handleUserClick(user)} style={{ cursor: 'pointer' }}>
-                                {`${user.name}: ${user.score}`}
-                            </div>
-                        ))}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {state.data.properties.items.map(user => (
+                                    <tr
+                                        key={user.id.value}
+                                        onClick={() => handleUserClick(user)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <td>{user.rank.value}</td>
+                                        <td>{user.username.value}</td>
+                                        <td>{user.points.value}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    {totalPages > 1 && (
+                    {state.data.properties.totalPages > 1 && (
                         <div className="pagination-controls">
-                            <button onClick={goToPrevPage} disabled={currentPage === 0}>
+                            <button onClick={goToFirstPage} disabled={state.data.properties.currentPage === 1}>
+                                First
+                            </button>
+                            <button onClick={goToPrevPage} disabled={state.data.properties.currentPage === 1}>
                                 Prev
                             </button>
-                            <button onClick={goToNextPage} disabled={currentPage === totalPages - 1}>
+                            <button
+                                onClick={goToNextPage}
+                                disabled={state.data.properties.currentPage === state.data.properties.totalPages}
+                            >
                                 Next
+                            </button>
+                            <button
+                                onClick={goToLastPage}
+                                disabled={state.data.properties.currentPage === state.data.properties.totalPages}
+                            >
+                                Last
                             </button>
                         </div>
                     )}
-                    <p className="scroll-instruction">Page {currentPage + 1} of {totalPages}</p>
+                    <p className="scroll-instruction">
+                        Page {state.data.properties.currentPage} of {state.data.properties.totalPages}
+                    </p>
                     <p>
                         <Link to="/">
                             <button>Back to Home</button>
@@ -175,16 +219,11 @@ export function Rankings() {
                     </p>
                 </div>
             );
-            
 
         case 'loading':
             return <div>Loading...</div>;
 
         case 'error':
             return <div>Error: {state.message}</div>;
-
-        default:
-            return <div>Unexpected state</div>;
-            
     }
 }

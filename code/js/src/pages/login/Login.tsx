@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/usersServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
-import { LoginOutput } from '../../services/users/models/LoginOuputModel';
+import { LoginOutput } from '../../services/models/users/LoginOuputModel';
 import { Email, Id, User, Username } from '../../domain/User';
-import { Entity } from '../../services/media/siren/Entity';
 import { useSetUser } from '../gomokuContainer/GomokuContainer';
+import { Entity } from '../../services/media/siren/Entity';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { isSuccessful } from '../utils/responseData';
 
@@ -58,7 +57,7 @@ export function Login() {
   const setUser = useSetUser();
   const location = useLocation();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (state.tag !== 'submitting') {
       return;
     }
@@ -74,7 +73,7 @@ export function Login() {
           const id = properties.properties.id as Id;
           const username = properties.properties.username as Username;
           const email = properties.properties.email as Email;
-          setUser({ id: id.value, username: username.value, email:  email.value});
+          setUser({ id: id.value, username: username.value, email: email.value});
           dispatch({ type: 'success' });
         }
       })

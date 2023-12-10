@@ -1,22 +1,21 @@
 import * as React from "react";
 import { Navigate } from 'react-router-dom';
 
-
-type FindGameState =
+type State =
     | { tag: 'searching' }
     | { tag: 'found' }
     | { tag: 'error'; message: string }
     | { tag: 'in-lobby' }
     | { tag: 'in-game' };
 
-type FindGameAction =
+type Action =
     | { type: 'find' }
     | { type: 'found' }
     | { type: 'error'; message: string }
     | { type: 'join-lobby' }
     | { type: 'start-game' };
 
-function findGameReducer(state: FindGameState, action: FindGameAction): FindGameState {
+function findGameReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'find':
             return { tag: 'searching' };

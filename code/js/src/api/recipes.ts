@@ -30,7 +30,6 @@ export async function fetchRecipes(): Promise<Recipe[]> {
   } catch (error) {
     console.log('Error during fetch: ' + error);
     throw error;
-    
   }
 }
 

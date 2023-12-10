@@ -37,8 +37,9 @@ class UserOutputModels {
             recipeLink(Uris.Games.GET_VARIANTS, Rels.GAME_VARIANTS_RECIPE)
             recipeLink(Uris.Lobby.GET_IS_IN_LOBBY, Rels.GET_IS_IN_LOBBY_RECIPE)
             recipeLink(Uris.Users.GET_BY_ID, Rels.USER_RECIPE)
-            recipeLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_RECIPE)
-            recipeLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_RECIPE)
+            recipeLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_BY_TERM_RECIPE)
+            recipeLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_BY_ID_RECIPE)
+            recipeLink(Uris.Users.STATS, Rels.GET_USERS_STATS_RECIPE)
         }
 
     /**

@@ -181,7 +181,6 @@ class JdbiUsersRepository(
         itemsPerPage: PositiveValue
     ): PaginatedResult<UserStatsInfo> {
         val termSQLFormat = "%${term.value}%"
-
         val result = handle.createQuery(
             """
             SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won, 

@@ -49,7 +49,7 @@ data class FieldModel(
 )
 
 class SirenBuilderScope<T>(
-    val properties: T
+    private val properties: T
 ) {
     private val links = mutableListOf<LinkModel>()
     private val entities = mutableListOf<EntityModel<*>>()

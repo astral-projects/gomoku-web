@@ -8,7 +8,6 @@ type Options = {
   body?: BodyInit;
 } 
 
-
 export default function () {
   return {
     getApi: getApi,
@@ -26,7 +25,6 @@ export default function () {
     const response = await fetch(path, options);
     const contentType = response.headers.get('content-type');
     const json = await response.json();
-    
     return {
       contentType: contentType,
       json: json,
@@ -35,12 +33,17 @@ export default function () {
   
   /**
    * Function that fetches the API with a token and returns the response as a json
-   * This is used for GET requests
    * @param path
+   * @param token
    */
-  function getApi<T>(path: string): Promise<ApiResponse<T>> {
+  function getApi<T>(path: string, token?: string): Promise<ApiResponse<T>> {
     const options = {
+      // get method tag value
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
     };
     return fetchApi<T>(path, options);
   }

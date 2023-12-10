@@ -34,9 +34,11 @@ object Rels {
 
     val GET_IS_IN_LOBBY_RECIPE = LinkRelation("$BASE/lobbies/{/lobby_id}")
 
-    val GET_USERS_STATS_RECIPE = LinkRelation("$BASE/users/stats/search")
+    val GET_USERS_STATS_BY_TERM_RECIPE = LinkRelation("$BASE/users/stats/search")
 
-    val GET_USER_STATS_RECIPE = LinkRelation("$BASE/users/{/user_id}/stats")
+    val GET_USER_STATS_BY_ID_RECIPE = LinkRelation("$BASE/users/{/user_id}/stats")
+
+    val GET_USERS_STATS_RECIPE = LinkRelation("$BASE/users/stats")
 
     val REGISTER_RECIPE = LinkRelation("$BASE/users")
 

@@ -13,7 +13,8 @@ import gomoku.utils.get
 import java.util.*
 
 /**
- * Provides a set of test functions that should be runned for all variant implementations.
+ * Provides a set of test functions that should be implemented for all variant implementations,
+ * and a set of helper functions to facilitate in that process.
  */
 abstract class VariantTest {
 
@@ -191,6 +192,8 @@ abstract class VariantTest {
          * configuration.
          * The sequence generated will work for both even and odd board sizes, since with odd the vertical
          * win will be blocked, and with even the slash and backslash wins will be blocked.
+         * @param variant The variant of the game.
+         * @return A list of squares that would result in a draw.
          */
         fun getDrawSquareSequence(
             variant: Variant

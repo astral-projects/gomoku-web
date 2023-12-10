@@ -1,8 +1,15 @@
 export class Link {
-    rel: LinkRelation[];
+    rel: string[];
     href: string;
 }
 
-export class LinkRelation {
-    name: string;
+export function getHrefByRel(links: Link[], relName: string): string | null {
+    for (const link of links) {
+        for (const rel of link.rel) {
+            if (rel === relName) {
+                return link.href;
+            }
+        }
+    }
+    return null;
 }
