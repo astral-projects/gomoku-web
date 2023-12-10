@@ -14,6 +14,7 @@ This project is divided into two phases:
     - [Backend API documentation](docs/gomoku-backend-api.md)
 - The second phase consists of the development of a **browser-based frontend application**, which will use the backend
   service developed in the first phase.
+    - [Frontend documentation](code/js/README.md)
 
 #### Authors
 

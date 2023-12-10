@@ -42,7 +42,7 @@ The API provides the following functionality:
 
 The API uses the following media types:
 
-- `application/json` - for the API response bodies;
+- `application/vnd.siren+json` - for the API response bodies;
 - `application/problem+json` - [RFC7807](https://tools.ietf.org/html/rfc7807) problem details for the API responses in
   case of errors;
 
@@ -58,13 +58,16 @@ Information about the requests:
 
 - For endpoints marked with 🔒 (indicating authentication is required):
     - Include an `Authorization` header using the `Bearer` scheme, with the user's `token`.
+      If the request is done by a browser, a cookie will be sent automatically.
+      Supported browsers are Chrome, Firefox and
+      Safari.
 - For endpoints marked with 📦 (indicating a request body is required):
     - Include a request body with the required information.
     - Ensure the `Content-Type` header is set to `application/json`.
 - For endpoints marked with 📖 (indicating the response is paginated):
     - Include the following optional query parameters:
-        - `offset` - the page offset (defaults to `0`);
-        - `limit` - the page limit (defaults to `10`);
+        - `page` - the page number (defaults to `1`);
+        - `itemsPerPage` - the number of items per page (defaults to `10`);
 - All endpoints should be prefixed with `/api`.
 
 ### User
@@ -78,7 +81,8 @@ The API provides the following operations/resources related to the `User` entity
 - `GET /users/{id}` - returns the user with the given id; See [Get User](#get-user-by-id) for more information;
 - `GET /users/stats 📖` - returns the users statistic information by ranking; See [Pagination](#pagination) for more
   information.
-- `GET /users/{id}/stats` - returns the user statistic information with the given id. See [Get User Stats](#get-user-stats) for more information.
+- `GET /users/{id}/stats` - returns the user statistic information with the given id.
+  See [Get User Stats](#get-user-stats) for more information.
 
 ### Game
 
@@ -223,94 +227,97 @@ Information about the responses:
 
 - The client application makes a `GET` request to the `users/{id}` resource, with the user id in the request path;
     - The Api then:
-        - **On Success** 
-          - returns a `200 OK` response with the user information in the response body. The response body
-            contains the following properties:
-              - `id` - the user's id;
-              - `username` - the user's username;
-              - `email` - the user's email;
+        - **On Success**
+            - returns a `200 OK` response with the user information in the response body. The response body
+              contains the following properties:
+                - `id` - the user's id;
+                - `username` - the user's username;
+                - `email` - the user's email;
 
-            Example:
-            ```json
-            {
-              "id": 42,
-              "username": "user example",
-              "email": "user1@example.com"
-            }
-              ```
-        - **On Failure** 
-          - returns a `400 Bad Request` if the id is not valid. Response with a message in the response body.
-            
-            Example:
+              Example:
+              ```json
+              {
+                "id": 42,
+                "username": "user example",
+                "email": "user1@example.com"
+              }
+                ```
+        - **On Failure**
+            - returns a `400 Bad Request` if the id is not valid. Response with a message in the response body.
+
+              Example:
+                ```json
+                  {
+                    "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/invalid-id",
+                    "title": "Invalid user id",
+                    "status": 400,
+                    "detail": "The user id must be a positive integer",
+                    "instance": "/api/users/-1",
+                    "data": null
+                  }
+                ```
+            - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the
+              response body.
+
+              Example:
               ```json
                 {
-                  "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/invalid-id",
-                  "title": "Invalid user id",
-                  "status": 400,
-                  "detail": "The user id must be a positive integer",
-                  "instance": "/api/users/-1",
-                  "data": null
+                    "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
+                    "title": "User not found",
+                    "status": 404,
+                    "detail": "The user with id <90> was not found",
+                    "instance": "/api/users/90",
+                    "data": null
                 }
               ```
-          - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the response body.
-            
-            Example:
-            ```json
-              {
-                  "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
-                  "title": "User not found",
-                  "status": 404,
-                  "detail": "The user with id <90> was not found",
-                  "instance": "/api/users/90",
-                  "data": null
-              }
-            ```
 
 ### Get User Stats
 
 - The client application makes a `GET` request to the `users` resource, with the id in the path.
   The response should be in body.
-  - The API then:
-  - **On Success** - returns a `200 OK` response with the user statistic information in the response body. The
-    response body
-    contains the following properties:
-      - `id` - the user's id;
-      - `username` - the user's username;
-      - `email` - the user's email;
-      - `points` - the user's points;
-      - `rank` - the user's rank;
-      - `gamesPlayed` - the user's games played;
-      - `wins` - the user's wins;
-      - `draws` - the user's draws;
-      - `losses` - the user's losses;
+    - The API then:
+    - **On Success** - returns a `200 OK` response with the user statistic information in the response body. The
+      response body
+      contains the following properties:
+        - `id` - the user's id;
+        - `username` - the user's username;
+        - `email` - the user's email;
+        - `points` - the user's points;
+        - `rank` - the user's rank;
+        - `gamesPlayed` - the user's games played;
+        - `wins` - the user's wins;
+        - `draws` - the user's draws;
+        - `losses` - the user's losses;
 
-    Example:
-    ```json
-    {
-        "id": 1,
-        "username": "user1",
-        "email": "user1@example.com",
-        "points": 1000,
-        "rank": 1,
-        "gamesPlayed": 10,
-        "wins": 5,
-        "draws": 0,
-        "losses": 5
-    }
-    ```
-  - **On Failure** - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the response body.
-    
-    Example:
-    ```json
-    {
-        "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
-        "title": "User not found",
-        "status": 404,
-        "detail": "The user with id <9> was not found",
-        "instance": "/api/users/9/stats",
-        "data": null
-    }
-    ```
+      Example:
+      ```json
+      {
+          "id": 1,
+          "username": "user1",
+          "email": "user1@example.com",
+          "points": 1000,
+          "rank": 1,
+          "gamesPlayed": 10,
+          "wins": 5,
+          "draws": 0,
+          "losses": 5
+      }
+      ```
+    - **On Failure** - returns a `404 Not Found` if the user with the given id does not exist. Response with a message
+      in the response body.
+
+      Example:
+      ```json
+      {
+          "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
+          "title": "User not found",
+          "status": 404,
+          "detail": "The user with id <9> was not found",
+          "instance": "/api/users/9/stats",
+          "data": null
+      }
+      ```
+
 ### Game Creation
 
 - The client application makes a `POST` request to the `games` resource, with the variant id in the request
