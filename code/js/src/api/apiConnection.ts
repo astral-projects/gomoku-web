@@ -14,6 +14,7 @@ export default function () {
     postApi: postApi,
     deleteApi: deleteApi,
     putApi: putApi,
+    getGamehc: getGamehc,
   };
 
   /**
@@ -22,39 +23,14 @@ export default function () {
    * @param options - The options for the fetch
    */
   async function fetchApi<T>(path: string, options: Options): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(path, options);
-      const contentType = response.headers.get('content-type');
-      console.log("Calling API at: " + path);
-
-      // Check if the response status indicates an error
-      if (!response.ok) {
-        console.log("Response:", response.status);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const json = await response.json();
-      console.log("Response:", json);
-      return {
-        contentType: contentType,
-        json: json,
-      };
-    } catch (error) {
-      console.log(JSON.stringify(error));
-      console.error("Error during fetchApi call:", error);
-      throw error; // Rethrow the error if you want to handle it at a higher level
-    }
-  }
-
-    /*const response = await fetch(path, options);
+    const response = await fetch(path, options);
     const contentType = response.headers.get('content-type');
-    console.log("inside fetchApi" + path);
     const json = await response.json();
-    console.log(response);
     return {
       contentType: contentType,
       json: json,
-    };*/
+    };
+  }
 
 
   /**
@@ -66,8 +42,11 @@ export default function () {
     const options = {
       method: 'GET',
     };
-    console.log("inside getApi" + path);
     return fetchApi<T>(path, options);
+  }
+
+  function getGamehc<T>(path: string): Promise<ApiResponse<T>> {
+    return fetchApi<T>(path, {method: 'GET'});
   }
   
   /**

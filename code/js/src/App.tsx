@@ -13,17 +13,17 @@ import {About} from './pages/about/About';
 import {Logout} from './pages/logout/Logout';
 import {UserStats} from './pages/userstats/UserStats';
 
-export const routes = {
+/*export const routes = {
     home: '/',
     login: '/login',
     me: '/me',
     register: '/register',
     rankings: '/rankings',
-    game: '/game',
+    game: '/games',
     logout: '/logout',
     error: '/error',
 };
-
+*/
 const router = createBrowserRouter([
     {
         path: '/',
@@ -58,11 +58,11 @@ const router = createBrowserRouter([
                 element: <UserStats />,
             },
             {
-                path: '/game',
+                path: '/games',
                 element: <FindGame />,
             },
             {
-                path: '/game/:gameId',
+                path: '/games/:gameId',
                 element: <Game />,
             },
             {
