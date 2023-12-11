@@ -7,14 +7,16 @@
 - [Introduction](#introduction)
 - [Pages](#pages)
 - [Code Structure](#code-structure)
-- [Webpack Configuration](#webpack-configuration)
 - [API](#api)
     - [Connection](#connection)
     - [Service](#service)
     - [Recipes](#recipes)
+- [React Context](#react-context)
+- [Webpack Configuration](#webpack-configuration)
 - [Authentication](#authentication)
 - [Tests](#tests)
 - [Implementation Challenges](#implementation-challenges)
+- [Further Improvements](#further-improvements)
 
 ---
 
@@ -115,13 +117,13 @@ The frontend code is organized in the following way:
         - `api` - Exposes generic modules to communicate with the API;
         - `pages` - Contains the React components and pages used in the application;
         - `domain` - Contains the domain classes used in the application;
-        - `services` - Contains the services used in the application;
-        - this layer is responsible for the communication
-          with the API, using the generic classes in the `api` layer;
+      - `services` - Contains the services used in the application, the media types used and the input and output
+        models;
         - `App.js` - The main component of the application;
         - `index.js` - The entry point of the application;
 
-In the `js` folder, there are other files used for the development of the application; that are equally relevant:
+In the `js` folder, there are other files used for the development of the application; that are equally relevant to
+mention:
 
 - `package.json` - Contains the dependencies of the application;
 - `webpack.config.js` - Contains the configuration of the Webpack bundler;
@@ -129,16 +131,6 @@ In the `js` folder, there are other files used for the development of the applic
 - `eslintrc.json` - Contains the configuration of the ESLint linter;
 
 ---
-
-## Webpack Configuration
-
-To establish communication with the backend API, the webpack dev server has been set up to route all requests through a
-proxy to the backend API.
-This configuration helps circumvent CORS issues.
-
-The fallback page is set to the `index.html` file, which is the entry point of the application.
-
-Details mentioned above can be seen in the [webpack.config.js](./webpack.config.js) file.
 
 ## API
 
@@ -149,6 +141,11 @@ HTTP methods supported
 by the API, such as `get`, `post`, `put` and `delete`, using a generic `fetchAPI` method.
 
 ```typescript
+export type ApiResponse<T> = {
+    contentType: string;
+    json: T;
+}
+
 async function fetchApi<T>(path: string, options: Options): Promise<ApiResponse<T>> {
     // ...
 }
@@ -167,10 +164,19 @@ generic `callApi` method that
 receives the HTTP method, the URI and the optional request body and returns a `Promise` with the response.
 
 ```typescript
-export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
+export async function callApi<B, T>(uri: string, method: Method, body?: B)
+    : Promise<ApiResponse<T | ProblemModel>> {
     // ...
 }
 ```
+
+Service implementations can be found in the [services](./src/services) folder.
+
+Currently, the following services are implemented:
+
+- [UserService](./src/services/userServices.ts) - Services for user-related operations;
+- [GameService](./src/services/gameServices.ts) - Services for game-related operations;
+- [SystemService](./src/services/systemServices.ts) - Services for system-related operations;
 
 ### Recipes
 
@@ -194,6 +200,28 @@ successful
 authentication, will redirect the user to the desired resource.
 If the resource is not found, the application will redirect the user to the home page.
 
+## React Context
+
+The [React Context](https://react.dev/learn/typescript#typing-usecontext) is used to share data between components
+without having to
+pass properties through all of them in a given subtree of React nodes.
+
+The context is used to share the following data:
+
+- User logged-in information, that can be accessed through the `useCurrentUser` and `useSetUser` hooks, to consult and
+  update the user information, respectively; Such hooks are used in the beginning of the application to check if the
+  user is logged-in and update the user information when the user logs-in or logs-out;
+
+## Webpack Configuration
+
+To establish communication with the backend API, the webpack dev server has been set up to route all requests through a
+proxy to the backend API.
+This configuration helps circumvent CORS issues and requires no additional configuration on the backend side.
+
+The fallback page is set to the `index.html` file, which is the entry point of the application.
+
+Details mentioned above can be seen in the [webpack.config.js](./webpack.config.js) file.
+
 ## Authentication
 
 The user authentication is done in the `Login` or `Register` pages.
@@ -201,7 +229,7 @@ The user authentication is done in the `Login` or `Register` pages.
 The backend API sets a cookie when the user is successfully authenticated,
 and that cookie is sent in all subsequent requests by the browser.
 
-When logged-in another cookie representing the user information is set in the browser.
+When logged-in, another cookie representing the user information is set in the browser.
 When logging out, the cookie will present an expired token.
 
 ## Tests
@@ -226,3 +254,4 @@ TODO()
   the code coverage and ensure that the application is working as expected in all possible scenarios.
 - **Improve user experience** - We could improve the user experience by adding more features to the application, such as
   notifications, animations, skeleton loading, etc.
+- **Add more features and pages** - We could add more features and pages to the application.

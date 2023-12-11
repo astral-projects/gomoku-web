@@ -4,7 +4,7 @@ import {useSetUser} from '../GomokuContainer';
 import {ProblemModel} from '../../services/media/ProblemModel';
 import {isSuccessful} from '../utils/responseData';
 import {logUnexpectedAction} from '../utils/logUnexpetedAction';
-import {logout} from '../../services/usersServices';
+import {logout} from '../../services/userServices';
 
 type State = { tag: 'loading' } | { tag: 'redirect' } | { tag: 'notLoggedIn' };
 

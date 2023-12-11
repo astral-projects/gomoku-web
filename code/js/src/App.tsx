@@ -11,7 +11,7 @@ import {Game} from './pages/game/Game';
 import {About} from './pages/about/About';
 import {Logout} from './pages/logout/Logout';
 import {UserStats} from './pages/userstats/UserStats';
-import {Rankings} from "./pages/Rankings/Rankings";
+import {Rankings} from './pages/rankings/Rankings';
 
 const router = createBrowserRouter([
     {

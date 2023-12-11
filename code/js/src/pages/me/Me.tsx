@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Link, Navigate, useLocation} from 'react-router-dom';
 import {useCurrentUser, useSetUser} from '../GomokuContainer';
-import {me} from '../../services/usersServices';
+import {me} from '../../services/userServices';
 import {HomeOutput} from '../../services/models/users/HomeOutputModel';
 import {ProblemModel} from '../../services/media/ProblemModel';
 import {isSuccessful} from '../utils/responseData';
