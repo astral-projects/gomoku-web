@@ -49,11 +49,11 @@ The API uses the following media types:
 
 It was added some properties to the siren representation of the resources:
 > **Recipe Links**:
-To the API responses using siren was added the property `recipeLinks` to indicate the available resources of the API.
+> To the API responses using siren was added the property `recipeLinks` to indicate the available resources of the API.
 
 > **Require Auth**:
-To the API responses using siren was added the property `requireAuth` to indicate if the resource requires authentication
-or not. 
+> To the API responses using siren was added the property `requireAuth` to indicate if the resource requires authentication
+> or not. 
 
 ### Link Relations
 
@@ -94,9 +94,8 @@ Information about the requests:
 
 - For endpoints marked with 🔒 (indicating authentication is required):
     - Include an `Authorization` header using the `Bearer` scheme, with the user's `token`.
-      If the request is done by a browser, a cookie will be sent automatically.
-      Supported browsers are Chrome, Firefox and
-      Safari.
+  - If the request is done by a browser-based client, the browser will send cookies automatically with each request.
+    Supported browsers: `Chrome, Firefox, Safari`.
 - For endpoints marked with 📦 (indicating a request body is required):
     - Include a request body with the required information.
     - Ensure the `Content-Type` header is set to `application/json`.
@@ -105,10 +104,6 @@ Information about the requests:
         - `page` - the page number (defaults to `1`);
         - `itemsPerPage` - the number of items per page (defaults to `10`);
 - All endpoints should be prefixed with `/api`.
-- For endpoints that automatically handle cookies for browser-based requests (`User-Agents:
-  Chrome, Firefox, Safari`), the browser sends cookies automatically with each request.
-  These cookies are included in the Cookie header of the request. The cookie will be set in the response header
-  `Set-Cookie` and will be used in the next requests automatically.
 
 ### Home
 
@@ -152,8 +147,8 @@ The API provides the following operations/resources related to the `Game` entity
 
 Information about the responses:
 
-- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also if
-  someone report a bug in the future, this header can be used to identify the request.
+- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also, if
+  someone reports a bug in the future, this header can be used to identify the request.
 - All responses have a `Content-Type` header with the media type of the response body.
 
 ## Usage Examples
@@ -197,7 +192,7 @@ Information about the responses:
                 "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/users"
             ],
             "href": "/api/users"
-        }
+        },
         //... More recipes
     "requireAuth": [
         false
@@ -246,7 +241,7 @@ Information about the responses:
           "rel": [
           "self"
           ],
-          "href": "/api/users/token"
+            "href": "/api/users/token"
           }
       ],
       "recipeLinks": [],

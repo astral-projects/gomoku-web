@@ -1,4 +1,4 @@
-import {callApi, Method} from './apiService';
+import {callApi, Method} from '../api/apiService';
 import {SystemOutput} from './models/system/SystemOutputModel';
 
 export async function fetchSystemInfo() {

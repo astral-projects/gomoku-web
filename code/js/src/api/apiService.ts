@@ -1,9 +1,6 @@
-// apiService.js
-
-import API from '../api/apiConnection';
-import { ApiResponse } from '../api/apiConnection';
+import API, {ApiResponse} from './apiConnection';
 //import { findUri } from '../api/recipes';
-import { ProblemModel } from './media/ProblemModel';
+import {ProblemModel} from '../services/media/ProblemModel';
 
 const apiConnection = API();
 
@@ -48,7 +45,6 @@ export async function callApi<B, T>(uri: string, method: Method, body?: B): Prom
         return response;
     }
   } catch (error) {
-    const errorResponse = (await error) as ApiResponse<ProblemModel>;
-    return errorResponse;
+      return (await error) as ApiResponse<ProblemModel>;
   }
 }

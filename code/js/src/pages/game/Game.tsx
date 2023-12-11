@@ -1,14 +1,10 @@
 import * as React from "react";
-import { exitGame, getGame } from "../../services/gameServices";
-import { makeMove } from "../../services/gameServices";
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { GameOutput } from "../../services/users/models/games/GameOutputModel";
-import { useCurrentGameId } from "../gomokuContainer/GomokuContainer";
-import { useCurrentUser } from "../gomokuContainer/GomokuContainer";
-import { Entity } from "../../services/media/siren/Entity";
-import { useNavigate } from "react-router-dom";
-
-
+import {exitGame, getGame, makeMove} from "../../services/gameServices";
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {GameOutput} from "../../services/models/games/GameOutputModel";
+import {useCurrentGameId, useCurrentUser} from "../GomokuContainer";
+import {Entity} from "../../services/media/siren/Entity";
+import {useNavigate} from "react-router-dom";
 
 
 const cellSize = 30;

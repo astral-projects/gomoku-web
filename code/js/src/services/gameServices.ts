@@ -1,12 +1,10 @@
-import { callApi } from './apiService';
-import { Method } from './apiService';
-import { FindGameOutput } from './users/models/games/FindGameOutputModel.js';
-import { VariantsOutput } from './users/models/games/VariantsOutputModel.js';
-import { LobbyOutput } from './users/models/lobby/LobbyOutputModel.js';
-import { GameOutput } from './users/models/games/GameOutputModel.js';
-import { VariantsInputModel } from './users/models/games/VariantsInputModel.js';
-import { MoveInputModel } from './users/models/games/MoveInputModel.js';
-
+import {callApi, Method} from '../api/apiService';
+import {FindGameOutput} from './models/games/FindGameOutputModel.js';
+import {VariantsOutput} from './models/games/VariantsOutputModel.js';
+import {LobbyOutput} from './models/lobby/LobbyOutputModel.js';
+import {GameOutput} from './models/games/GameOutputModel.js';
+import {VariantsInputModel} from './models/games/VariantsInputModel.js';
+import {MoveInputModel} from './models/games/MoveInputModel.js';
 
 
 export async function findGame(body: VariantsInputModel) {

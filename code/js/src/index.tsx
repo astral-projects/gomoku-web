@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import { fetchRecipes, recipeUris } from './api/recipes';
-import { Error } from './pages/error/Error';
+import {createRoot} from 'react-dom/client';
+import {App} from './App';
+import {fetchRecipes, recipeUris} from './api/apiRecipes';
+import {Error} from './pages/error/Error';
 
 export let loggedUser : {
   id: number,

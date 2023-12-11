@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
-import { useCurrentUser, useSetUser } from '../gomokuContainer/GomokuContainer';
-import { me } from '../../services/usersServices';
-import { HomeOutput } from '../../services/models/users/HomeOutputModel';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { isSuccessful } from '../utils/responseData';
-import { Email, Id, Username } from '../../domain/User';
-import { logUnexpectedAction } from '../utils/logUnexpetedAction';
-import { Button } from '@mui/material';
+import {Link, Navigate, useLocation} from 'react-router-dom';
+import {useCurrentUser, useSetUser} from '../GomokuContainer';
+import {me} from '../../services/usersServices';
+import {HomeOutput} from '../../services/models/users/HomeOutputModel';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {isSuccessful} from '../utils/responseData';
+import {Email, Id, Username} from '../../domain/User';
+import {logUnexpectedAction} from '../utils/logUnexpetedAction';
+import {Button} from '@mui/material';
 
 type State =
   | { tag: 'loading' }

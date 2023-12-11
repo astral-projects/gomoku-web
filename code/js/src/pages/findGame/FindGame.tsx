@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Navigate, useLocation } from 'react-router-dom';
-import { getVariants, waittingInLobby, findGame, exitLobby } from "../../services/gameServices";
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { FindGameOutput } from "../../services/users/models/games/FindGameOutputModel";
-import { useSetGameId } from "../gomokuContainer/GomokuContainer";
+import {Navigate, useLocation} from 'react-router-dom';
+import {exitLobby, findGame, getVariants, waittingInLobby} from "../../services/gameServices";
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {FindGameOutput} from "../../services/models/games/FindGameOutputModel";
+import {useSetGameId} from "../GomokuContainer";
 //import { LobbyOutput } from "../../services/users/models/lobby/LobbyOutputModel";
 //localstorage
 type State =
@@ -27,28 +27,27 @@ type Action =
 function findGameReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'find':
-            return { tag: 'loading-variants' };
+            return {tag: 'loading-variants'};
         case 'found':
-            return { tag: 'found' };
+            return {tag: 'found'};
         case 'variants-loaded':
-            return { tag: 'selecting-variant' };
+            return {tag: 'selecting-variant'};
         case 'error':
-            return { tag: 'error', message: action.message };
+            return {tag: 'error', message: action.message};
         case 'join-lobby':
-            return { tag: 'in-lobby', lobbyId: action.lobbyId };
+            return {tag: 'in-lobby', lobbyId: action.lobbyId};
         case 'leave-lobby':
-            return { tag: 'selecting-variant' };
+            return {tag: 'selecting-variant'};
         case 'start-game':
-            return { tag: 'in-game', gameId: action.gameId };
+            return {tag: 'in-game', gameId: action.gameId};
         default:
             return state;
     }
 }
 
 
-
 export function FindGame() {
-    const [state, dispatch] = React.useReducer(findGameReducer, { tag: 'loading-variants' });
+    const [state, dispatch] = React.useReducer(findGameReducer, {tag: 'loading-variants'});
     const [variants, setVariants] = React.useState(null);
     const [pollingFinished, setPollingFinished] = React.useState(false);
     const location = useLocation();
@@ -56,28 +55,27 @@ export function FindGame() {
     const pollingIntervalRef = React.useRef(null);
 
     const fetchGame = (variantId) => {
-        findGame({ variantId: variantId }).then(result => {
+        findGame({variantId: variantId}).then(result => {
             const errorData = result.json as ProblemModel;
             const successData = result.json as unknown as FindGameOutput;
             if (result.contentType === 'application/problem+json') {
-                dispatch({ type: 'error', message: errorData.detail });
+                dispatch({type: 'error', message: errorData.detail});
             } else if (result.contentType === 'application/vnd.siren+json') {
                 if (successData.class.find((c) => c == 'lobby') != undefined) {
-                    dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
+                    dispatch({type: 'join-lobby', lobbyId: successData.properties.id});
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
                     stopPollingLobbyStatus();
                     setGameId(gameId);
-                    dispatch({ type: 'start-game', gameId: gameId });
+                    dispatch({type: 'start-game', gameId: gameId});
                 }
             }
         })
             .catch((err: { message: string }) => {
-                dispatch({ type: 'error', message: err.message });
+                dispatch({type: 'error', message: err.message});
             });
 
     };
-
 
 
     const fetchVariants = () => {
@@ -85,11 +83,11 @@ export function FindGame() {
             const errorData = result.json as ProblemModel;
             const successData = result.json as unknown as FindGameOutput;
             if (result.contentType === 'application/problem+json') {
-                dispatch({ type: 'error', message: errorData.detail });
+                dispatch({type: 'error', message: errorData.detail});
             } else if (result.contentType === 'application/vnd.siren+json') {
                 setVariants(successData.properties);
                 localStorage.setItem('gameVariants', JSON.stringify(successData.properties));
-                dispatch({ type: 'variants-loaded' });
+                dispatch({type: 'variants-loaded'});
             }
         })
     };
@@ -106,31 +104,29 @@ export function FindGame() {
             const errorData = result.json as ProblemModel;
             const successData = result.json as unknown as FindGameOutput;
             if (result.contentType === 'application/problem+json') {
-                dispatch({ type: 'error', message: errorData.detail });
+                dispatch({type: 'error', message: errorData.detail});
                 stopPollingLobbyStatus();
             } else if (result.contentType === 'application/vnd.siren+json') {
                 if (successData.class.find((c) => c == 'lobby') != undefined) {
-                    dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
+                    dispatch({type: 'join-lobby', lobbyId: successData.properties.id});
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
                     setPollingFinished(true);
                     setGameId(gameId);
-                    dispatch({ type: 'start-game', gameId: gameId });
+                    dispatch({type: 'start-game', gameId: gameId});
                 }
             }
 
         })
-           // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const startPollingLobbyStatus = React.useCallback((lobbyId) => {
-        stopPollingLobbyStatus(); 
+        stopPollingLobbyStatus();
         pollingIntervalRef.current = setInterval(() => {
             pollLobbyStatus(lobbyId);
         }, 5000);
     }, [pollLobbyStatus, stopPollingLobbyStatus]);
-
-
 
 
     React.useEffect(() => {
@@ -152,14 +148,13 @@ export function FindGame() {
         exitLobby(lobbyId).then(result => {
             const errorData = result.json as ProblemModel;
             if (result.contentType === 'application/problem+json') {
-                dispatch({ type: 'error', message: errorData.detail });
+                dispatch({type: 'error', message: errorData.detail});
             } else if (result.contentType === 'application/vnd.siren+json') {
                 stopPollingLobbyStatus();
-                dispatch({ type: 'leave-lobby' });
+                dispatch({type: 'leave-lobby'});
             }
         })
     };
-
 
 
     switch (state.tag) {
@@ -170,7 +165,7 @@ export function FindGame() {
                     {variants && variants.map(variant => (
                         <button
                             key={variant.id}
-                            style={{ display: 'block', margin: '10px 0' }}
+                            style={{display: 'block', margin: '10px 0'}}
                             onClick={() => fetchGame(variant.id.value)}
                         >
                             {variant.name}
@@ -193,15 +188,16 @@ export function FindGame() {
             if (!pollingFinished) {
                 return <div>Preparing game...</div>;
             }
-          
-            return <Navigate to={location.state?.source?.pathname ||`/games/${gameId}`} replace={true}/>;
-       
+
+            return <Navigate to={location.state?.source?.pathname || `/games/${gameId}`} replace={true}/>;
+
         }
 
         case 'error':
             return (
                 <div>
-                    {state.message} <button onClick={() => dispatch({ type: 'find' })}>Try again</button>
+                    {state.message}
+                    <button onClick={() => dispatch({type: 'find'})}>Try again</button>
                 </div>
             );
 
