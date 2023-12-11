@@ -10,19 +10,19 @@ import { UserStats } from '../domain/UserStats';
 import { UserStatsOutput } from './models/users/UserStatsOutputModel';
 
 export async function register(body: RegisterInputModel) {
-    return await callApi<RegisterInputModel, RegisterOutput>('api/users/register', Method.POST, body);
+    return await callApi<RegisterInputModel, RegisterOutput>('/api/users/register', Method.POST, body);
 }
 
 export async function login(body: LoginInputModel) {
-    return await callApi<LoginInputModel, LoginOutput>('api/users/token', Method.POST, body);
+    return await callApi<LoginInputModel, LoginOutput>('/api/users/token', Method.POST, body);
 }
 
 export async function logout() {
-    return await callApi('api/users/logout', Method.POST);
+    return await callApi('/api/users/logout', Method.POST);
 }
 
 export async function me() {
-    return await callApi<unknown, HomeOutput>('api/users/home', Method.GET);
+    return await callApi<unknown, HomeOutput>('/api/users/home', Method.GET);
 }
 
 export async function fetchUserStatsByUserId(userId: string) {
@@ -39,7 +39,7 @@ export async function fetchUsersStats(uri?: string) {
     const page = 1;
     const itemsPerPage = 10;
     const query = `page=${page}&itemsPerPage=${itemsPerPage}`;
-    const base = `api/users/stats`;
+    const base = `/api/users/stats`;
     const defaultUri = `${base}?${query}`;
     const actualUri = uri ? uri : defaultUri;
     return await callApi<unknown, PaginatedResult<UserStats>>(actualUri, Method.GET, {});

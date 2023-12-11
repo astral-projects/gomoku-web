@@ -13,12 +13,13 @@ export type GameOutputModel = {
     };
     board: {
         grid: string[];
-        turn: {
+        turn?: {  
             player: string;
             timeLeftInSec: {
                 value: number;
             };
         };
+        winner?: string;
     };
     createdAt: string;
     updatedAt: string;

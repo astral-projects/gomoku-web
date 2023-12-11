@@ -3,43 +3,15 @@ import { exitGame, getGame } from "../../services/gameServices";
 import { makeMove } from "../../services/gameServices";
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { GameOutput } from "../../services/users/models/games/GameOutputModel";
-import { useCurrentGameId } from "../gomokuContainer/GomokuContainer";
+import { renderBoard } from "./BoardDraw";
 import { useCurrentUser } from "../gomokuContainer/GomokuContainer";
 import { Entity } from "../../services/media/siren/Entity";
-import { useNavigate } from "react-router-dom";
-
-
-
-
-const cellSize = 30;
+import { useNavigate, useParams } from "react-router-dom";
+import { GameEntities } from "../../services/users/models/games/GameEntitiesModel";
 
 function columnIndexToLetter(index) {
-    return String.fromCharCode(97 + index);
+  return String.fromCharCode(97 + index);
 }
-
-type GameProperties = {
-    id: number;
-    state: { name: string };
-    variant: {
-        id: number;
-        name: string;
-        openingRule: string;
-        boardSize: number;
-    };
-    board: {
-        grid: string[];
-        turn: {
-            player: string;
-            timeLeftInSec: {
-                value: number;
-            };
-        };
-    };
-    createdAt: string;
-    updatedAt: string;
-    hostId: number;
-    guestId: number;
-};
 
 type FindGameState =
   | { tag: 'loading' }
@@ -47,6 +19,7 @@ type FindGameState =
   | { tag: 'play', boardSize: number, grid: string[] }
   | { tag: 'leave' }
   | { tag: 'win', boardSize: number, grid: string[] }
+  | { tag: 'lost', boardSize: number, grid: string[] }
   | { tag: 'error', message: string };
 
 
@@ -56,6 +29,7 @@ type FindGameAction =
   | { type: 'set-not-your-turn', BOARD_SIZE: number, grid: string[] }
   | { type: 'leave-game' }
   | { type: 'win', BOARD_SIZE: number, grid: string[] }
+  | { type: 'lose', BOARD_SIZE: number, grid: string[] }
   | { type: 'error', message: string };
 
 function gameReducer(state: FindGameState, action: FindGameAction): FindGameState {
@@ -70,6 +44,8 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
       return { tag: 'leave' };
     case 'win':
       return { ...state, tag: 'win', boardSize: action.BOARD_SIZE, grid: action.grid };
+    case 'lose':
+      return { ...state, tag: 'lost', boardSize: action.BOARD_SIZE, grid: action.grid };
     case 'error':
       return { ...state, tag: 'error', message: action.message };
     default:
@@ -78,11 +54,11 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
 }
 
 
-
-
 export function Game() {
   const [state, dispatch] = React.useReducer(gameReducer, { tag: 'loading' });
-  const currentGameId = useCurrentGameId();
+  const { gameId } = useParams();
+  const currentGameId = parseInt(gameId);
+  const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
   const navigate = useNavigate();
   const user = useCurrentUser();
 
@@ -92,7 +68,7 @@ export function Game() {
   const fetchGame = React.useCallback((currentGameId) => {
     if (isFetching) return;
     setIsFetching(true);
-    getGame(parseInt(currentGameId)).then(result => {
+    getGame(currentGameId).then(result => {
       const errorData = result.json as ProblemModel;
       const successData = result.json as unknown as GameOutput;
       if (result.contentType === 'application/problem+json') {
@@ -101,7 +77,16 @@ export function Game() {
       } else if (result.contentType === 'application/vnd.siren+json') {
         if (successData.class.find((c) => c == 'game') != undefined) {
           if (successData.properties.state.name == 'finished') {
-            dispatch({ type: 'win', BOARD_SIZE: successData.properties.variant.boardSize, grid: successData.properties.board.grid });
+            if (successData.properties.board.winner != undefined) {
+              const isWin = successData.properties.board.winner == "W" ? successData.properties.hostId == user.id : successData.properties.guestId == user.id;
+              if (isWin) {
+                dispatch({ type: 'win', BOARD_SIZE: successData.properties.variant.boardSize, grid: successData.properties.board.grid });
+              } else {
+                dispatch({ type: 'lose', BOARD_SIZE: successData.properties.variant.boardSize, grid: successData.properties.board.grid });
+              }
+            } else {
+              dispatch({ type: 'error', message: 'Something went wrong.' })
+            }
           } else {
             const isYourTurn = successData.properties.board.turn.player == "W" ? successData.properties.hostId == user.id : successData.properties.guestId == user.id;
             if (isYourTurn) {
@@ -109,8 +94,8 @@ export function Game() {
             } else {
               dispatch({ type: 'set-not-your-turn', BOARD_SIZE: successData.properties.variant.boardSize, grid: successData.properties.board.grid });
             }
-            setIsFetching(false);
           }
+          setIsFetching(false);
         }
       }
     });
@@ -124,7 +109,7 @@ export function Game() {
     if (state.tag === 'notYourTurn') {
       const interval = setInterval(() => {
         fetchGame(currentGameId);
-      }, 10000);
+      }, 2000);
 
       return () => clearInterval(interval);
 
@@ -133,51 +118,49 @@ export function Game() {
   }, [setIsFetching, isFetching, state.tag, currentGameId, fetchGame, user]);
 
 
-
-
-
-
-  const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
-
   const handleIntersectionClick = (rowIndex, colIndex, size, grid) => {
     if (isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
       return;
     }
     setIsMoveInProgress(true);
     const colLetter = columnIndexToLetter(colIndex - 1);
-    moVe(currentGameId, colLetter, rowIndex, size, grid)
-  };
-
-
-  const moVe = (gameId: number, col: string, row: number, size:number, grid:string[]) => {
-    makeMove(gameId, { col: col, row: row }).then(result => {
+    makeMove(currentGameId, { col: colLetter, row: rowIndex }).then(result => {
       const errorData = result.json as ProblemModel;
-
       if (result.contentType === 'application/problem+json') {
         if (errorData.detail.includes('The game with id') && errorData.detail.includes('is already finished')) {
           dispatch({ type: 'win', BOARD_SIZE: size, grid: grid });
-          setIsMoveInProgress(false);
         } else {
           dispatch({ type: 'error', message: errorData.detail });
-          setIsMoveInProgress(false);
         }
-
+        setIsMoveInProgress(false);
       } else if (result.contentType === 'application/vnd.siren+json') {
         const successData = result.json as unknown as GameOutput;
-        const entities = successData.entities as Entity<GameProperties>[];
+        const entities = successData.entities as Entity<GameEntities>[];
         if (successData.class.find((c) => c == 'game') != undefined) {
-          const isYourTurn = entities[0].properties.board.turn.player == "W" ? entities[0].properties.hostId == user.id : entities[0].properties.guestId == user.id;
-          if (isYourTurn) {
-            setIsMoveInProgress(false);
-            dispatch({ type: 'set-turn', isYourTurn: isYourTurn, BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+          if (entities[0].properties.state.name == 'finished') {
+            if (entities[0].properties.board.winner != undefined) {
+              const isWin = entities[0].properties.board.winner == "W" ? entities[0].properties.hostId == user.id : entities[0].properties.guestId == user.id;
+              if (isWin) {
+                dispatch({ type: 'win', BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+              } else {
+                dispatch({ type: 'lose', BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+              }
+            }
           } else {
-            setIsMoveInProgress(false);
-            dispatch({ type: 'set-not-your-turn', BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+            const isYourTurn = entities[0].properties.board.turn.player == "W" ? entities[0].properties.hostId == user.id : entities[0].properties.guestId == user.id;
+            if (isYourTurn) {
+              dispatch({ type: 'set-turn', isYourTurn: isYourTurn, BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+            } else {
+              dispatch({ type: 'set-not-your-turn', BOARD_SIZE: entities[0].properties.variant.boardSize, grid: entities[0].properties.board.grid });
+            }
           }
+          setIsMoveInProgress(false);
         }
       }
     });
   };
+
+
 
   const handleLeaveGame = (gameId) => {
     setIsFetching(false);
@@ -200,103 +183,34 @@ export function Game() {
       return <div>Loading game...</div>;
     case 'notYourTurn':
       return <div>
-        {renderBoard(state.boardSize, cellSize, state.grid, null)}
+        {renderBoard(state.boardSize, state.grid, null)}
         Turn: Not your turn
         Player: {user.username}
         <button onClick={() => handleLeaveGame(currentGameId)}>Leave Game</button>
       </div>;
     case 'play':
       return <>
-        {renderBoard(state.boardSize, cellSize, state.grid, handleIntersectionClick)}
+        {renderBoard(state.boardSize, state.grid, handleIntersectionClick)}
         Turn: Your turn
         Player: {user.username}
         <button onClick={() => handleLeaveGame(currentGameId)}>Leave Game</button>
       </>;
     case 'leave':
       return <div>You have left the game.</div>;
+
+    case "lost":
+      return <>
+        {renderBoard(state.boardSize, state.grid)}
+        You Lost the game...
+        Player: {user.username}
+        <button onClick={() => navigate('/games')}>Start New Game</button>
+      </>;
     case 'win':
       return <>
-        {renderBoard(state.boardSize, cellSize, state.grid, null)}
+        {renderBoard(state.boardSize, state.grid)}
         You won the game!
         Player: {user.username}
         <button onClick={() => navigate('/games')}>Start New Game</button>
       </>;
   }
-}
-
-
-const boardStyle = (boardSize): React.CSSProperties => ({
-    position: 'relative',
-    width: `${boardSize * cellSize}px`,
-    height: `${boardSize * cellSize}px`,
-    backgroundImage: `
-      linear-gradient(to right, black 1px, transparent 1px),
-      linear-gradient(to bottom, black 1px, transparent 1px)
-    `,
-    backgroundSize: `${cellSize}px ${cellSize}px`,
-    boxShadow: `inset 0 -1px 0 0 black, inset -1px 0 0 0 black`,
-    boxSizing: 'content-box',
-});
-
-function parseGrid(grid) {
-    const parsedGrid = {};
-    grid.forEach(cell => {
-        const [position, player] = cell.split('-');
-        const colLetter = position.charAt(0);
-        const row = parseInt(position.slice(1), 10) - 1;
-        const colIndex = colLetter.charCodeAt(0) - 'a'.charCodeAt(0) + 1;
-        const intersectionId = `${row}-${colIndex}`;
-        parsedGrid[intersectionId] = player === 'w' ? 'W' : 'B';
-    });
-    return parsedGrid;
-}
-
-
-
-
-
-function renderBoard(boardSize: number, cellSize: number, grid: string[], handleIntersectionClick: (rowIndex: number, colIndex: number, size: number, grid: string[]) => void) {
-  const parsedGrid = parseGrid(grid);
-  return (
-    <div style={boardStyle(boardSize)}>
-      {[...Array(boardSize + 1)].map((_, rowIndex) => (
-        [...Array(boardSize + 1)].map((_, colIndex) => {
-          const intersectionId = `${rowIndex}-${colIndex}`;
-          const isEdge = rowIndex === 0 || colIndex === 0 || rowIndex === boardSize || colIndex === boardSize;
-          const letter = parsedGrid[intersectionId];
-
-                            const intersectionStyle: React.CSSProperties = {
-                                position: 'absolute',
-                                width: '10px',
-                                height: '10px',
-                                left: `${colIndex * cellSize - 5}px`,
-                                top: `${rowIndex * cellSize - 5}px`,
-                                cursor: 'pointer',
-                                pointerEvents: isEdge ? 'none' : 'auto',
-                            };
-
-                            const pieceStyle: React.CSSProperties = {
-                                position: 'absolute',
-                                fontSize: '20px',
-                                lineHeight: '20px',
-                                left: '50%',
-                                top: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                userSelect: 'none',
-                            };
-
-          return (
-            <div
-              key={intersectionId}
-              style={intersectionStyle}
-              onClick={handleIntersectionClick ? () => handleIntersectionClick(rowIndex, colIndex, boardSize, grid) : undefined}
-            >
-              {(letter === 'W' || letter === 'B') && (
-                <span style={pieceStyle}>{letter}</span>
-              )}
-            </div>
-          );
-        })
-      ))}
-    </div>);
 }

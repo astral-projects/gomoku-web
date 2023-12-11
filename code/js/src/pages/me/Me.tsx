@@ -60,10 +60,8 @@ export function Me() {
           const errorData = result.json as ProblemModel;
           const SuccessData = result.json as unknown as HomeOutput;
           if (!isSuccessful(result.contentType)) {
-            console.log(`Error: ${errorData.detail}`);
             dispatch({ type: 'error', message: errorData.detail });
           } else {
-            console.log(`Success: ${SuccessData.properties}`);
             const id = SuccessData.properties.id as unknown as Id;
             const username = SuccessData.properties.username as unknown as Username;
             const email = SuccessData.properties.email as unknown as Email;

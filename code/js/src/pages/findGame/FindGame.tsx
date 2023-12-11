@@ -1,11 +1,9 @@
 import * as React from "react";
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { getVariants, waittingInLobby, findGame, exitLobby } from "../../services/gameServices";
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { FindGameOutput } from "../../services/users/models/games/FindGameOutputModel";
-import { useSetGameId } from "../gomokuContainer/GomokuContainer";
-//import { LobbyOutput } from "../../services/users/models/lobby/LobbyOutputModel";
-//localstorage
+
 type State =
     | { tag: 'loading-variants' }
     | { tag: 'found' }
@@ -50,10 +48,7 @@ function findGameReducer(state: State, action: Action): State {
 export function FindGame() {
     const [state, dispatch] = React.useReducer(findGameReducer, { tag: 'loading-variants' });
     const [variants, setVariants] = React.useState(null);
-    const [pollingFinished, setPollingFinished] = React.useState(false);
-    const location = useLocation();
-    const setGameId = useSetGameId();
-    const pollingIntervalRef = React.useRef(null);
+    const [isPollingActive, setIsPollingActive] = React.useState(false);
 
     const fetchGame = (variantId) => {
         findGame({ variantId: variantId }).then(result => {
@@ -66,8 +61,8 @@ export function FindGame() {
                     dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
-                    stopPollingLobbyStatus();
-                    setGameId(gameId);
+                    setIsPollingActive(false);
+    
                     dispatch({ type: 'start-game', gameId: gameId });
                 }
             }
@@ -80,73 +75,67 @@ export function FindGame() {
 
 
 
-    const fetchVariants = () => {
-        getVariants().then(result => {
-            const errorData = result.json as ProblemModel;
-            const successData = result.json as unknown as FindGameOutput;
-            if (result.contentType === 'application/problem+json') {
-                dispatch({ type: 'error', message: errorData.detail });
-            } else if (result.contentType === 'application/vnd.siren+json') {
-                setVariants(successData.properties);
-                localStorage.setItem('gameVariants', JSON.stringify(successData.properties));
-                dispatch({ type: 'variants-loaded' });
-            }
-        })
-    };
-
-    const stopPollingLobbyStatus = React.useCallback(() => {
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-        }
-    }, []);
-
     const pollLobbyStatus = React.useCallback((lobbyId) => {
+        if (!isPollingActive) return;
         waittingInLobby(lobbyId).then(result => {
             const errorData = result.json as ProblemModel;
             const successData = result.json as unknown as FindGameOutput;
             if (result.contentType === 'application/problem+json') {
                 dispatch({ type: 'error', message: errorData.detail });
-                stopPollingLobbyStatus();
+                setIsPollingActive(false);
             } else if (result.contentType === 'application/vnd.siren+json') {
                 if (successData.class.find((c) => c == 'lobby') != undefined) {
                     dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
                 } else if (successData.class.find((c) => c == 'game') != undefined) {
                     const gameId = successData.properties.id;
-                    setPollingFinished(true);
-                    setGameId(gameId);
+                    setIsPollingActive(false);
+                   
                     dispatch({ type: 'start-game', gameId: gameId });
                 }
             }
 
         })
-           // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isPollingActive]);
 
     const startPollingLobbyStatus = React.useCallback((lobbyId) => {
-        stopPollingLobbyStatus(); 
-        pollingIntervalRef.current = setInterval(() => {
+        setIsPollingActive(true);
+        const intervalId = setInterval(() => {
             pollLobbyStatus(lobbyId);
-        }, 5000);
-    }, [pollLobbyStatus, stopPollingLobbyStatus]);
+        }, 2000);
+
+        return intervalId;
+    }, [pollLobbyStatus, setIsPollingActive]);
 
 
 
 
     React.useEffect(() => {
+        let intervalId;
         if (state.tag === 'loading-variants') {
-            fetchVariants();
+            getVariants().then(result => {
+                const errorData = result.json as ProblemModel;
+                const successData = result.json as unknown as FindGameOutput;
+                if (result.contentType === 'application/problem+json') {
+                    dispatch({ type: 'error', message: errorData.detail });
+                } else if (result.contentType === 'application/vnd.siren+json') {
+                    setVariants(successData.properties);
+                    dispatch({ type: 'variants-loaded' });
+                }
+            })
         }
 
         if (state.tag === 'in-lobby') {
-            startPollingLobbyStatus(state.lobbyId);
+            intervalId = startPollingLobbyStatus(state.lobbyId);
         }
         return () => {
-            stopPollingLobbyStatus();
-            setPollingFinished(true);
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            setIsPollingActive(false);
+
         };
 
-    }, [state, startPollingLobbyStatus, stopPollingLobbyStatus, pollLobbyStatus]);
+    }, [state, startPollingLobbyStatus]);
 
     const handleLeaveLobby = (lobbyId) => {
         exitLobby(lobbyId).then(result => {
@@ -154,7 +143,7 @@ export function FindGame() {
             if (result.contentType === 'application/problem+json') {
                 dispatch({ type: 'error', message: errorData.detail });
             } else if (result.contentType === 'application/vnd.siren+json') {
-                stopPollingLobbyStatus();
+                setIsPollingActive(false);
                 dispatch({ type: 'leave-lobby' });
             }
         })
@@ -190,12 +179,7 @@ export function FindGame() {
             );
         case 'in-game': {
             const gameId = state.gameId;
-            if (!pollingFinished) {
-                return <div>Preparing game...</div>;
-            }
-          
-            return <Navigate to={location.state?.source?.pathname ||`/games/${gameId}`} replace={true}/>;
-       
+            return <Navigate to={`/games/${gameId}`} replace={true} />;
         }
 
         case 'error':
