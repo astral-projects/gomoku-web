@@ -2,12 +2,12 @@ import * as React from "react";
 import { exitGame, getGame } from "../../services/gameServices";
 import { makeMove } from "../../services/gameServices";
 import { ProblemModel } from '../../services/media/ProblemModel';
-import { GameOutput } from "../../services/users/models/games/GameOutputModel";
+import { GameOutput } from "../../services/models/games/GameOutputModel";
 import { renderBoard } from "./BoardDraw";
-import { useCurrentUser } from "../gomokuContainer/GomokuContainer";
+import {useCurrentUser} from '../GomokuContainer';
 import { Entity } from "../../services/media/siren/Entity";
 import { useNavigate, useParams } from "react-router-dom";
-import { GameEntities } from "../../services/users/models/games/GameEntitiesModel";
+import { GameEntities } from "../../services/models/games/GameEntitiesModel";
 
 function columnIndexToLetter(index) {
   return String.fromCharCode(97 + index);

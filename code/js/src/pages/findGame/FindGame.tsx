@@ -2,7 +2,7 @@ import * as React from "react";
 import { Navigate } from 'react-router-dom';
 import { getVariants, waittingInLobby, findGame, exitLobby } from "../../services/gameServices";
 import { ProblemModel } from '../../services/media/ProblemModel';
-import { FindGameOutput } from "../../services/users/models/games/FindGameOutputModel";
+import { FindGameOutput } from "../../services/models/games/FindGameOutputModel";
 
 type State =
     | { tag: 'loading-variants' }

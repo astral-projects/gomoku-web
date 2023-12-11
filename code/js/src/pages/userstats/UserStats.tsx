@@ -56,7 +56,7 @@ export function UserStats() {
             .catch((err: { message: string }) => {
                 dispatch({type: 'error', message: err.message});
             });
-    }, []);
+    }, [userId]);
 
     switch (state.tag) {
         case 'loaded':
