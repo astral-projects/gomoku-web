@@ -1,4 +1,4 @@
-import { SirenModel } from "../../../media/siren/SirenModel"
+import {SirenModel} from "../../media/siren/SirenModel"
 
 export type FindGameOutputModel = {
     message: string,

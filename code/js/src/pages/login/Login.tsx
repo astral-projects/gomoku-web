@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { login } from '../../services/usersServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { LoginOutput } from '../../services/models/users/LoginOuputModel';
-import { Email, Id, User, Username } from '../../domain/User';
-import { Entity } from '../../services/media/siren/Entity';
-import { useSetUser } from '../gomokuContainer/GomokuContainer';
-import { logUnexpectedAction } from '../utils/logUnexpetedAction';
-import { isSuccessful } from '../utils/responseData';
+import {Navigate, useLocation} from 'react-router-dom';
+import {login} from '../../services/usersServices';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {LoginOutput} from '../../services/models/users/LoginOuputModel';
+import {Email, Id, User, Username} from '../../domain/User';
+import {Entity} from '../../services/media/siren/Entity';
+import {useSetUser} from '../GomokuContainer';
+import {logUnexpectedAction} from '../utils/logUnexpetedAction';
+import {isSuccessful} from '../utils/responseData';
 
 type State =
   | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }

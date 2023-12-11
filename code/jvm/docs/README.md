@@ -33,7 +33,8 @@ The JVM application is a Spring Boot application, built with [Spring Initializr]
 Some dependencies used in this project are:
 
 - **[Spring Web](https://spring.io/projects/spring-framework)** - for the REST API;
-- **[Jdbi](https://jdbi.org/)** - for the database access, using PostgreSQL;
+- **[Jdbi](https://jdbi.org/)** - for the database access, using [PostgreSQL](https://www.postgresql.org/) as the
+  database;
 - **[Jackson](https://github.com/FasterXML/jackson)** - for JSON serialization and deserialization;
 
 ---
@@ -320,7 +321,7 @@ In the backend infrastructure, the validation of the data is done in three diffe
   }
   
   // In the http layer, before calling the service 
-  // which is expecting a Id object, the id is validated.
+  // which is expecting an Id object, the id is validated.
   val id: Either<InvalidIdError, Id> = Id(id)
   when (id) {
       is Either.Right -> service.get(id = id.value)

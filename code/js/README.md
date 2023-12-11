@@ -1,108 +1,228 @@
+# Gomoku - Backend Documentation 🉐
 
-# Login
-|            | edit | submit     | error    | sucess   |
-|------------|------|------------|----------|----------|
-| editting   | -    | submitting | editting | -        |
-| submitting | -    | -          | editting | redirect |
-| redirect   | -    | -          | -        | -        |
+> This is the frontend documentation for the Gomoku Royale game.
 
+## Table of Contents
 
-```js
-type State =
-  | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
-  | { tag: 'submitting'; username: string }
-  | { tag: 'redirect' };
+- [Introduction](#introduction)
+- [Pages](#pages)
+- [Code Structure](#code-structure)
+- [Webpack Configuration](#webpack-configuration)
+- [API](#api)
+    - [Connection](#connection)
+    - [Service](#service)
+    - [Recipes](#recipes)
+- [Authentication](#authentication)
+- [Tests](#tests)
+- [Implementation Challenges](#implementation-challenges)
 
-type Action =
-  | { type: 'edit'; inputName: string; inputValue: string }
-  | { type: 'submit' }
-  | { type: 'error'; message: string }
-  | { type: 'success' };
-  
-  ```
+---
 
-  # Register
-|            | edit | submit     | error    | sucess   |
-|------------|------|------------|----------|----------|
-| editting   | edit | submitting | editting | -        |
-| submitting | -    | -          | editting | redirect |
-| redirect   | -    | -          | -        | -        |
+## Introduction
 
-```js
-type State =
-  | { tag: 'editing'; error?: string; inputs: { username: string; email:string, confirmpassword:string, password: string } }
-  | { tag: 'submitting'; username: stringm, email:string }
-  | { tag: 'redirect' };
+The frontend is an [SPA](https://en.wikipedia.org/wiki/Single-page_application) and acts as a web-based client for
+the [Gomoku Royale API](../../docs/gomoku-backend-api.md).
+It is written mainly in [TypeScript](https://www.typescriptlang.org/) and uses the [React](https://reactjs.org/)
 
-type Action =
-    | { type: 'edit'; inputName: string; inputPassword: string, inputEmail:string, inputConfirmPassword:string  }
-    | { type: 'submit' }
-    | { type: 'error'; message: string }
-    | { type: 'success' };
-    
+Some dependencies used in this project are:
+
+- [React Router](https://reactrouter.com/) - Used to manage the application routes;
+- [React Dom](https://reactjs.org/docs/react-dom.html) - Used to render the React components with the DOM;
+- [Webpack](https://webpack.js.org/) - Used to bundle the application;
+
+---
+
+## Pages
+
+The application uses the [React Router](https://reactrouter.com/) to manage the routes, and can be seen in the
+[App](./src/App.tsx) component.
+
+The routes are the following:
+
+[Home Page](./src/pages/home/Home.tsx)
+
+- Path: `/`
+- Component: `Home`
+- Description: The main landing page of the application.
+
+[Login Page](./src/pages/login/Login.tsx)
+
+- Path: `/login`
+- Component: `Login`
+- Description: Page for user authentication and login.
+
+[Me Page](./src/pages/me/Me.tsx)
+
+- Path: `/me`
+- Component: `Me`
+- Description: User profile page displaying personalized information.
+
+[Register Page](./src/pages/register/Register.tsx)
+
+- Path: `/register`
+- Component: `Register`
+- Description: Page for user registration.
+
+[Rankings Page](./src/pages/rankings/Rankings.tsx)
+
+- Path: `/rankings`
+- Component: `Rankings`
+- Description: Page displaying overall rankings of users.
+
+[User Stats Page](./src/pages/userstats/UserStats.tsx)
+
+- Path: `/rankings/:id`
+- Component: `UserStats`
+- Description: Page displaying detailed statistics for a specific user identified by id
+
+[Find Game Page](./src/pages/findGame/FindGame.tsx)
+
+- Path: `/games`
+- Component: `FindGame`
+- Description: Page for users to find and join available games.
+
+[In-Game Page](./src/pages/game/Game.tsx)
+
+- Path: `/games/:gameId`
+- Component: `Game`
+- Description: Page displaying details and status of a specific game identified by gameId.
+
+[Logout Page](./src/pages/logout/Logout.tsx)
+
+- Path: `/logout`
+- Component: `Logout`
+- Description: Page for user logout and session termination.
+
+[About Page](./src/pages/about/About.tsx)
+
+- Path: `/about`
+- Component: `About`
+- Description: Page providing information about the application.
+
+[Error Page](./src/pages/error/Error.tsx)
+
+- Path: `/error`
+- Component: `Error`
+- Description: Page displaying an error or handling unexpected situations.
+
+## Code Structure
+
+The frontend code is organized in the following way:
+
+- `js`
+    - `public` - Contains the `index.html` and the `index.css` files;
+    - `src`
+        - `api` - Exposes generic modules to communicate with the API;
+        - `pages` - Contains the React components and pages used in the application;
+        - `domain` - Contains the domain classes used in the application;
+        - `services` - Contains the services used in the application;
+        - this layer is responsible for the communication
+          with the API, using the generic classes in the `api` layer;
+        - `App.js` - The main component of the application;
+        - `index.js` - The entry point of the application;
+
+In the `js` folder, there are other files used for the development of the application; that are equally relevant:
+
+- `package.json` - Contains the dependencies of the application;
+- `webpack.config.js` - Contains the configuration of the Webpack bundler;
+- `tsconfig.json` - Contains the configuration of the TypeScript compiler;
+- `eslintrc.json` - Contains the configuration of the ESLint linter;
+
+---
+
+## Webpack Configuration
+
+To establish communication with the backend API, the webpack dev server has been set up to route all requests through a
+proxy to the backend API.
+This configuration helps circumvent CORS issues.
+
+The fallback page is set to the `index.html` file, which is the entry point of the application.
+
+Details mentioned above can be seen in the [webpack.config.js](./webpack.config.js) file.
+
+## API
+
+### Connection
+
+To abstract the API connection, the [apiConnection](./src/api/apiConnection.ts) module was implemented and exposes all
+HTTP methods supported
+by the API, such as `get`, `post`, `put` and `delete`, using a generic `fetchAPI` method.
+
+```typescript
+async function fetchApi<T>(path: string, options: Options): Promise<ApiResponse<T>> {
+    // ...
+}
 ```
-    
-# Home
-|          | login |  register    | users-stats | systemInfo | user-by-id |
-|----------|-------|--------------|-------------|------------|------------|
-| idle     |  -    |      -       |      -      |     -      |     -      |
-| redirect |  -    |      -       |      -      |     -      |     -      |
 
-```js
-type State =
-  | { tag: 'idle' }
-  | { tag: 'redirect' };
-  
-type Action =
-    | { type: 'login' }
-    | { type: 'register' }
-    | { type: 'users-stats' }
-    | { type: 'systemInfo' }
-    | { type: 'user-by-id' };
-    
-```
-    
-# Users Stats
-|          |   | user-stats | navigate-to-page | refresh | success | error |
-|----------|---|------------|------------------|---------|---------|-------|
-| loading  | - | -          |                  | -       | loaded  |       |
-| loaded   | - | loading    | loading          | loading | -       |       |
-| redirect | - | -          | -                | -       | -       |       |
+The media types used in the communication with the API are the following:
 
-```js
-type State =
-  | { tag: 'loading' }
-  | { tag: 'loaded' }
-  | { tag: 'redirect' };
+- `application/json` - Used in the request bodies;
+- `application/problem+json` - Used in the response bodies when an error occurs;
+- `application/vnd.siren+json` - Used in the response bodies when the request is successful.
 
-type Action =
-    | { type: 'user-stats' }
-    | { type: 'navigate-to-page' }
-    | { type: 'refresh' }
-    | { type: 'success' }
-    | { type: 'error' };
+### Service
+
+To abstract an API service, the [apiService](./src/api/apiService.ts) module was implemented that exposes a
+generic `callApi` method that
+receives the HTTP method, the URI and the optional request body and returns a `Promise` with the response.
+
+```typescript
+export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
+    // ...
+}
 ```
 
-# System Info
-|          | home     | logout  | users-stats | success  | error    | 
-|----------|----------|---------|-------------|----------|----------|
-| loading  | -        |         | -           | redirect | redirect |
-| loaded   | redirect | loading | -           |          |          |
-| redirect | -        | -       | -           |          |          |
+### Recipes
 
+The [apiRecipes](./src/api/apiRecipes.ts) module provides functions
+for obtaining URI templates corresponding to all API resources exposed by the backend.
+These templates can be utilized to construct the actual URIs.
 
+This module was developed to address requests related to [Deep Linking](https://en.wikipedia.org/wiki/Deep_linking),
+enabling users to access specific resources directly without navigating through the application,
+thanks to prior bookmarking, sharing the link with other users, or reloading the page.
 
+Given that the application operates as a Single Page Application (SPA), conventional methods described above would lead
+to a 404 error since the server lacks the information on how to handle such requests explicitly.
 
-```js
-type State =
-  | { tag: 'loading' }
-  | { tag: 'loaded' }
-  | { tag: 'redirect' };
+By utilizing these URI templates, the application can dynamically populate these URIs and seamlessly navigate to the
+desired
+resource without requiring users to navigate through the entire application.
 
-type Action =
-    | { type: 'home' }
-    | { type: 'logout' }
-    | { type: 'users-stats' };
-```
+If the resource requires authentication, the application will redirect the user to the login page and, after a
+successful
+authentication, will redirect the user to the desired resource.
+If the resource is not found, the application will redirect the user to the home page.
 
+## Authentication
 
+The user authentication is done in the `Login` or `Register` pages.
+
+The backend API sets a cookie when the user is successfully authenticated,
+and that cookie is sent in all subsequent requests by the browser.
+
+When logged-in another cookie representing the user information is set in the browser.
+When logging out, the cookie will present an expired token.
+
+## Tests
+
+The frontend tests use the [Playwright](https://playwright.dev/) framework to test the application in a browser.
+
+TODO()
+
+### Implementation Challenges
+
+- **API Integration** - The API integration was a challenge because the API was not fully implemented, at least the way
+  we wanted it to be, and the documentation was updated regularly.
+  We had to make some changes to the API, particularly using the siren media type, and integrate it with the frontend,
+  was not an easy task.
+
+- **Concurrency** - TODO()
+
+### Further Improvements
+
+- **Add css** - We planned to add css to the application, but we did not have enough time to do it.
+- **Add more tests** - We only implemented the basic tests for the application, but we could add more tests to improve
+  the code coverage and ensure that the application is working as expected in all possible scenarios.
+- **Improve user experience** - We could improve the user experience by adding more features to the application, such as
+  notifications, animations, skeleton loading, etc.

@@ -160,8 +160,6 @@ export function Game() {
     });
   };
 
-
-
   const handleLeaveGame = (gameId) => {
     setIsFetching(false);
     exitGame(gameId).then(result => {

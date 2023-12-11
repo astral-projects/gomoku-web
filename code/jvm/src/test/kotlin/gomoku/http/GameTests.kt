@@ -186,7 +186,7 @@ class GameTests {
 
         // when: a user tries to get the game by id
         // then: the response is a 200 with the proper body
-        val getGameResponse = client.get().uri("/games/$gameId")
+        client.get().uri("/games/$gameId")
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -276,7 +276,7 @@ class GameTests {
         // then: the response is a 200 with the proper body
         val playerToken = if (Random().nextBoolean()) guestToken else hostToken
         val idOfPlayerToken = if (playerToken == guestToken) guestId else hostId
-        val exitGameResponse = client.post().uri("/games/$gameId/exit")
+        client.post().uri("/games/$gameId/exit")
             .header("Authorization", "Bearer $playerToken")
             .exchange()
             .expectStatus().isOk

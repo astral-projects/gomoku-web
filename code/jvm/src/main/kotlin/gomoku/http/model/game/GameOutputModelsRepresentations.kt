@@ -168,5 +168,4 @@ class GameOutputModelsRepresentations {
             clazz("variants")
             link(Uris.Games.getVariants(), Rels.SELF)
         }
-
 }

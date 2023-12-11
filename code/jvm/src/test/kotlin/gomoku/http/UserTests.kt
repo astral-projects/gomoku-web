@@ -46,7 +46,7 @@ class UserTests {
 
         // when: creating an user
         // then: the response is a 201 with a proper Location header
-        val userId = client.post().uri("/users")
+        client.post().uri("/users")
             .bodyValue(
                 mapOf(
                     "username" to username.value,
@@ -612,7 +612,7 @@ class UserTests {
 
         // when: getting the user statistic information with no offset or limit
         // then: the response is a 200 with the proper representation
-        val resultWithNoPageAndItemsPerPage = client.get().uri("/users/stats")
+        client.get().uri("/users/stats")
             .exchange()
             .expectStatus().isOk
             .expectHeader().value("Content-Type") {
@@ -631,7 +631,7 @@ class UserTests {
         val itemsPerPage = 5
 
         // then: the response is a 200 with the proper representation
-        val resultWithPage = client.get().uri("/users/stats?page=$page&itemsPerPage=$itemsPerPage")
+        client.get().uri("/users/stats?page=$page&itemsPerPage=$itemsPerPage")
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -731,7 +731,7 @@ class UserTests {
 
         // when: getting the previous page
         // then: the response is a 200 with the proper representation
-        val resultWithPreviousPage = client.get().uri(previousPageHref)
+        client.get().uri(previousPageHref)
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -769,7 +769,7 @@ class UserTests {
 
         // when: getting the user statistic information
         // then: the response is a 200 with the proper representation
-        val userStatsReponseBody = client.get().uri("/users/$userId/stats")
+        client.get().uri("/users/$userId/stats")
             .exchange()
             .expectStatus().isOk
             .expectHeader().value("Content-Type") {
@@ -847,7 +847,7 @@ class UserTests {
         val token = createToken(client, registrationCredentials)
         // when: getting the user statistic information by search term with no offset or limit
         // then: the response is a 200 with the proper representation
-        val resultWithNoPageAndNoItemsPerPage = client.get().uri("/users/stats/search?term=$term")
+        client.get().uri("/users/stats/search?term=$term")
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
@@ -867,19 +867,18 @@ class UserTests {
         val itemsPerPage = 5
 
         // then: the response is a 200 with the proper representation
-        val resultWithPageAndItemsPerPage =
-            client.get().uri("/users/stats/search?term=$term&page=$page&itemsPerPage=$itemsPerPage")
-                .header("Authorization", "Bearer $token")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.properties.currentPage").isEqualTo(page)
-                .jsonPath("$.properties.itemsPerPage").isEqualTo(
-                    if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers
-                )
-                .jsonPath("$.requireAuth[0]").isEqualTo("true")
-                .returnResult()
-                .responseBody!!
+        client.get().uri("/users/stats/search?term=$term&page=$page&itemsPerPage=$itemsPerPage")
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.currentPage").isEqualTo(page)
+            .jsonPath("$.properties.itemsPerPage").isEqualTo(
+                if (itemsPerPage < nrOfUsers) itemsPerPage else nrOfUsers
+            )
+            .jsonPath("$.requireAuth[0]").isEqualTo("true")
+            .returnResult()
+            .responseBody!!
 
         // when: getting the user statistic information by search term with an invalid page
         // then: the response is a 400
@@ -938,7 +937,10 @@ class UserTests {
         assertEquals(Problem.invalidTermLength, shortSearchTermProblem.type)
         assertEquals("The search term must be above 3 characters", shortSearchTermProblem.detail)
         val shortSearchTermInstance = assertNotNull(shortSearchTermProblem.instance)
-        assertEquals(URI("/api/users/stats/search?term=$shortSearchTerm&page=1&itemsPerPage=10"), shortSearchTermInstance)
+        assertEquals(
+            URI("/api/users/stats/search?term=$shortSearchTerm&page=1&itemsPerPage=10"),
+            shortSearchTermInstance
+        )
         assertEquals("Invalid search term length", shortSearchTermProblem.title)
         assertEquals(400, shortSearchTermProblem.status)
     }
