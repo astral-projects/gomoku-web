@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Link, useLocation} from 'react-router-dom';
-import {fetchUserStatsByUserId} from '../../services/userServices';
+import {fetchUserStatsByUserId} from '../../services/usersServices';
 import {UserStats} from '../../domain/UserStats.js';
 import {ProblemModel} from '../../services/media/ProblemModel.js';
 import {isSuccessful} from '../utils/responseData';

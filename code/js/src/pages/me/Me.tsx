@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { useCurrentUser } from '../gomokuContainer/GomokuContainer';
+import { useCurrentUser } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { Button } from '@mui/material';
 
@@ -45,7 +45,7 @@ export function Me() {
     const [state, dispatch] = React.useReducer(reduce, {
         tag: 'idle',
         button: 'Find Match',
-        user: user?.username || '',
+        user: user?.username || '' ,
     });
     const location = useLocation();
 

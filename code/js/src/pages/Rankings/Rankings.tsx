@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {Link, Navigate} from 'react-router-dom';
-import {fetchUsersStats, fetchUserStatsBySearchTerm} from '../../services/userServices';
+import {fetchUsersStats, fetchUserStatsBySearchTerm} from '../../services/usersServices';
 import {UserStats} from '../../domain/UserStats.js';
 import {ProblemModel} from '../../services/media/ProblemModel.js';
 import {isSuccessful} from '../utils/responseData';

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
-import { fetchRecipes, recipeUris } from './api/recipes';
+import { fetchRecipes, recipeUris } from './api/apiRecipes';
 import { Error } from './pages/error/Error';
 import { fetchHome } from './api/authenticate';
 
@@ -52,8 +52,9 @@ export const home = fetchHome()
         console.log('Fetched home');
         return response;
     })
-    .catch(() => {
+    .catch((e) => {
         console.log('Error fetching home');
+        console.log(e);
         console.log('Retrying');
         // retry 3 times
         retry(fetchHome, 3, 1000)
