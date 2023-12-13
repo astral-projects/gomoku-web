@@ -8,13 +8,14 @@ import { RegisterOutput } from './models/users/RegisterOuputModel';
 import { PaginatedResult } from './models/users/PaginatedResultModel';
 import { UserStats } from '../domain/UserStats';
 import { UserStatsOutput } from './models/users/UserStatsOutputModel';
+import { findUri } from '../api/recipes';
 
 export async function register(body: RegisterInputModel) {
-    return await callApi<RegisterInputModel, RegisterOutput>('api/users/register', Method.POST, body);
+    return await callApi<RegisterInputModel, RegisterOutput>('/api/users/register', Method.POST, body);
 }
 
 export async function login(body: LoginInputModel) {
-    return await callApi<LoginInputModel, LoginOutput>('api/users/token', Method.POST, body);
+    return await callApi<LoginInputModel, LoginOutput>('/api/users/token', Method.POST, body);
 }
 
 export async function logout() {
@@ -22,7 +23,7 @@ export async function logout() {
 }
 
 export async function me() {
-    return await callApi<unknown, HomeOutput>('api/users/home', Method.GET);
+    return await callApi<unknown, HomeOutput>(await findUri('me'), Method.GET);
 }
 
 export async function fetchUserStatsByUserId(userId: string) {

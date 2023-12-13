@@ -10,7 +10,7 @@ import { MoveInputModel } from './users/models/games/MoveInputModel.js';
 
 
 export async function findGame(body: VariantsInputModel) {
-  return await callApi<VariantsInputModel, FindGameOutput>('api/games', Method.POST, body);
+  return await callApi<VariantsInputModel, FindGameOutput>('/api/games', Method.POST, body);
 }
 
 /*
@@ -27,7 +27,7 @@ export async function findGame(body: { variantId:number }): Promise<FetchRespons
 }*/
 
 export async function waittingInLobby(lobbyId:number){
-  return await callApi<unknown, LobbyOutput>(`api/lobby/${lobbyId}`, Method.GET);
+  return await callApi<unknown, LobbyOutput>(`/api/lobby/${lobbyId}`, Method.GET);
 }
 
 /*export async function waittingInLobby(lobbyId:number): Promise<FetchResponse<FindGameOutput>>{
@@ -46,7 +46,7 @@ export async function waittingInLobby(lobbyId:number){
   };
 }*/
 export async function getVariants() {
-  return await callApi<unknown, VariantsOutput>('api/games/variants', Method.GET);
+  return await callApi<unknown, VariantsOutput>('/api/games/variants', Method.GET);
 }
 
 /*export async function exitLobby(lobbyId:number): Promise<FetchResponse<LobbyOutput>>{
@@ -58,7 +58,7 @@ export async function getVariants() {
 }*/
 
 export async function exitLobby(lobbyId:number){
-  return await callApi<unknown, LobbyOutput>(`api/lobby/${lobbyId}/exit`, Method.DELETE);
+  return await callApi<unknown, LobbyOutput>(`/api/lobby/${lobbyId}/exit`, Method.DELETE);
 }
 
 /*export async function getGame(gameId:number): Promise<FetchResponse<GameOutput>>{
@@ -71,7 +71,7 @@ export async function exitLobby(lobbyId:number){
 
 export async function getGame(gameId:number){
   console.log("gameId: dento do call api  ", gameId);
-  return await callApi<unknown, GameOutput>(`http://localhost:3000/api/games/${gameId}`, Method.GET);
+  return await callApi<unknown, GameOutput>(`http://localhost:4000/api/games/${gameId}`, Method.GET);
 }
 
 /*export async function makeMove(gameId:number, body:{col:string, row:number}): Promise<FetchResponse<GameOutput>>{
@@ -83,9 +83,9 @@ export async function getGame(gameId:number){
 }*/
 
 export async function makeMove(gameId:number, body:MoveInputModel) {
-  return await callApi<MoveInputModel, GameOutput>(`http://localhost:3000/api/games/${gameId}/move`, Method.POST, body);
+  return await callApi<MoveInputModel, GameOutput>(`http://localhost:4000/api/games/${gameId}/move`, Method.POST, body);
 }
 
 export async function exitGame(gameId:number){
-  return await callApi<unknown, GameOutput>(`http://localhost:3000/api/games/${gameId}/exit`, Method.POST);
+  return await callApi<unknown, GameOutput>(`http://localhost:4000/api/games/${gameId}/exit`, Method.POST);
 }

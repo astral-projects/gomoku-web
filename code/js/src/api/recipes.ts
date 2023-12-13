@@ -1,5 +1,7 @@
+import { promise } from "../index";
+
 export const recipeUris = [];
-const PORT = 3000;
+const PORT = 4000;
 const BASE = `http://localhost:${PORT}`;
 
 export type Recipe = {
@@ -9,7 +11,7 @@ export type Recipe = {
 
 export async function fetchRecipes(): Promise<Recipe[]> {
   try {
-    const response = await fetch('http://localhost:3000/api/', {
+    const response = await fetch('http://localhost:4000/api/', {
       method: 'GET',
     });
 
@@ -66,7 +68,8 @@ function getRecipeUris(recipes: Recipe[]) {
  * @param relName - The name of the rel to find
  * @returns
  */
-export function findUri(relName: string) {
+export async function findUri(relName: string) {
+  await promise;
   if (recipeUris instanceof Array && recipeUris.length > 0) {
     for (let i: number = 0; i < recipeUris.length; i++) {
       const recipeUri = recipeUris[i];

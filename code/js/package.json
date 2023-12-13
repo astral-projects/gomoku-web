@@ -5,8 +5,9 @@
   "main": "add.js",
   "proxy": "http://localhost:8080",
   "scripts": {
-    "build": "webpack build",
+    "dev-build": "webpack build",
     "start": "webpack serve",
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -35,6 +36,7 @@
     "@mui/material": "^5.14.18",
     "@mui/styled-engine-sc": "^6.0.0-alpha.6",
     "@types/js-cookie": "^3.0.6",
+    "html-webpack-plugin": "^5.5.4",
     "js-cookie": "^3.0.5",
     "react": "^17.0.0 || ^18.0.0",
     "react-cookie": "^6.1.1",

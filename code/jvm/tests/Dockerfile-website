@@ -1,0 +1,15 @@
+FROM node:16
+
+WORKDIR /app
+
+COPY code/js/*.json .
+COPY code/js/.prettierrc .
+
+RUN npm install
+
+COPY code/js/ .
+
+RUN npm run build
+
+EXPOSE 3000
+
