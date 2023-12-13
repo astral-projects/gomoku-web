@@ -1,9 +1,6 @@
-// apiService.js
-
-import API from '../api/apiConnection';
-import { ApiResponse } from '../api/apiConnection';
+import API, {ApiResponse} from './apiConnection';
 //import { findUri } from '../api/recipes';
-import { ProblemModel } from './media/ProblemModel';
+import {ProblemModel} from '../services/media/ProblemModel';
 
 const apiConnection = API();
 
@@ -27,12 +24,9 @@ export async function callApi<B, T>(uri: string, method: Method, body?: B): Prom
     // get the uri from the rel
     // const uriRecipe = findUri(rel);
     const bodyFormat = body ? body : {};
-    console.log("Calling api with uri: " + uri);
     switch (method) {
       case Method.GET:
-        console.log("Calling api with uri: insiede the method " + uri);
         response = await apiConnection.getApi(uri);
-        console.log("Calling api with uri: the response  " + response);
         return response;
 
       case Method.POST:
@@ -48,7 +42,6 @@ export async function callApi<B, T>(uri: string, method: Method, body?: B): Prom
         return response;
     }
   } catch (error) {
-    const errorResponse = (await error) as ApiResponse<ProblemModel>;
-    return errorResponse;
+      return (await error) as ApiResponse<ProblemModel>;
   }
 }

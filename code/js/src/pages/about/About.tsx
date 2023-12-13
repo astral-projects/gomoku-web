@@ -40,25 +40,21 @@ export function About() {
     console.log('id: ' + userId);
 
     React.useEffect(() => {
-        if (state.tag === 'loading') {
-            dispatch({type: 'load'});
-            fetchSystemInfo()
-                .then(result => {
-                    console.log('result: ' + JSON.stringify(result));
-                    if (!isSuccessful(result.contentType)) {
-                        const errorData = result.json as ProblemModel;
-                        dispatch({type: 'error', message: errorData.detail});
-                    } else {
-                        const successData = result.json as SystemOutput;
-                        const properties = successData.properties as SystemOutputModel;
-                        dispatch({type: 'success', data: properties});
-                    }
-                })
-                .catch((err: { message: string }) => {
-                    dispatch({type: 'error', message: err.message});
-                });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        dispatch({type: 'load'});
+        fetchSystemInfo()
+            .then(result => {
+                if (!isSuccessful(result.contentType)) {
+                    const errorData = result.json as ProblemModel;
+                    dispatch({type: 'error', message: errorData.detail});
+                } else {
+                    const successData = result.json as SystemOutput;
+                    const properties = successData.properties as SystemOutputModel;
+                    dispatch({type: 'success', data: properties});
+                }
+            })
+            .catch((err: { message: string }) => {
+                dispatch({type: 'error', message: err.message});
+            });
     }, []);
 
     switch (state.tag) {
