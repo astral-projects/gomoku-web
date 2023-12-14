@@ -1,15 +1,15 @@
-import {callApi, Method} from '../api/apiService';
-import {LoginInputModel} from './models/users/LoginInputModel';
-import {RegisterInputModel} from './models/users/RegisterInputModel';
-import {LoginOutput} from './models/users/LoginOuputModel';
-import {HomeOutput} from './models/users/HomeOutputModel';
-import {RegisterOutput} from './models/users/RegisterOuputModel';
-import {PaginatedResult} from './models/users/PaginatedResultModel';
-import {UserStats} from '../domain/UserStats';
-import {UserStatsOutput} from './models/users/UserStatsOutputModel';
+import { callApi, Method } from '../api/apiService';
+import { LoginInputModel } from './models/users/LoginInputModel';
+import { RegisterInputModel } from './models/users/RegisterInputModel';
+import { LoginOutput } from './models/users/LoginOuputModel';
+import { HomeOutput } from './models/users/HomeOutputModel';
+import { RegisterOutput } from './models/users/RegisterOuputModel';
+import { PaginatedResult } from './models/users/PaginatedResultModel';
+import { UserStats } from '../domain/UserStats';
+import { UserStatsOutput } from './models/users/UserStatsOutputModel';
 
 export async function register(body: RegisterInputModel) {
-    return await callApi<RegisterInputModel, RegisterOutput>('/api/users/register', Method.POST, body);
+    return await callApi<RegisterInputModel, RegisterOutput>('/api/users', Method.POST, body);
 }
 
 export async function login(body: LoginInputModel) {
