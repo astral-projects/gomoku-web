@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { fetchUsersStats, fetchUserStatsBySearchTerm } from '../../services/usersServices';
-import { UserStats } from '../../domain/UserStats.js';
-import { ProblemModel } from '../../services/media/ProblemModel.js';
-import { isSuccessful } from '../utils/responseData';
-import { PaginatedResult } from '../../services/models/users/PaginatedResultModel.js';
+import {useState} from 'react';
+import {Link, Navigate} from 'react-router-dom';
+import {fetchUsersStats, fetchUserStatsBySearchTerm} from '../../services/usersServices';
+import {UserStats} from '../../domain/UserStats.js';
+import {ProblemModel} from '../../services/media/ProblemModel.js';
+import {isSuccessful} from '../utils/responseData';
+import {PaginatedResult} from '../../services/models/users/PaginatedResultModel.js';
 import './Rankings.css';
-import { getHrefByRel } from '../../services/media/siren/Link';
+import {getHrefByRel} from '../../services/media/siren/Link';
 
 type State =
     | { tag: 'loading' }
@@ -25,23 +25,23 @@ function rankingsReducer(state: State, action: Action): State {
     switch (state.tag) {
         case 'loaded':
             if (action.type === 'load') {
-                return { tag: 'loading' };
+                return {tag: 'loading'};
             } else if (action.type === 'rowClick') {
-                return { tag: 'redirecting', user: action.user };
+                return {tag: 'redirecting', user: action.user};
             }
             return state;
 
         case 'loading':
             if (action.type === 'success') {
-                return { tag: 'loaded', data: action.data };
+                return {tag: 'loaded', data: action.data};
             } else if (action.type === 'error') {
-                return { tag: 'error', message: action.message };
+                return {tag: 'error', message: action.message};
             }
             return state;
 
         case 'error':
             if (action.type === 'load') {
-                return { tag: 'loading' };
+                return {tag: 'loading'};
             }
             return state;
     }
@@ -50,46 +50,43 @@ function rankingsReducer(state: State, action: Action): State {
 export function Rankings() {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const [state, dispatch] = React.useReducer(rankingsReducer, { tag: 'loading' });
+    const [state, dispatch] = React.useReducer(rankingsReducer, {tag: 'loading'});
 
     const fetchPage = (relName: string) => {
         if (state.tag === 'loaded') {
-            dispatch({ type: 'load' });
+            dispatch({type: 'load'});
             const href = getHrefByRel(state.data.links, relName);
             fetchUsersStats(href)
                 .then(result => {
                     if (!isSuccessful(result.contentType)) {
                         const errorData = result.json as ProblemModel;
-                        dispatch({ type: 'error', message: errorData.detail });
+                        dispatch({type: 'error', message: errorData.detail});
                     } else {
                         const successData = result.json as PaginatedResult<UserStats>;
-                        dispatch({ type: 'success', data: successData });
+                        dispatch({type: 'success', data: successData});
                     }
                 })
                 .catch((err: { message: string }) => {
-                    dispatch({ type: 'error', message: err.message });
+                    dispatch({type: 'error', message: err.message});
                 });
         }
     };
 
     React.useEffect(() => {
-        if (state.tag === 'loading') {
-            dispatch({ type: 'load' });
-            fetchUsersStats()
-                .then(result => {
-                    if (!isSuccessful(result.contentType)) {
-                        const errorData = result.json as ProblemModel;
-                        dispatch({ type: 'error', message: errorData.detail });
-                    } else {
-                        const successData = result.json as PaginatedResult<UserStats>;
-                        dispatch({ type: 'success', data: successData });
-                    }
-                })
-                .catch((err: { message: string }) => {
-                    dispatch({ type: 'error', message: err.message });
-                });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        dispatch({type: 'load'});
+        fetchUsersStats()
+            .then(result => {
+                if (!isSuccessful(result.contentType)) {
+                    const errorData = result.json as ProblemModel;
+                    dispatch({type: 'error', message: errorData.detail});
+                } else {
+                    const successData = result.json as PaginatedResult<UserStats>;
+                    dispatch({type: 'success', data: successData});
+                }
+            })
+            .catch((err: { message: string }) => {
+                dispatch({type: 'error', message: err.message});
+            });
     }, []);
 
     React.useEffect(() => {
@@ -107,27 +104,27 @@ export function Rankings() {
 
     React.useEffect(() => {
         if (state.tag === 'loaded') {
-            dispatch({ type: 'load' });
+            dispatch({type: 'load'});
             fetchUserStatsBySearchTerm(debouncedSearchTerm)
                 .then(result => {
                     if (!isSuccessful(result.contentType)) {
                         const errorData = result.json as ProblemModel;
                         console.log(result.json);
-                        dispatch({ type: 'error', message: errorData.detail });
+                        dispatch({type: 'error', message: errorData.detail});
                     } else {
                         const successData = result.json as PaginatedResult<UserStats>;
-                        dispatch({ type: 'success', data: successData });
+                        dispatch({type: 'success', data: successData});
                     }
                 })
                 .catch((err: { message: string }) => {
-                    dispatch({ type: 'error', message: err.message });
+                    dispatch({type: 'error', message: err.message});
                 });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm]);
 
     const handleUserClick = (user: UserStats) => {
-        dispatch({ type: 'rowClick', user: user });
+        dispatch({type: 'rowClick', user: user});
     };
 
     const goToFirstPage = () => {
@@ -147,7 +144,7 @@ export function Rankings() {
         case 'redirecting' : {
             const userId = state.user.id.value;
             const uri = `/rankings/${userId}`;
-            return <Navigate to={uri} replace={true} />;
+            return <Navigate to={uri} replace={true}/>;
         }
         case 'loaded':
             return (
@@ -164,24 +161,24 @@ export function Rankings() {
                     <div>
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Username</th>
-                                    <th>Points</th>
-                                </tr>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Username</th>
+                                <th>Points</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {state.data.properties.items.map(user => (
-                                    <tr
-                                        key={user.id.value}
-                                        onClick={() => handleUserClick(user)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <td>{user.rank.value}</td>
-                                        <td>{user.username.value}</td>
-                                        <td>{user.points.value}</td>
-                                    </tr>
-                                ))}
+                            {state.data.properties.items.map(user => (
+                                <tr
+                                    key={user.id.value}
+                                    onClick={() => handleUserClick(user)}
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    <td>{user.rank.value}</td>
+                                    <td>{user.username.value}</td>
+                                    <td>{user.points.value}</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>

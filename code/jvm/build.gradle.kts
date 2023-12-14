@@ -75,7 +75,7 @@ tasks.withType<Test> {
  * DB related tasks
  * - To run `psql` inside the container, do
  *      docker exec -ti db-tests psql -d db -U dbuser -W
- *   and provide it with the same password as define on `tests/Dockerfile-db-test`
+ *   and provide it with the same password as define on `tests/Dockerfile-nginx-db-test`
  */
 task<Exec>("dbTestsUp") {
     commandLine("docker-compose", "up", "-d", "--build", "--force-recreate", "db-tests")
@@ -106,6 +106,10 @@ task<Copy>("extractUberJar") {
 task<Exec>("composeUp") {
     commandLine("docker-compose", "up", "--build", "--force-recreate")
     dependsOn("extractUberJar")
+}
+
+task<Exec>("composeDown") {
+    commandLine("docker-compose", "down")
 }
 
 val compileKotlin: KotlinCompile by tasks

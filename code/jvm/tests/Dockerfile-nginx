@@ -1,2 +1,5 @@
-FROM nginx
-COPY code/jvm/tests/nginx/nginx.conf /etc/nginx
+FROM nginx:alpine
+COPY code/jvm/tests/nginx/nginx.conf /etc/nginx/
+
+COPY code/js/dist/main.js /opt/isel/daw/app/
+COPY code/js/public/index.html /opt/isel/daw/app/

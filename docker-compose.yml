@@ -21,15 +21,12 @@ services:
       PORT: 8080
       DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit"
 
-
-  # The service running the load-balancer
   nginx:
     container_name: nginx
     build:
       context: .
       dockerfile: code/jvm/tests/Dockerfile-nginx
     ports:
-      - 8080:8080
       - 8088:8088
 
   # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
