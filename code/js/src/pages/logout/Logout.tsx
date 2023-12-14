@@ -46,8 +46,8 @@ export function Logout() {
                 console.log(`Error: ${error}`);
                 dispatch({ type: 'error', message: error });
             });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        
+    }, [setUser]);
 
     switch (state.tag) {
         case 'redirect':

@@ -45,7 +45,7 @@ export function Me() {
     const [state, dispatch] = React.useReducer(reduce, {
         tag: 'idle',
         button: 'Find Match',
-        user: user?.username || '' ,
+        user: user?.username || '',
     });
     const location = useLocation();
 
@@ -55,14 +55,18 @@ export function Me() {
         if (state.tag === 'loading') {
             return;
         } else if (state.tag === 'notLoggedIn') {
-            return;
+            <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
         }
 
         dispatch({ type: 'play' });
     }
-
+    
     if (state.tag === 'redirect') {
         return <Navigate to={location.state?.source?.pathname || '/games'} />;
+    }
+
+    if (state.tag === 'notLoggedIn') {
+        return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
     }
 
     return (
