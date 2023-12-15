@@ -1,17 +1,32 @@
 import * as React from 'react';
-import {createBrowserRouter, Outlet, RouterProvider} from 'react-router-dom';
-import {GomokuContainer} from './pages/GomokuContainer';
-import {Home} from './pages/home/Home';
-import {Login} from './pages/login/Login';
-import {Me} from './pages/me/Me';
-import {Error} from './pages/error/Error';
-import {Register} from './pages/register/Register';
-import {FindGame} from './pages/findGame/FindGame';
-import {Game} from './pages/game/Game';
-import {About} from './pages/about/About';
-import {Logout} from './pages/logout/Logout';
-import {UserStats} from './pages/userstats/UserStats';
-import {Rankings} from './pages/Rankings/Rankings';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { GomokuContainer } from './pages/GomokuContainer';
+import { Home } from './pages/home/Home';
+import { Login } from './pages/login/Login';
+import { Me } from './pages/me/Me';
+import { Error } from './pages/error/Error';
+import { Register } from './pages/register/Register';
+import { FindGame } from './pages/findGame/FindGame';
+import { Game } from './pages/game/Game';
+import { About } from './pages/about/About';
+import { Logout } from './pages/logout/Logout';
+import { UserStats } from './pages/userstats/UserStats';
+import { Rankings } from './pages/Rankings/Rankings';
+import { RequireAuthn } from './pages/AuthContainer';
+
+const webRoutes = {
+    home: '/',
+    me: '/me',
+    login: '/login',
+    register: '/register',
+    rankings: '/rankings',
+    games: '/games',
+    logout: '/logout',
+    about: '/about',
+    error: '/error',
+    userStats: '/rankings/:id',
+    game: '/games/:gameId',
+};
 
 const router = createBrowserRouter([
     {
@@ -23,47 +38,63 @@ const router = createBrowserRouter([
         ),
         children: [
             {
-                path: '/',
+                path: webRoutes.home,
                 element: <Home />,
             },
             {
-                path: '/login',
+                path: webRoutes.login,
                 element: <Login />,
             },
             {
-                path: '/me',
-                element: <Me />,
+                path: webRoutes.me,
+                element: (
+                    <RequireAuthn>
+                        <Me />
+                    </RequireAuthn>
+                ),
             },
             {
-                path: '/register',
+                path: webRoutes.register,
                 element: <Register />,
             },
             {
-                path: '/rankings',
+                path: webRoutes.rankings,
                 element: <Rankings />,
             },
             {
-                path: '/rankings/:id',
+                path: webRoutes.userStats,
                 element: <UserStats />,
             },
             {
-                path: '/games',
-                element: <FindGame />,
+                path: webRoutes.games,
+                element: (
+                    <RequireAuthn>
+                        <FindGame />,
+                    </RequireAuthn>
+                ),
             },
             {
-                path: '/games/:gameId',
-                element: <Game />,
+                path: webRoutes.game,
+                element: (
+                    <RequireAuthn>
+                        <Game />
+                    </RequireAuthn>
+                ),
             },
             {
-                path: '/logout',
-                element: <Logout />,
+                path: webRoutes.logout,
+                element: (
+                    <RequireAuthn>
+                        <Logout />,
+                    </RequireAuthn>
+                ),
             },
             {
-                path: '/about',
-                element: <About/>,
+                path: webRoutes.about,
+                element: <About />,
             },
             {
-                path: '/error',
+                path: webRoutes.error,
                 element: <Error />,
             },
         ],

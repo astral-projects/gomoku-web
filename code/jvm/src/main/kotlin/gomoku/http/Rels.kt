@@ -22,6 +22,8 @@ object Rels {
 
     val SYSTEM_INFO = LinkRelation("$BASE/system-info")
 
+    val SYSTEM_INFO_RECIPE = LinkRelation("$BASE/system")
+
     val USER_STATS = LinkRelation("$BASE/user-stats")
 
     val USERS_STATS = LinkRelation("$BASE/users-stats")
@@ -40,7 +42,7 @@ object Rels {
 
     val GET_USERS_STATS_RECIPE = LinkRelation("$BASE/users/stats?q={query}{&page,itemPerPage}")
 
-    val REGISTER_RECIPE = LinkRelation("$BASE/users")
+    val REGISTER_RECIPE = LinkRelation("$BASE/register")
 
     val LOGIN_RECIPE = LinkRelation("$BASE/login")
 

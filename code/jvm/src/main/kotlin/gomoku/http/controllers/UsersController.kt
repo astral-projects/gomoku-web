@@ -53,8 +53,13 @@ class UsersController(
         const val DEFAULT_PAGE = "1"
         const val HEADER_SET_COOKIE_NAME = "Set-Cookie"
         const val AUTHORIZATION_COOKIE_NAME = "_autho"
+        const val USER_NAME_COOKIE = "user_name"
+        const val USER_ID_COOKIE = "user_id"
+        const val USER_COOKIE_PROPS = "Path=/"
         const val AUTHORIZATION_COOKIE_PROPS = "HttpOnly; SameSite=Strict; Path=/"
-        const val AUTHORIZATION_COOKIE_DELETE_PROPS = "Max-Age=0;"
+        const val AUTHORIZATION_COOKIE_DELETE_PROPS =
+            "Expires=Thu, 01 Jan 1970 00:00:00 GMT; $AUTHORIZATION_COOKIE_PROPS"
+        const val USER_COOKIE_DELETE_PROPS = "Expires=Thu, 01 Jan 1970 00:00:00 GMT; $USER_COOKIE_PROPS"
         private const val MOZILLA_USER_AGENT = "Mozilla"
         private const val CHROME_USER_AGENT = "Chrome"
         private const val SAFARI_USER_AGENT = "Safari"
@@ -190,12 +195,25 @@ class UsersController(
 
                                 // evaluate if the user agent is web or not and set the cookie accordingly
                                 if (isWeb(userAgent)) {
-                                    ResponseEntity.ok().header(
-                                        HEADER_SET_COOKIE_NAME,
-                                        "$AUTHORIZATION_COOKIE_NAME=${tokenCreationResult.value.tokenValue}; $AUTHORIZATION_COOKIE_PROPS"
-                                    ).sirenResponse(
-                                        userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
-                                    )
+                                    ResponseEntity.ok()
+                                        // set the _autho cookie with token value
+                                        .header(
+                                            HEADER_SET_COOKIE_NAME,
+                                            "$AUTHORIZATION_COOKIE_NAME=${tokenCreationResult.value.tokenValue}; $AUTHORIZATION_COOKIE_PROPS"
+
+                                        )
+                                        // set the _user cookie with username value.
+                                        .header(
+                                            HEADER_SET_COOKIE_NAME,
+                                            "$USER_NAME_COOKIE=${loggedUser.username}; $USER_COOKIE_PROPS"
+                                        )
+                                        .header(
+                                            HEADER_SET_COOKIE_NAME,
+                                            "$USER_ID_COOKIE=${loggedUser.id}; $USER_COOKIE_PROPS"
+                                        )
+                                        .sirenResponse(
+                                            userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
+                                        )
                                 } else {
                                     ResponseEntity.ok().sirenResponse(
                                         userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
@@ -226,10 +244,10 @@ class UsersController(
             }
 
             is Success -> {
-                // remove the cookie from the client
-                val cookie = "$AUTHORIZATION_COOKIE_NAME=; $AUTHORIZATION_COOKIE_DELETE_PROPS"
                 ResponseEntity.ok()
-                    .header(HEADER_SET_COOKIE_NAME, cookie)
+                    .header(HEADER_SET_COOKIE_NAME, "$AUTHORIZATION_COOKIE_NAME=; $AUTHORIZATION_COOKIE_DELETE_PROPS")
+                    .header(HEADER_SET_COOKIE_NAME, "$USER_NAME_COOKIE=; $USER_COOKIE_DELETE_PROPS")
+                    .header(HEADER_SET_COOKIE_NAME, "$USER_ID_COOKIE=; $USER_COOKIE_DELETE_PROPS")
                     .sirenResponse(
                         userOutputModels.logout()
                     )
@@ -358,7 +376,6 @@ class UsersController(
 
     /**
      * Retrieves user statistics by username. Normally used for search queries.
-     * @param user The authenticated user making the request.
      * @param page The optional page to start from (default is **1**).
      * @param itemsPerPage The optional maximum number of user statistics results to be returned (default is **10**).
      * @param term The term to search for.

@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { fetchRecipes, recipeUris } from './api/apiRecipes';
 import { Error } from './pages/error/Error';
-import { fetchHome } from './api/authenticate';
 
 const rootElement = createRoot(document.getElementById('main-div'));
 
@@ -42,28 +41,6 @@ export const promise = fetchRecipes()
             })
             .catch(error => {
                 console.log('Error fetching recipes', error);
-                // redirect to error page
-                return rootElement.render(<Error />);
-            });
-    });
-
-export const home = fetchHome()
-    .then(response => {
-        console.log('Fetched home');
-        return response;
-    })
-    .catch((e) => {
-        console.log('Error fetching home');
-        console.log(e);
-        console.log('Retrying');
-        // retry 3 times
-        retry(fetchHome, 3, 1000)
-            .then(() => {
-                console.log('Fetched home');
-                return;
-            })
-            .catch(error => {
-                console.log('Error fetching home', error);
                 // redirect to error page
                 return rootElement.render(<Error />);
             });

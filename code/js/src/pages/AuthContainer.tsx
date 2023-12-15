@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { useCurrentUser } from './GomokuContainer';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { getCookie } from '../pages/utils/getCookies';
 
 export function RequireAuthn({ children }: { children: React.ReactNode }): React.ReactElement {
-    const currentUser = useCurrentUser();
-    const location = useLocation();
-    console.log(`currentUser = ${currentUser}`);
-    if (currentUser) {
+    const cookie = getCookie('user_name');
+    if (cookie) {
+        console.log('logged in');
         return <>{children}</>;
     } else {
-        console.log('redirecting to login');
-        return <Navigate to="/login" state={{ source: location.pathname }} replace={true} />;
+        console.log('not logged in');
+        return <Navigate to="/login" />;
     }
 }

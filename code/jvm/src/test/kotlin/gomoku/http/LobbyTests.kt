@@ -41,7 +41,7 @@ class LobbyTests {
 
         // and: waiting in the lobby
         // then: the response is a 200 with the proper representation
-         client.get().uri("/lobby/$lobbyId")
+        client.get().uri("/lobby/$lobbyId")
             .header("Authorization", "Bearer $hostToken")
             .exchange()
             .expectStatus().isOk

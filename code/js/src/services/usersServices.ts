@@ -11,15 +11,15 @@ import { UserStatsOutput } from './models/users/UserStatsOutputModel';
 import { findUri } from '../api/apiRecipes';
 
 export async function register(body: RegisterInputModel) {
-    return await callApi<RegisterInputModel, RegisterOutput>('/api/users/register', Method.POST, body);
+    return await callApi<RegisterInputModel, RegisterOutput>(await findUri('register'), Method.POST, body);
 }
 
 export async function login(body: LoginInputModel) {
-    return await callApi<LoginInputModel, LoginOutput>('/api/users/token', Method.POST, body);
+    return await callApi<LoginInputModel, LoginOutput>(await findUri('login'), Method.POST, body);
 }
 
 export async function logout() {
-    return await callApi('api/users/logout', Method.POST);
+    return await callApi(await findUri('logout'), Method.POST);
 }
 
 export async function me() {
