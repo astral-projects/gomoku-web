@@ -148,9 +148,10 @@ class GameOutputModelsRepresentations {
      * @param game The game to be updated.
      * @param gameId The id of the game to be updated.
      */
+    //TODO(I CHANGED hERE)
     fun makeMove(game: Game, gameId: Id) =
         siren(
-            GameMoveOutputModel(gameId.value)
+            GameOutputModel.serializeFrom(game)
         ) {
             clazz("game")
             requireAuth()

@@ -5,9 +5,7 @@ import { ProblemModel } from '../../services/media/ProblemModel';
 import { GameOutput } from '../../services/models/games/GameOutputModel';
 import { renderBoard } from './BoardDraw';
 import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
-import { Entity } from '../../services/media/siren/Entity';
-import { useNavigate, useParams } from 'react-router-dom';
-import { GameEntities } from '../../services/models/games/GameEntitiesModel';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
@@ -36,7 +34,12 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
         case 'start-fetching':
             return { tag: 'loading' };
         case 'set-not-your-turn':
-            return { ...state, tag: 'notYourTurn', boardSize: action.BOARD_SIZE, grid: action.grid };
+            return {
+                ...state,
+                tag: 'notYourTurn',
+                boardSize: action.BOARD_SIZE,
+                grid: action.grid,
+            };
         case 'set-turn':
             return { tag: 'play', boardSize: action.BOARD_SIZE, grid: action.grid };
         case 'leave-game':
@@ -55,7 +58,7 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
 export function Game() {
     const [state, dispatch] = React.useReducer(gameReducer, { tag: 'loading' });
     const userId = useCurrentUserId();
-    const userName = useCurrentUserName();
+    const username = useCurrentUserName();
     const { gameId } = useParams();
     const currentGameId = parseInt(gameId);
     const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
@@ -155,45 +158,46 @@ export function Game() {
                 setIsMoveInProgress(false);
             } else if (result.contentType === 'application/vnd.siren+json') {
                 const successData = result.json as unknown as GameOutput;
-                const entities = successData.entities as Entity<GameEntities>[];
                 if (successData.class.find(c => c == 'game') != undefined) {
-                    if (entities[0].properties.state.name == 'finished') {
-                        if (entities[0].properties.board.winner != undefined) {
+                    if (successData.properties.state.name == 'finished') {
+                        if (successData.properties.board.winner != undefined) {
                             const isWin =
-                                entities[0].properties.board.winner == 'W'
-                                    ? entities[0].properties.hostId == userId
-                                    : entities[0].properties.guestId == userId;
+                              successData.properties.board.winner == 'W'
+                                    ? successData.properties.hostId == userId
+                                    : successData.properties.guestId == userId;
                             if (isWin) {
                                 dispatch({
                                     type: 'win',
-                                    BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                    grid: entities[0].properties.board.grid,
+                                    BOARD_SIZE: successData.properties.variant.boardSize,
+                                    grid: successData.properties.board.grid,
                                 });
                             } else {
                                 dispatch({
                                     type: 'lose',
-                                    BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                    grid: entities[0].properties.board.grid,
+                                    BOARD_SIZE: successData.properties.variant.boardSize,
+                                    grid: successData.properties.board.grid,
                                 });
                             }
+                        } else {
+                            dispatch({ type: 'error', message: 'Something went wrong.' });
                         }
                     } else {
                         const isYourTurn =
-                            entities[0].properties.board.turn.player == 'W'
-                                ? entities[0].properties.hostId == userId
-                                : entities[0].properties.guestId == userId;
+                            successData.properties.board.turn.player == 'W'
+                                ? successData.properties.hostId == userId
+                                : successData.properties.guestId == userId;
                         if (isYourTurn) {
                             dispatch({
                                 type: 'set-turn',
                                 isYourTurn: isYourTurn,
-                                BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                grid: entities[0].properties.board.grid,
+                                BOARD_SIZE: successData.properties.variant.boardSize,
+                                grid: successData.properties.board.grid,
                             });
                         } else {
                             dispatch({
                                 type: 'set-not-your-turn',
-                                BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                grid: entities[0].properties.board.grid,
+                                BOARD_SIZE: successData.properties.variant.boardSize,
+                                grid: successData.properties.board.grid,
                             });
                         }
                     }
@@ -201,7 +205,28 @@ export function Game() {
                 }
             }
         });
-    };
+    }; /*
+    //f(game, display)
+    function play(obj: Entity<GameEntities>) {
+        const isYourTurn =
+            obj.properties.board.turn.player == 'W'
+                ? obj.properties.hostId == user.id
+                : obj.properties.guestId == user.id;
+        if (isYourTurn) {
+            dispatch({
+                type: 'set-turn',
+                isYourTurn: isYourTurn,
+                BOARD_SIZE: obj.properties.variant.boardSize,
+                grid: obj.properties.board.grid,
+            });
+        } else {
+            dispatch({
+                type: 'set-not-your-turn',
+                BOARD_SIZE: obj.properties.variant.boardSize,
+                grid: obj.properties.board.grid,
+            });
+        }
+    }*/
 
     const handleLeaveGame = gameId => {
         setIsFetching(false);
@@ -211,7 +236,6 @@ export function Game() {
                 dispatch({ type: 'error', message: errorData.detail });
             } else if (result.contentType === 'application/vnd.siren+json') {
                 dispatch({ type: 'leave-game' });
-                navigate('/games');
             }
         });
     };
@@ -221,18 +245,26 @@ export function Game() {
             return <div>Loading game...</div>;
         case 'notYourTurn':
             return (
-                <div>
-                    {renderBoard(state.boardSize, state.grid, null)}
-                    Turn: Not your turn Player: {userName}
-                    <button onClick={() => handleLeaveGame(currentGameId)}>Leave Game</button>
-                </div>
+                <>
+                    <div>{renderBoard(state.boardSize, state.grid, null)}</div>
+                    <div>Turn:Not your turn Player: {username}</div>
+                    <div>
+                        <Link to="/games" onClick={() => handleLeaveGame(currentGameId)}>
+                            Leave Game
+                        </Link>
+                    </div>
+                </>
             );
         case 'play':
             return (
                 <>
-                    {renderBoard(state.boardSize, state.grid, handleIntersectionClick)}
-                    Turn: Your turn Player: {userName}
-                    <button onClick={() => handleLeaveGame(currentGameId)}>Leave Game</button>
+                    <div>{renderBoard(state.boardSize, state.grid, handleIntersectionClick)}</div>
+                    <div>Turn: Your turn Player: {username}</div>
+                    <div>
+                        <Link to="/games" onClick={() => handleLeaveGame(currentGameId)}>
+                            Leave Game
+                        </Link>
+                    </div>
                 </>
             );
         case 'leave':
@@ -241,17 +273,21 @@ export function Game() {
         case 'lost':
             return (
                 <>
-                    {renderBoard(state.boardSize, state.grid)}
-                    You Lost the game... Player: {userName}
-                    <button onClick={() => navigate('/games')}>Start New Game</button>
+                    <div>{renderBoard(state.boardSize, state.grid)}</div>
+                    <div> You Lost the game... Player: {username}</div>
+                    <div>
+                        <Link to={'/games'}>Start New Game</Link>
+                    </div>
                 </>
             );
         case 'win':
             return (
                 <>
-                    {renderBoard(state.boardSize, state.grid)}
-                    You won the game! Player: {userName}
-                    <button onClick={() => navigate('/games')}>Start New Game</button>
+                    <div>{renderBoard(state.boardSize, state.grid)}</div>
+                    <div>You won the game! Player: {username}</div>
+                    <div>
+                        <Link to={'/games'}>Start New Game</Link>
+                    </div>
                 </>
             );
     }
