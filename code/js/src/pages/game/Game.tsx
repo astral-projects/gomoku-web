@@ -14,8 +14,7 @@ function columnIndexToLetter(index) {
 type FindGameState =
     | { tag: 'loading' }
     | { tag: 'notYourTurn'; boardSize: number; grid: string[] }
-    | { tag: 'play'; boardSize: number; grid: string[] }
-    | { tag: 'leave' }
+    | { tag: 'your-turn'; boardSize: number; grid: string[] }
     | { tag: 'win'; boardSize: number; grid: string[] }
     | { tag: 'lost'; boardSize: number; grid: string[] }
     | { tag: 'error'; message: string };
@@ -24,7 +23,6 @@ type FindGameAction =
     | { type: 'start-fetching' }
     | { type: 'set-turn'; isYourTurn: boolean; BOARD_SIZE: number; grid: string[] }
     | { type: 'set-not-your-turn'; BOARD_SIZE: number; grid: string[] }
-    | { type: 'leave-game' }
     | { type: 'win'; BOARD_SIZE: number; grid: string[] }
     | { type: 'lose'; BOARD_SIZE: number; grid: string[] }
     | { type: 'error'; message: string };
@@ -41,9 +39,7 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
                 grid: action.grid,
             };
         case 'set-turn':
-            return { tag: 'play', boardSize: action.BOARD_SIZE, grid: action.grid };
-        case 'leave-game':
-            return { tag: 'leave' };
+            return { tag: 'your-turn', boardSize: action.BOARD_SIZE, grid: action.grid };
         case 'win':
             return { ...state, tag: 'win', boardSize: action.BOARD_SIZE, grid: action.grid };
         case 'lose':
@@ -61,8 +57,6 @@ export function Game() {
     const { gameId } = useParams();
     const currentGameId = parseInt(gameId);
     const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
-    //const navigate = useNavigate();
-
     const [isFetching, setIsFetching] = React.useState(false);
 
     const fetchGame = React.useCallback(
@@ -233,8 +227,6 @@ export function Game() {
             const errorData = result.json as ProblemModel;
             if (result.contentType === 'application/problem+json') {
                 dispatch({ type: 'error', message: errorData.detail });
-            } else if (result.contentType === 'application/vnd.siren+json') {
-                dispatch({ type: 'leave-game' });
             }
         });
     };
@@ -254,7 +246,7 @@ export function Game() {
                     </div>
                 </>
             );
-        case 'play':
+        case 'your-turn':
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid, handleIntersectionClick)}</div>
@@ -266,8 +258,6 @@ export function Game() {
                     </div>
                 </>
             );
-        case 'leave':
-            return <div>You have left the game.</div>;
 
         case 'lost':
             return (
