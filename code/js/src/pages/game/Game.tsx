@@ -5,9 +5,7 @@ import { ProblemModel } from '../../services/media/ProblemModel';
 import { GameOutput } from '../../services/models/games/GameOutputModel';
 import { renderBoard } from './BoardDraw';
 import { useCurrentUser } from '../GomokuContainer';
-import { Entity } from '../../services/media/siren/Entity';
 import { Link, useParams } from 'react-router-dom';
-import { GameEntities } from '../../services/models/games/GameEntitiesModel';
 
 function columnIndexToLetter(index) {
     return String.fromCharCode(97 + index);
@@ -159,36 +157,54 @@ export function Game() {
                 setIsMoveInProgress(false);
             } else if (result.contentType === 'application/vnd.siren+json') {
                 const successData = result.json as unknown as GameOutput;
-                const entities = successData.entities as Entity<GameEntities>[];
                 if (successData.class.find(c => c == 'game') != undefined) {
-                    if (entities[0].properties.state.name == 'finished') {
-                        if (entities[0].properties.board.winner != undefined) {
+                    if (successData.properties.state.name == 'finished') {
+                        if (successData.properties.board.winner != undefined) {
                             const isWin =
-                                entities[0].properties.board.winner == 'W'
-                                    ? entities[0].properties.hostId == user.id
-                                    : entities[0].properties.guestId == user.id;
+                                successData.properties.board.winner == 'W'
+                                    ? successData.properties.hostId == user?.id
+                                    : successData.properties.guestId == user?.id;
                             if (isWin) {
                                 dispatch({
                                     type: 'win',
-                                    BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                    grid: entities[0].properties.board.grid,
+                                    BOARD_SIZE: successData.properties.variant.boardSize,
+                                    grid: successData.properties.board.grid,
                                 });
                             } else {
                                 dispatch({
                                     type: 'lose',
-                                    BOARD_SIZE: entities[0].properties.variant.boardSize,
-                                    grid: entities[0].properties.board.grid,
+                                    BOARD_SIZE: successData.properties.variant.boardSize,
+                                    grid: successData.properties.board.grid,
                                 });
                             }
+                        } else {
+                            dispatch({ type: 'error', message: 'Something went wrong.' });
                         }
                     } else {
-                        play(entities[0]);
+                        const isYourTurn =
+                            successData.properties.board.turn.player == 'W'
+                                ? successData.properties.hostId == user?.id
+                                : successData.properties.guestId == user?.id;
+                        if (isYourTurn) {
+                            dispatch({
+                                type: 'set-turn',
+                                isYourTurn: isYourTurn,
+                                BOARD_SIZE: successData.properties.variant.boardSize,
+                                grid: successData.properties.board.grid,
+                            });
+                        } else {
+                            dispatch({
+                                type: 'set-not-your-turn',
+                                BOARD_SIZE: successData.properties.variant.boardSize,
+                                grid: successData.properties.board.grid,
+                            });
+                        }
                     }
                     setIsMoveInProgress(false);
                 }
             }
         });
-    };
+    }; /*
     //f(game, display)
     function play(obj: Entity<GameEntities>) {
         const isYourTurn =
@@ -209,7 +225,7 @@ export function Game() {
                 grid: obj.properties.board.grid,
             });
         }
-    }
+    }*/
 
     const handleLeaveGame = gameId => {
         setIsFetching(false);
