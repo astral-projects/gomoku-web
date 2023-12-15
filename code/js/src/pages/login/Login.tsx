@@ -3,9 +3,9 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/usersServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { LoginOutput } from '../../services/models/users/LoginOuputModel';
-import { Email, Id, User, Username } from '../../domain/User';
+import { Id, User, Username } from '../../domain/User';
 import { Entity } from '../../services/media/siren/Entity';
-import { useSetUser } from '../GomokuContainer';
+import { useSetUserName, useSetUserId } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { isSuccessful } from '../utils/responseData';
 
@@ -54,7 +54,8 @@ function reduce(state: State, action: Action): State {
 
 export function Login() {
     const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
-    const setUser = useSetUser();
+    const setUserId = useSetUserId();
+    const setUserName = useSetUserName();
     const location = useLocation();
 
     if (state.tag === 'redirect') {
@@ -82,8 +83,8 @@ export function Login() {
                     const properties = successData.entities[0] as Entity<User>;
                     const id = properties.properties.id as Id;
                     const username = properties.properties.username as Username;
-                    const email = properties.properties.email as Email;
-                    setUser({ id: id.value, username: username.value, email: email.value });
+                    setUserId(id.value);
+                    setUserName(username.value);
                     dispatch({ type: 'success' });
                 }
             })

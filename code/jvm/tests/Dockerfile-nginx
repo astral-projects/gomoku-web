@@ -1,5 +1,21 @@
+# Do the build process in multiple stages to reduce the size of the final image
+FROM node:alpine as build
+
+WORKDIR /app
+
+# Install dependencies
+COPY code/js/package.json  ./
+
+# Copy the source code
+COPY code/js/ ./
+
+RUN npm install
+
+RUN npm run build
+
 FROM nginx:alpine
 COPY code/jvm/tests/nginx/nginx.conf /etc/nginx/
 
-COPY code/js/dist/main.js /opt/isel/daw/app/
-COPY code/js/public/index.html /opt/isel/daw/app/
+# Copy the compiled application to the nginx directory
+COPY --from=build /app/dist/main.js /opt/isel/daw/app/
+COPY --from=build /app/public/index.html /opt/isel/daw/app/

@@ -4,10 +4,10 @@ import { makeMove } from '../../services/gameServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { GameOutput } from '../../services/models/games/GameOutputModel';
 import { renderBoard } from './BoardDraw';
-import { useCurrentUser } from '../GomokuContainer';
-import { Link, useParams } from 'react-router-dom';
+import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 
-function columnIndexToLetter(index) {
+function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
 }
 
@@ -23,6 +23,7 @@ type FindGameAction =
     | { type: 'start-fetching' }
     | { type: 'set-turn'; isYourTurn: boolean; BOARD_SIZE: number; grid: string[] }
     | { type: 'set-not-your-turn'; BOARD_SIZE: number; grid: string[] }
+    | { type: 'leave-game' }
     | { type: 'win'; BOARD_SIZE: number; grid: string[] }
     | { type: 'lose'; BOARD_SIZE: number; grid: string[] }
     | { type: 'error'; message: string };
@@ -53,10 +54,13 @@ function gameReducer(state: FindGameState, action: FindGameAction): FindGameStat
 
 export function Game() {
     const [state, dispatch] = React.useReducer(gameReducer, { tag: 'loading' });
-    const user = useCurrentUser();
+    const userId = useCurrentUserId();
+    const username = useCurrentUserName();
     const { gameId } = useParams();
     const currentGameId = parseInt(gameId);
     const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
+    //const navigate = useNavigate();
+
     const [isFetching, setIsFetching] = React.useState(false);
 
     const fetchGame = React.useCallback(
@@ -75,8 +79,8 @@ export function Game() {
                             if (successData.properties.board.winner != undefined) {
                                 const isWin =
                                     successData.properties.board.winner == 'W'
-                                        ? successData.properties.hostId == user?.id
-                                        : successData.properties.guestId == user?.id;
+                                        ? successData.properties.hostId == userId
+                                        : successData.properties.guestId == userId;
                                 if (isWin) {
                                     dispatch({
                                         type: 'win',
@@ -96,8 +100,8 @@ export function Game() {
                         } else {
                             const isYourTurn =
                                 successData.properties.board.turn.player == 'W'
-                                    ? successData.properties.hostId == user?.id
-                                    : successData.properties.guestId == user?.id;
+                                    ? successData.properties.hostId == userId
+                                    : successData.properties.guestId == userId;
                             if (isYourTurn) {
                                 dispatch({
                                     type: 'set-turn',
@@ -118,11 +122,11 @@ export function Game() {
                 }
             });
         },
-        [isFetching, user]
+        [isFetching, userId]
     );
 
     React.useEffect(() => {
-        if (state.tag == 'loading' && !isFetching && user != undefined) {
+        if (state.tag == 'loading' && !isFetching) {
             fetchGame(currentGameId);
         }
         if (state.tag === 'notYourTurn') {
@@ -132,7 +136,7 @@ export function Game() {
 
             return () => clearInterval(interval);
         }
-    }, [setIsFetching, isFetching, state.tag, currentGameId, fetchGame, user]);
+    }, [setIsFetching, isFetching, state.tag, currentGameId, fetchGame, userId]);
 
     const handleIntersectionClick = (rowIndex, colIndex, size, grid) => {
         if (isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
@@ -155,9 +159,9 @@ export function Game() {
                     if (successData.properties.state.name == 'finished') {
                         if (successData.properties.board.winner != undefined) {
                             const isWin =
-                                successData.properties.board.winner == 'W'
-                                    ? successData.properties.hostId == user?.id
-                                    : successData.properties.guestId == user?.id;
+                              successData.properties.board.winner == 'W'
+                                    ? successData.properties.hostId == userId
+                                    : successData.properties.guestId == userId;
                             if (isWin) {
                                 dispatch({
                                     type: 'win',
@@ -177,8 +181,8 @@ export function Game() {
                     } else {
                         const isYourTurn =
                             successData.properties.board.turn.player == 'W'
-                                ? successData.properties.hostId == user?.id
-                                : successData.properties.guestId == user?.id;
+                                ? successData.properties.hostId == userId
+                                : successData.properties.guestId == userId;
                         if (isYourTurn) {
                             dispatch({
                                 type: 'set-turn',
@@ -227,6 +231,8 @@ export function Game() {
             const errorData = result.json as ProblemModel;
             if (result.contentType === 'application/problem+json') {
                 dispatch({ type: 'error', message: errorData.detail });
+            } else if (result.contentType === 'application/vnd.siren+json') {
+                dispatch({ type: 'leave-game' });
             }
         });
     };
@@ -238,7 +244,7 @@ export function Game() {
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid, null)}</div>
-                    <div>Turn:Not your turn Player: {user.username}</div>
+                    <div>Turn:Not your turn Player: {username}</div>
                     <div>
                         <Link to="/games" onClick={() => handleLeaveGame(currentGameId)}>
                             Leave Game
@@ -250,7 +256,7 @@ export function Game() {
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid, handleIntersectionClick)}</div>
-                    <div>Turn: Your turn Player: {user.username}</div>
+                    <div>Turn: Your turn Player: {username}</div>
                     <div>
                         <Link to="/games" onClick={() => handleLeaveGame(currentGameId)}>
                             Leave Game
@@ -258,12 +264,14 @@ export function Game() {
                     </div>
                 </>
             );
+        case 'leave':
+            return <div>You have left the game.</div>;
 
         case 'lost':
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid)}</div>
-                    <div> You Lost the game... Player: {user.username}</div>
+                    <div> You Lost the game... Player: {username}</div>
                     <div>
                         <Link to={'/games'}>Start New Game</Link>
                     </div>
@@ -273,7 +281,7 @@ export function Game() {
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid)}</div>
-                    <div>You won the game! Player: {user.username}</div>
+                    <div>You won the game! Player: {username}</div>
                     <div>
                         <Link to={'/games'}>Start New Game</Link>
                     </div>

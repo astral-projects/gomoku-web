@@ -2,7 +2,7 @@ package gomoku.http.model.user
 
 import gomoku.domain.user.User
 
-class UserOutputModel(
+data class UserOutputModel(
     val id: Int,
     val username: String,
     val email: String

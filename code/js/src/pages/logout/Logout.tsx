@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {Navigate, useLocation} from 'react-router-dom';
-import {useSetUser} from '../GomokuContainer';
-import {ProblemModel} from '../../services/media/ProblemModel';
-import {isSuccessful} from '../utils/responseData';
-import {logUnexpectedAction} from '../utils/logUnexpetedAction';
-import {logout} from '../../services/usersServices';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useSetUserId, useSetUserName } from '../GomokuContainer';
+import { ProblemModel } from '../../services/media/ProblemModel';
+import { isSuccessful } from '../utils/responseData';
+import { logUnexpectedAction } from '../utils/logUnexpetedAction';
+import { logout } from '../../services/usersServices';
+import { useEffect } from 'react';
 
 type State = { tag: 'loading' } | { tag: 'redirect' } | { tag: 'notLoggedIn' };
 
@@ -28,17 +29,19 @@ function reduce(state: State, action: Action): State {
 
 export function Logout() {
     const [state, dispatch] = React.useReducer(reduce, { tag: 'loading' });
-    const setUser = useSetUser();
+    const setUserName = useSetUserName();
+    const setUserId = useSetUserId();
     const location = useLocation();
 
-    React.useEffect(() => {
+    useEffect(() => {
         logout()
             .then(result => {
                 if (!isSuccessful(result.contentType)) {
                     const errorData = result.json as ProblemModel;
                     dispatch({ type: 'error', message: errorData.detail });
                 } else {
-                    setUser(undefined);
+                    setUserId(undefined);
+                    setUserName(undefined);
                     dispatch({ type: 'success' });
                 }
             })
@@ -46,8 +49,7 @@ export function Logout() {
                 console.log(`Error: ${error}`);
                 dispatch({ type: 'error', message: error });
             });
-        
-    }, [setUser]);
+    }, [setUserName, setUserId]);
 
     switch (state.tag) {
         case 'redirect':

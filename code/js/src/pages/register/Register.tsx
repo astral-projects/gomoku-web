@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { register } from '../../services/usersServices';
 import { isSuccessful } from '../utils/responseData';
 import { ProblemModel } from '../../services/media/ProblemModel';
+
 type State =
     | {
           tag: 'editing';
@@ -68,7 +69,6 @@ export function Register() {
     if (state.tag === 'redirect') {
         return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
     }
-
     function handleChange(ev: React.FormEvent<HTMLInputElement>) {
         dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: ev.currentTarget.value });
     }
@@ -78,22 +78,17 @@ export function Register() {
             return;
         }
         dispatch({ type: 'submit' });
-        register({
-            username: state.inputs.username,
-            email: state.inputs.email,
-            password: state.inputs.password,
-        })
-            .then(result => {
+        register({ username: state.inputs.username, email: state.inputs.email, password: state.inputs.password }).then(
+            result => {
                 if (!isSuccessful(result.contentType)) {
-                    const errorData = result.json as ProblemModel;
-                    dispatch({ type: 'error', message: errorData.detail });
+                    const error = result.json as ProblemModel;
+                    dispatch({ type: 'error', message: error.detail });
                 } else {
                     dispatch({ type: 'success' });
+                    <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
                 }
-            })
-            .catch((err: { message: string }) => {
-                dispatch({ type: 'error', message: err.message });
-            });
+            }
+        );
     }
 
     const username = state.tag === 'submitting' ? state.username : state.inputs.username;

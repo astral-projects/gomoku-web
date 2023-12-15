@@ -28,6 +28,7 @@ class UserOutputModels {
         siren(HomeOutputModel()) {
             clazz("home")
             link(Uris.Users.home(), Rels.SELF)
+            recipeLink(Uris.System.GET_SYSTEM_INFO, Rels.SYSTEM_INFO_RECIPE)
             recipeLink(Uris.Users.ME, Rels.ME_RECIPE)
             recipeLink(Uris.Users.REGISTER, Rels.REGISTER_RECIPE)
             recipeLink(Uris.Users.TOKEN, Rels.LOGIN_RECIPE)

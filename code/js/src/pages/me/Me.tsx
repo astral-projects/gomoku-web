@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { useCurrentUser } from '../GomokuContainer';
+import { useCurrentUserName } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { Button } from '@mui/material';
 
@@ -41,11 +41,11 @@ function reduce(state: State, action: Action): State {
 }
 
 export function Me() {
-    const user = useCurrentUser();
+    const userName = useCurrentUserName();
     const [state, dispatch] = React.useReducer(reduce, {
         tag: 'idle',
         button: 'Find Match',
-        user: user?.username || '',
+        user: userName,
     });
     const location = useLocation();
 
@@ -73,7 +73,7 @@ export function Me() {
         <div>
             <fieldset disabled={state.tag !== 'idle'}>
                 <p>
-                    Hello {user?.username}! <Link to={'/logout'}>Logout</Link>
+                    Hello {userName}! <Link to={'/logout'}>Logout</Link>
                 </p>
                 <div>
                     <Button onClick={onClick}>{state.tag === 'idle' ? state.button : 'Loading'}</Button>
