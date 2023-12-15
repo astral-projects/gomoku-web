@@ -260,7 +260,7 @@ class GamesController(
             is Failure -> Problem.invalidGameId(instance)
             is Success -> when (val gettingColumnResult = Column(move.col)) {
                 is Failure -> Problem.invalidColumn(instance)
-                is Success -> when (val gettingRowResult = Row(move.row)) {
+                is Success -> when (val gettingRowResult = Row(move.row-1)) {
                     is Failure -> Problem.invalidRow(instance)
                     is Success -> {
                         val square = Square(gettingColumnResult.value, gettingRowResult.value)
