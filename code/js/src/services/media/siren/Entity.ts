@@ -1,9 +1,7 @@
-import { Action } from "./Action";
-import { Link } from "./Link";
+import { Link } from './Link';
 
-export class Entity<T> {
-    class: string[];
+export type Entity<T> = {
     properties: T;
-    actions: Action[];
     links: Link[];
-}
+    rel: string[];
+};

@@ -2,7 +2,7 @@ import { promise } from '../index';
 
 export const recipeUris = [];
 const PORT = 4000;
-const HOME = `http://localhost:${PORT}/api/`;
+const BASE = `http://localhost:${PORT}`;
 
 export type Recipe = {
     rel: string[];
@@ -11,7 +11,7 @@ export type Recipe = {
 
 export async function fetchRecipes(): Promise<Recipe[]> {
     try {
-        const response = await fetch(HOME, {
+        const response = await fetch(BASE + '/api/', {
             method: 'GET',
         });
 

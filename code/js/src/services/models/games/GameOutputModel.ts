@@ -1,4 +1,4 @@
-import {SirenModel} from "../../media/siren/SirenModel"
+import { SirenModel } from '../../media/siren/SirenModel';
 
 export type GameOutputModel = {
     id: number;
@@ -13,13 +13,14 @@ export type GameOutputModel = {
     };
     board: {
         grid: string[];
-        turn?: {  
+        turn?: {
             player: string;
             timeLeftInSec: {
                 value: number;
             };
         };
         winner?: string;
+        type?: string;
     };
     createdAt: string;
     updatedAt: string;
@@ -27,4 +28,4 @@ export type GameOutputModel = {
     guestId: number;
 };
 
-export type GameOutput= SirenModel<GameOutputModel>
+export type GameOutput = SirenModel<GameOutputModel>;

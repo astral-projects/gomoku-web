@@ -30,7 +30,14 @@ function parseGrid(grid) {
 export function renderBoard(
     boardSize: number,
     grid: string[],
-    handleIntersectionClick: (rowIndex: number, colIndex: number, size: number, grid: string[]) => void = undefined
+    opponnet: string,
+    handleIntersectionClick: (
+        rowIndex: number,
+        colIndex: number,
+        size: number,
+        grid: string[],
+        opponent: string
+    ) => void = undefined
 ) {
     const parsedGrid = parseGrid(grid);
     return (
@@ -67,7 +74,7 @@ export function renderBoard(
                             style={intersectionStyle}
                             onClick={
                                 handleIntersectionClick
-                                    ? () => handleIntersectionClick(rowIndex, colIndex, boardSize, grid)
+                                    ? () => handleIntersectionClick(rowIndex, colIndex, boardSize, grid, opponnet)
                                     : undefined
                             }
                         >
