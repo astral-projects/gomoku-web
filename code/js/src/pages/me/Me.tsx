@@ -60,7 +60,7 @@ export function Me() {
 
         dispatch({ type: 'play' });
     }
-    
+
     if (state.tag === 'redirect') {
         return <Navigate to={location.state?.source?.pathname || '/games'} />;
     }
