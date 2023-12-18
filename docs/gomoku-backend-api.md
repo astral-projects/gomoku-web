@@ -10,73 +10,99 @@
 - [Introduction](#introduction)
 - [Functionality](#functionality)
 - [Media Types](#media-types)
+  - [Siren](#siren)
+- [Link Relations](#link-relations)
 - [Navigation Graph](#navigation-graph)
 - [Requests](#requests)
+  - [Home](#home)
     - [User](#user)
     - [Game](#game)
+  - [Lobby](#lobby)
+  - [System](#system)
 - [Responses](#responses)
-- [Usage Examples](#usage-examples)
-    - [User Creation](#user-creation)
-    - [User Login](#user-login)
-    - [User Logout](#user-logout)
-    - [Game Creation](#game-creation)
-    - [Game Move](#game-move)
-    - [Pagination](#pagination)
-
+  - [Headers](#headers)
+  - [Problem](#problem)
+- [Resources](#resources)
+  - [Get home](#get-home)
+  - [Register a new user](#register-a-new-user)
+  - [Login a user](#login-a-user)
+  - [Logout a user](#logout-a-user)
+  - [Get home authenticated](#get-home-authenticated)
+  - [Get a user](#get-a-user)
+  - [Get user stats](#get-user-stats)
+  - [Get users stats](#get-users-stats)
+  - [Get users stats by search term](#get-users-stats-by-search-term)
+  - [Find a game](#find-a-game)
+  - [Get a game](#get-a-game)
+  - [Exit a game](#exit-a-game)
+  - [Make a game move](#make-a-game-move)
+  - [Get game variants](#get-game-variants)
+  - [Check lobby status](#check-lobby-status)
+  - [Exit a lobby](#exit-a-lobby)
+  - [Get system information](#get-system-information)
+- [Representations](#representations)
+  - [Game Representation](#game-representation)
+  - [Paginated Result Representation](#paginated-result-representation)
 ---
 
 ## Introduction
 
-This API is a RESTful API that is designed to be consumed by a frontend client application.
+This API is a RESTful API designed to be consumed by a frontend client application.
 
 ## Functionality
 
 The API provides the following functionality:
 
-- Creating games, leaving games and matchmaking;
+- Creating games, leaving games and lobbies and matchmaking;
 - In-game actions, such as placing pieces on a board;
 - User authentication;
-- Consult user/s statistical information.
+- Consult user(s) statistical information.
 
 ## Media Types
 
 The API uses the following media types:
 
-- `application/vnd.siren+json` - [Siren](https://github.com/kevinswiber/siren) for the API response bodies;
-- `application/problem+json` - [RFC7807](https://tools.ietf.org/html/rfc7807) problem details for the API responses in
-  case of errors;
 - `application/json` - for the API request bodies;
+- `application/vnd.siren+json` - [Siren](https://github.com/kevinswiber/siren) for the API response bodies;
+- `application/problem+json` - [Problem](https://tools.ietf.org/html/rfc7807) for the API responses in
+  case of errors;
 
-It was added some properties to the siren representation of the resources:
+### Siren
+
+The following properties were added to the siren representation of the API:
+
 > **Recipe Links**:
-> To the API responses using siren was added the property `recipeLinks` to indicate the available resources of the API.
+> To indicate the available resources of the API.
 
 > **Require Auth**:
-> To the API responses using siren was added the property `requireAuth` to indicate if the resource requires authentication
-> or not. 
+> To indicate if the resource requires authentication or not.
 
 ### Link Relations
 
-The API uses the following [link relations](https://www.iana.org/assignments/link-relations/link-relations.xhtml) represented in the file [Rels.kt](../code/jvm/src/main/kotlin/gomoku/http/Rels.kt):
-- Every link relation that is undocumented in the previous link is a custom link relation created by the API. Every link is represented as an uri with the following format: 
-`https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}`.
+The API uses the following [link relations](https://www.iana.org/assignments/link-relations/link-relations.xhtml)
+represented in the file [Rels.kt](../code/jvm/src/main/kotlin/gomoku/http/Rels.kt):
+
+- Every link relation that is undocumented in the previous link is a custom link relation created by the API. Every link
+  is represented as an uri with the following format:
+  `https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}`.
   - `self` - the link to the current resource;
   - `user` - the link to the user resource;
   - `game` - the link to the game resource;
   - `system-info` - the link to the system information resource;
-  - `user-stats` - the link to the user stats resource;
-  - `users-stats` - the link to the users stats resource;
+  - `user-stats` - the link to the user statistic information resource;
+  - `users-stats` - the link to the users statistic information resource;
 
-- In the section created for represent the available resources of the API, the link relation is represented as an uri with the following format:
-`https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}/{resource}`.
+- In the section created for represent the available resources of the API, the link relation is represented as an uri
+  with the following format:
+  `https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}/{resource}`.
   - `/users/{user_id}` - the recipe to the user resource;
   - `/games/{game_id}` - the recipe to the game resource;
-  - `/games/variants` - the recipe to the game variants resource;
+  - `/games/variants` - the recipe to the game variants' resource;
   - `/lobbies/{lobby_id}` - the recipe to the lobby resource;
-  - `/users/stats/search?q={query}{&page,itemPerPage}` - the recipe to the users stats resource;
+  - `/users/stats/search?q={query}{&page,itemPerPage}` - the recipe to the user's stats resource;
   - `/users/{user_id}/stats` - the recipe to the user stats resource;
-  - `/users/stats?q={query}{&page,itemPerPage}` - the recipe to the users stats resource;
-  - `/users` - the recipe to the users resource;
+  - `/users/stats?q={query}{&page,itemPerPage}` - the recipe to the user's stats resource;
+  - `/users` - the recipe to the user's resource;
   - `/login` - the recipe to the login resource;
   - `/users/logout` - the recipe to the logout resource;
   - `/games` - the recipe to the games resource;
@@ -107,756 +133,488 @@ Information about the requests:
 
 ### Home
 
-The API provides the following operations/resources related to the `Home` entity:
-
-- `GET /api/` - returns the home page information and the available resources of the API; See [Home](#home) for more
+- `GET /` - returns the home page information and the available resources of the API; See [Get home](#get-home) for more
   information.
 
 ### User
 
-The API provides the following operations/resources related to the `User` entity:
-
-- `POST /api/users 📦` - creates a new user; See [User Creation](#user-creation) for more information;
-- `POST /api/users/token 📦` - authenticates a user; See [User Login](#user-login) for more information;
-- `POST /api/users/logout 🔒` - invalidates a user's token; See [User Logout](#user-logout) for more information;
-- `GET /api/users/home 🔒` - returns logged-in user's information;
-- `GET /api/users/{id}` - returns the user with the given id; See [Get User](#get-user-by-id) for more information;
-- `GET /api/users/stats 📖` - returns the users statistic information by ranking; See [Pagination](#pagination) for more
-  information.
-- `GET /api/users/{id}/stats` - returns the user statistic information with the given id.
-  See [Get User Stats](#get-user-stats) for more information.
+- `POST /users 📦` - creates a new user. See [Register a new user](#register-a-new-user) for more information;
+- `POST /users/token 📦` - authenticates a user. See [Login a user](#login-a-user) for more information;
+- `POST /users/logout 🔒` - invalidates a user's token. See [Logout a user](#logout-a-user) for more information;
+- `GET /users/home 🔒` - returns logged-in user's information. See [Get home authenticated](#get-home-authenticated) for
+  more information;
+- `GET /users/{id}` - returns the user with the given id. See [Get a user](#get-a-user) for more information;
+- `GET /users/{id}/stats` - returns the user statistic information with the given id.
+  See [Get user stats](#get-user-stats) for more information;
+- `GET /users/stats 📖` - returns the users statistic information by ranking. See [Get users stats](#get-users-stats) for
+  more information;
+- `GET /users/stats/search 📖` - returns the users statistic information by search term.
+  See [Get users stats by search term](#get-users-stats-by-search-term) for more information.
 
 ### Game
 
-The API provides the following operations/resources related to the `Game` entity:
+- `POST /games 🔒📦` - joins a lobby or creates a new game with the given variant id. See [Find a game](#find-a-game) for
+  more information;
+- `GET /games/{id}` - returns the game with the given id. See [Get a game](#get-a-game) for more information;
+- `POST /games/{id}/exit` 🔒 - exits the game with the given id. See [Exit a game](#exit-a-game) for more information;
+- `POST /games/{id}/move 🔒📦` - makes a move in the game with the given id. See [Make a game move](#make-a-game-move) for
+  more
+- `POST /games/variants` - returns the game variants. See [Get game variants](#get-game-variants) for more information;
 
-- `POST /api/games 🔒📦` - joins a lobby or creates a new game with the given variant id;
-  See [Game Creation](#game-creation)
+### Lobby
+
+- `GET /lobby/{id} 🔒` - checks the status of the lobby with the given id. See [Check lobby status](#check-lobby-status)
   for more information;
-- `GET /api/games/{id}` - returns the game with the given id;
-- `DELETE /api/games/{id}` 🔒 - deletes the game with the given id;
-- `GET /api/system` - returns the system information;
-- `POST /api/games/{id}/move 🔒📦` - makes a move in the game with the given id; See [Game Move](#game-move) for more
-  information;
-- `POST /api/games/{id}/exit 🔒` - exits the game with the given id.
-- `GET /api/games/lobby/{id} 🔒` - Checks the status of the lobby with the given ID, returning whether the user is still
-  waiting in the lobby or has already entered a game.
-- `DELETE /api/games/lobby/{id} 🔒` - deletes the lobby with the given id.
+- `DELETE /lobby/{id}/exit 🔒` - deletes the lobby with the given id. See [Exit a lobby](#exit-a-lobby) for more
 
-### Responses
+### System
 
-Information about the responses:
+- `GET /system` - returns the system information. See [Get system information](#get-system-information) for more
 
-- All responses have a `Request-Id` header with a unique `UUID` for the request, used for debugging purposes. Also, if
-  someone reports a bug in the future, this header can be used to identify the request.
-- All responses have a `Content-Type` header with the media type of the response body.
+## Responses
 
-## Usage Examples
+### Headers
 
-### Home Page
-- The client application makes a `GET` request to the `home` resource;
-- It was created a new property to the siren representation of the home page, called `recipes`, which contains the
-  available resources of the API;
-- The API then returns a `200 OK` response with the home page information and the available resources of the API in the
-  response body. The response body contains the following properties:
-    - `recipes` - the available resources of the API;
-    - `actions` - the available actions of the API;
-    - `entities` - the available entities of the API.
+All responses have the following headers:
 
-  Example:
-  ```json
-  {
-    "class": [
-        "home"
-    ],
-    "properties": {
-        "message": "Welcome to Gomoku API."
-    },
-    "links": [
-        {
-            "rel": [
-                "self"
-            ],
-            "href": "/api/"
-        }
-    ],
-    "recipeLinks": [
-        {
-            "rel": [
-                "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/users/home"
-            ],
-            "href": "/api/users/home"
-        },
-        {
-            "rel": [
-                "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/users"
-            ],
-            "href": "/api/users"
-        },
-        //... More recipes
-    "requireAuth": [
-        false
-    ],
-  ```
+- `Request-Id` with a unique `UUID` for the request, mainly used for debugging purposes.
+- `Content-Type` with the media type of the response body.
+- `WWW-Authenticate` with the authentication scheme used by the API, when the authentication failed.
 
-### User Creation
+### Problem
 
-- The client application makes a `POST` request to the `register` resource, with the **user's credentials** in the
-  request
-  body. The request body should be a JSON object with the following properties:
-    - `username` - the user's username (must be between `5 and 30 characters` long);
-    - `email` - the user's email (must follow the following regex: `^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$`);
-    - `password` - the user's password (must be between `8 and 40 characters` long);
+> [!NOTE]
+> The API uses the [Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807) specification to represent
+> errors.
 
-  Example:
-  ```json
-  {
-    "username": "postman-user",
-    "email": "email@validemail.com",
-    "password": "postman-password"
-  }
-  ```
-  - The API then:
-- **On Success** - creates a new user with the provided credentials and returns a `201 Created` response with the **user representation**
-    in the body using siren.
+#### Example
 
-  Example:
-  ```json
-  {
-      "class": [
-        "user",
-        "login"
-      ],
-        "properties": {
-          "id": 8
-        },
-      "links": [
-      {
-          "rel": [
-            "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
-          ],
-          "href": "/api/users/8"
-      },
-      {
-          "rel": [
-          "self"
-          ],
-            "href": "/api/users/token"
-          }
-      ],
-      "recipeLinks": [],
-      "actions": [
-          {
-          "name": "login",
-          "href": "/api/users/token",
-          "method": "POST",
-          "type": "application/json",
-          "fields": [
-            {
-            "name": "username",
-            "type": "text",
-            "value": null
-            },
-          {
-              "name": "password",
-              "type": "text",
-              "value": null
-          }
-      ],
-        "requireAuth": [
-          false
-        ]
-        }
-      ],
-      "entities": [],
-      "requireAuth": [
-        false
-      ]
-  }
-  ```
-  - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
+> [!IMPORTANT]
+> An optional data field was added to the problem representation of the API,
+> to provide additional information about the request problem.
+>
+> Status: `400 BAD REQUEST`
 
-    Example:
-    ```json
-    {
-       "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/insecure-password",
-       "title": "Received password is considered insecure",
-       "status": 400,
-       "detail": "Password length must be between 8 and 40 characters",
-       "instance": "/api/users"
-    }
-    ```
+```json
+{
+  "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-move",
+  "title": "Invalid move",
+  "status": 400,
+  "detail": "The move is invalid because the square is already occupied with a piece.",
+  "instance": "/api/games/{id}/move",
+  "data": null
+}
+```
 
-### User Login
+## Resources
 
-- The client application makes a `POST` request to the `login` resource, with the user's credentials in the request
-  body. The request body should be a JSON object with the following properties:
-    - `username` - the user's username (must be between `5 and 30 characters` long);
-    - `password` - the user's password (must be between `8 and 40 characters` long).
+### Get home
 
-  Example:
-    ```json
-    {
-        "username": "postman-user",
-        "password": "postman-password"
-    }
-    ```
+> [!NOTE]
+> Returns the home page information and the available resources of the API.
 
-  - The API then:
-- **On Success** - authenticates the user and returns a `200 OK` response with a message in the response body. The
-  response body
-  contains the following properties:
-    - `token` - the user's access token should be used in the `Authorization` header with
-      the `Bearer` scheme for all the requests that require authentication.
+#### HTTP Response Status codes
 
-  Example:
-  ```json 
-  {
-      "class": [
-        "token",
-        "user"
-      ],
-      "properties": {
-        "token": "CgiEG9OLlaTzEszVtfE2HdBBqqzzThKaao1k5-oCuTg="
-      },
-      "links": [
-          {
-              "rel": [
-                "self"
-              ],
-              "href": "/api/users/token"
-          }
-      ],
-      "entities": [
-          {
-              "properties": {
-                  "id": {
-                    "value": 7
-                  },
-                  "username": {
-                    "value": "postman-username9"
-                  },
-                  "email": {
-                    "value": "example@postman.com9"
-                  },
-                  "passwordValidation": {
-                    "validationInfo": "$2a$10$S3GqqaONiRlLcAl/RdcD0OaamudMP5qf4SFlcLOPzh/1HSaY1LiaC"
-                  }
-              },
-              "links": [
-                  {
-                  "rel": [
-                    "self"
-                  ],
-                    "href": "/api/users/7"
-                  }
-              ],
-                  "rel": [
-                    "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
-                  ]
-          }
-      ],
-      "requireAuth": [
-        false
-      ]
-  }
-  ```
-  - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
 
-    ```json
-    {
-       "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-username",
-       "title": "Invalid username",
-       "status": 400,
-       "detail": "The username <postman-user> is invalid",
-       "instance": "/api/users/token"
-    }
-    ```
+#### Request Example
 
-- The client application should store the user token in a secure place, such as the browser's local storage or a
-  cookie.
+```curl
+curl http://localhost/api/
+```
 
-### User Logout
+#### Response Example
 
-- The client application makes a `POST` request to the `logout` resource, with the user token in the `Authorization`
-  header with the `Bearer` scheme;
-  - The API then:
-      - **On Success** - invalidates the user's token and returns a `200 OK` response with a message in the response body.
+> [!IMPORTANT]
+> Some recipe links were omitted for readability purposes.
+>
+> Status: `200 OK`
 
-        Example:
-        ```json
-        { 
-           "message": "User was logged out successfully."
-        }
-        ```
-
-  - **On Failure Example** - returns a `401 Unauthorized` response with a message in the response body.
-
-      Example:
-      ```json
-      {
-          "class": [
-              "logout"
-          ],
-          "properties": {
-              "message": "User logged out successfully, token was revoked."
-          },
-          "links": [
-              {
-                  "rel": [
-                      "self"
-                  ],
-                  "href": "/api/users/logout"
-              }
-          ],
-        "recipeLinks": [],
-        "actions": [],
-        "entities": [],
-        "requireAuth": [
-          true
-        ]
-     }
-
-- To log in again, the client application should request a new token to the API.
-
-### Get User By Id
-
-- The client application makes a `GET` request to the `users/{id}` resource, with the user id in the request path;
-  - The Api then:
-      - **On Success**
-  - returns a `200 OK` response with the user information in the response body.
-    The response body
-    contains the following properties:
-      - `id` - the user's id;
-      - `username` - the user's username;
-      - `email` - the user's email;
-
-    Example:
-    ```json
-    {
-        "class": [
-            "user"
-        ],
-        "properties": {
-            "id": {
-                "value": 1
-            },
-            "username": {
-                "value": "user1"
-            },
-            "email": {
-                "value": "user1@example.com"
-            },
-            "passwordValidation": {
-                "validationInfo": "password_hash_1"
-            }
-        },
-        "links": [
-            {
-                "rel": [
-                    "self"
-                ],
-                "href": "/api/users/1"
-            }
-        ],
-        "recipeLinks": [],
-        "actions": [],
-        "entities": [],
-        "requireAuth": [
-            false
-        ]
-    }
-    ```
-    - **On Failure**
-    - returns a `400 Bad Request` if the id is not valid. Response with a message in the response body.
-
-      Example:
-        ```json
-          {
-            "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/invalid-id",
-            "title": "Invalid user id",
-            "status": 400,
-            "detail": "The user id must be a positive integer",
-            "instance": "/api/users/-1",
-            "data": null
-          }
-        ```
-    - returns a `404 Not Found` if the user with the given id does not exist. Response with a message in the
-      response body.
-
-      Example:
-      ```json
-        {
-            "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
-            "title": "User not found",
-            "status": 404,
-            "detail": "The user with id <90> was not found",
-            "instance": "/api/users/90",
-            "data": null
-        }
-      ```
-
-### Get User Stats
-
-- The client application makes a `GET` request to the `users` resource, with the id in the path.
-  The response should be in body.
-    - The API then:
-      - **On Success** - returns a `200 OK` response with the user statistic information in the response body. The
-        response body
-        contains the following properties:
-          - `id` - the user's id;
-          - `username` - the user's username;
-          - `email` - the user's email;
-          - `points` - the user's points;
-          - `rank` - the user's rank;
-          - `gamesPlayed` - the user's games played;
-          - `wins` - the user's wins;
-          - `draws` - the user's draws;
-          - `losses` - the user's losses;
-
-        Example:
-        ```json
-        {
-          "class": [
-            "user-stats"
-          ],
-          "properties": {
-              "id": {
-                "value": 6
-              },
-              "username": {
-                "value": "postman-username8"
-              },
-              "email": {
-                "value": "example@postman.com8"
-              },
-              "points": {
-                "value": 5500
-              },
-              "rank": {
-                "value": 1
-              },
-              "gamesPlayed": {
-                "value": 12
-              },
-              "wins": {
-                "value": 10
-              },
-              "draws": {
-                "value": 1
-              },
-              "losses": {
-                "value": 1
-              }
-          },
-          "links": [
-              {
-                "rel": [
-                  "self"
-                ],
-                "href": "/api/users/6/stats"
-              }
-          ],
-          "requireAuth": [
-            true
-          ]
-        }
-          ```
-        - **On Failure** - returns a `404 Not Found` if the user with the given id does not exist. Response with a message
-          in the response body.
-
-          Example:
-          ```json
-          {
-              "type": "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/problems/user-not-found",
-              "title": "User not found",
-              "status": 404,
-              "detail": "The user with id <9> was not found",
-              "instance": "/api/users/9/stats",
-              "data": null
-          }
-          ```
-
-### Game Creation
-
-- The client application makes a `POST` request to the `games` resource, with the variant id in the request
-  body. The request body should be a JSON object with the following properties:
-
-  ```json 
-  {
-    "variantId": 1
-  }
-  ```
-  - The API then:
-      - **On Success**
-        - **Lobby created** - creates a new game only if another user with the same variant id is waiting at a lobby. If
-          there is no
-          user waiting for a game, the API creates a new lobby with the given variant id and returns a `201 Created`
-          response
-          with the lobby id and a message in the response body;
-
-          Example:
-          ```json
-          {
-              "class": [
-                  "lobby",
-                  "exit-lobby"
-              ],
-              "properties": {
-                  "message": "Lobby created successfully with id=4",
-                  "id": 4
-              },
-              "links": [
-                  {
-                      "rel": [
-                          "self"
-                      ],
-                      "href": "/api/lobby/4"
-                  }
-              ],
-              "actions": [
-                  {
-                      "name": "Exit Lobby",
-                      "href": "/api/lobby/4/exit",
-                      "method": "DELETE",
-                      "type": "application/json",
-                      "fields": [],
-                      "requireAuth": [
-                          true
-                      ]
-                  }
-              ],
-              "entities": [],
-              "requireAuth": [
-                true
-              ]
-          }
-            ```
-          
-          - **Game created** - creates a new game with the provided variant id and returns a `201 Created` response with
-            the
-            game id and a message in the response body.
-
-            Example:
-            ```json
-            {
-              "class": [
-                  "game",
-                  "make-move",
-                  "exit-game"
-              ],
-              "properties": {
-                  "message": "Joined the game successfully with id=2",
-                  "id": 2
-              },
-              "links": [
-                  {
-                      "rel": [
-                          "self"
-                      ],
-                      "href": "/api/games/2"
-                  }
-              ],
-              "actions": [
-                  {
-                      "name": "Make Move",
-                      "href": "/api/games/2/move",
-                      "method": "POST",
-                      "type": "application/json",
-                      "fields": [
-                          {
-                              "name": "col",
-                              "type": "text",
-                              "value": null
-                          },
-                          {
-                              "name": "row",
-                              "type": "number",
-                              "value": null
-                          }
-                  ],
-                      "requireAuth": [
-                          true
-                      ]
-                  },
-                  {
-                      "name": "Exit Game",
-                      "href": "/api/games/2/exit",
-                      "method": "POST",
-                      "type": "application/json",
-                      "fields": [],
-                      "requireAuth": [
-                          true
-                      ]
-                }
-              ],
-              "entities": [],
-              "requireAuth": [
-              true
-              ]
-            } 
-            ```
-      - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
-
-        ```json
-        {
-           "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/game-variant-not-found",
-            "title": "Game variant not found",
-            "status": 400,
-            "detail": "The game variant with id <1> was not found",
-            "instance": "/api/games"
-        }
-        ```
-
-### Game Move
-
-- The client application makes a `POST` request to the `games/{id}/move` resource, with the move information in the
-  request body. The request body should be a JSON object with the following properties:
-    - `col` - the column of the square where player will play (must be between `a` and `z`);
-    - `row` - the row of the square where player will play (must be minimum `1`).
-      Example:
-      ```json
-      {
-        "col": "a",
-        "row": 11
-      }
-      ```
-
-      - The API then:
-          - **On Success** - makes the move and returns a `200 OK` response with a message in the response body.
-
-            Example:
-            ```json
-             {
-                "class": [
-                    "game"
-                ],
-                "properties": {
-                    "gameId": 3,
-                    "message": "Move was made successfully."
-                },
-                "links": [
-                    {
-                      "rel": [
-                        "self"
-                      ],
-                      "href": "/api/games/3/move"
-                    }
-                ],
-                "entities": [
-                    {
-                        "properties": {
-                            "id": 3,
-                            "state": {
-                              "name": "in_progress"
-                            },
-                            "variant": {
-                              "id": 1,
-                              "name": "freestyle",
-                              "openingRule": "none",
-                              "boardSize": 15
-                            },
-                            "board": {
-                              "grid": [
-                                "a8-w"
-                              ],
-                              "turn": {
-                                "player": "B",
-                                "timeLeftInSec": {
-                                  "value": 60
-                                }
-                              }
-                            },
-                            "createdAt": "2023-12-10T22:54:23Z",
-                            "updatedAt": "2023-12-10T22:57:30Z",
-                            "hostId": 7,
-                            "guestId": 6
-                        },
-                    "links": [
-                        {
-                          "rel": [
-                            "self"
-                          ],
-                          "href": "/api/games/3"
-                        }
-                    ],
-                        "rel": [
-                          "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/game"
-                        ]
-                  }
-                ],
-                "requireAuth": [
-                  true
-                ]
-            }
-            ```
-
-          - **On Failure Example** - returns a `400 Bad Request` response with a message in the response body.
-
-            ```json
-            {
-               "type": "https://github.com/2023-daw-leic51d-14/code/jvm/docs/problems/invalid-move",
-               "title": "Invalid move",
-               "status": 400,
-               "detail": "The move is invalid because the square is already occupied with a piece.",
-               "instance": "/api/games/{id}/move"
-            }
-            ``` 
-
-### Pagination
-
-- The client application makes a `GET` request a resource marked as paginated.
-- The client application can include the following optional `query` parameters:
-    - `page` - the page number (defaults to `1`);
-    - `itemsPerPage` - the number of items per page (defaults to `10`);
-
-  Example:
-  ```text
-   GET /api/users/stats?page=3&itemsPerPage=10
-  ```
-
-- The API then returns a `200 OK` response with the requested page in the response body. The response body contains the
-  following properties:
-    - `currentPage` - the current page number;
-    - `itemsPerPage` - the number of items per page, that could be less or equal to the `limit` query parameter;
-    - `totalPages` - the total number of pages that can be transversed with the received `limit` query parameter;
-    - `items` - the items in the current page.
-- In the response body, with the representation siren it was added the following links to navigate between pages:
-
-[**Link Relation**](https://www.iana.org/assignments/link-relations/link-relations.xhtml) - the links to navigate between pages:
-  - `first` - the first page;
-  - `prev` - the previous page;
-  - `next` - the next page;
-  - `last` - the last page.
-  - `self` - the current page.
-
-  Example:
-
-  ```json
-  {
+```json
+{
   "class": [
-    "users-stats"
+    "home"
   ],
   "properties": {
-    "currentPage": 29,
-    "itemsPerPage": 10,
-    "totalPages": 31,
-    "items": [
-      {
+    "message": "Welcome to Gomoku API."
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/"
+    }
+  ],
+  "recipeLinks": [
+    {
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/system"
+      ],
+      "href": "/api/system"
+    },
+    {
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/users/home"
+      ],
+      "href": "/api/users/home"
+    }
+  ],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Register a new user
+
+> [!NOTE]
+> Register a new user in the system.
+
+#### Body Parameters
+
+- **Username** - the user's username.
+  - Required: `true`
+  - Type: `string`
+  - Length Range: `5-30`
+
+- **Email** - the user's email.
+  - Required: `true`
+  - Type: `string`
+  - Regex: `^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$`
+
+- **Password** - the password of the user.
+  - Required: `true`
+  - Type: `string`
+  - Length Range: `8-40`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     201     |   Created   |
+|     400     | Bad Request |
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Accept: application/json" \
+  http://localhost/api/users \
+  -d '{"username":"postman-user","email":"email@valid.com","password":"postman-password"}'
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `201 CREATED`
+
+```json
+{
+  "class": [
+    "user",
+    "login"
+  ],
+  "properties": {
+    "id": 895
+  },
+  "links": [
+    {
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ],
+      "href": "/api/users/895"
+    },
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/token"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "login",
+      "href": "/api/users/token",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "username",
+          "type": "text",
+          "value": null
+        },
+        {
+          "name": "password",
+          "type": "text",
+          "value": null
+        }
+      ],
+      "requireAuth": [
+        false
+      ]
+    }
+  ],
+  "entities": [],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Login a user
+
+> [!NOTE]
+> Login a user in the system.
+
+#### Body Parameters
+
+- **Username** - the user's username.
+  - Required: `true`
+  - Type: `string`
+  - Length Range: `5-30`
+- **Password** - the password of the user.
+  - Required: `true`
+  - Type: `string`
+  - Length Range: `8-40`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     400     | Bad Request |
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  http://localhost/api/users/token \
+  -d '{"username":"postman-user","password":"postman-password"}'
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "token",
+    "user"
+  ],
+  "properties": {
+    "token": "A_1bgxfmE7zZJN7xwh67-ruKI8AcrKJP4MprsXxyfFA="
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/token"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [
+    {
+      "properties": {
         "id": {
-          "value": 32
+          "value": 895
         },
         "username": {
-          "value": "user-3959341354177784066"
+          "value": "postman-username"
         },
         "email": {
-          "value": "email@4395467089796734078.com"
+          "value": "example@postman.com"
+        },
+        "passwordValidation": {
+          "validationInfo": "$2a$10$j/t4mb2yyUHJu5pZxpSGfepbh/suWqqG82CqFle0etSsnin4p3dJO"
+        }
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/895"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ]
+    }
+  ],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Logout a user
+
+> [!NOTE]
+> Logout a user in the system.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     401     | Unauthorized |
+
+#### Request Example
+
+```curl
+curl  \
+-X POST \
+-H "Authorization: Bearer <TOKEN>" \
+http://localhost/api/users/logout
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "logout"
+  ],
+  "properties": {
+    "message": "User logged out successfully, token was revoked."
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/logout"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get home authenticated
+
+> [!NOTE]
+> Returns the logged-in user's information.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     401     | Unauthorized |
+
+#### Request Example
+
+```curl
+curl \ 
+-H "Authorization: Bearer <TOKEN>" \
+http://localhost/api/users/home
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "home",
+    "users-stats",
+    "user-stats",
+    "system-info",
+    "find-game",
+    "logout"
+  ],
+  "properties": {
+    "id": {
+      "value": 895
+    },
+    "username": {
+      "value": "postman-username"
+    },
+    "email": {
+      "value": "example@postman.com"
+    },
+    "passwordValidation": {
+      "validationInfo": "$2a$10$j/t4mb2yyUHJu5pZxpSGfepbh/suWqqG82CqFle0etSsnin4p3dJO"
+    }
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "find-game",
+      "href": "/api/games",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    },
+    {
+      "name": "logout",
+      "href": "/api/users/logout",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "properties": {
+        "id": {
+          "value": 895
+        },
+        "username": {
+          "value": "postman-username"
+        },
+        "email": {
+          "value": "example@postman.com"
         },
         "points": {
           "value": 0
         },
         "rank": {
-          "value": 44
+          "value": 1
         },
         "gamesPlayed": {
           "value": 0
@@ -871,39 +629,178 @@ Information about the responses:
           "value": 0
         }
       },
-      // ... More items in the current page 
-    ]
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/895/stats"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user-stats"
+      ]
+    },
+    {
+      "properties": {
+        "currentPage": 1,
+        "itemsPerPage": 1,
+        "totalPages": 611,
+        "items": [
+          {
+            "id": {
+              "value": 2
+            },
+            "username": {
+              "value": "user2"
+            },
+            "email": {
+              "value": "user2@example.com"
+            },
+            "points": {
+              "value": 4350
+            },
+            "rank": {
+              "value": 2
+            },
+            "gamesPlayed": {
+              "value": 8
+            },
+            "wins": {
+              "value": 3
+            },
+            "draws": {
+              "value": 0
+            },
+            "losses": {
+              "value": 5
+            }
+          }
+        ]
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/stats?page=1&itemsPerPage=1"
+        },
+        {
+          "rel": [
+            "next"
+          ],
+          "href": "/api/users/stats?page=2&itemsPerPage=1"
+        },
+        {
+          "rel": [
+            "last"
+          ],
+          "href": "/api/users/stats?page=611&itemsPerPage=1"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/users-stats"
+      ]
+    },
+    {
+      "properties": {
+        "gameName": "Gomoku Royale API",
+        "version": "0.0.1",
+        "description": "Gomoku Royale is an online multiplayer strategy game where players compete to connect five of their pieces in a row, column or diagonally.",
+        "releaseDate": "18/12/2023",
+        "authors": [
+          {
+            "firstName": "Diogo",
+            "lastName": "Rodrigues",
+            "gitHubUrl": "https://github.com/Diogofmr"
+          },
+          {
+            "firstName": "Tiago",
+            "lastName": "Frazão",
+            "gitHubUrl": "https://github.com/TiagoFrazao01"
+          },
+          {
+            "firstName": "Francisco",
+            "lastName": "Engenheiro",
+            "gitHubUrl": "https://github.com/FranciscoEngenheiro"
+          }
+        ]
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/system"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/system-info"
+      ]
+    }
+  ],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get a user
+
+> [!NOTE]
+> Returns the user with the given id.
+
+#### Path Parameters
+
+- **id** - the user's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     400     | Bad Request |
+|     404     |  Not Found  |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/users/1
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "user"
+  ],
+  "properties": {
+    "id": {
+      "value": 1
+    },
+    "username": {
+      "value": "user1"
+    },
+    "email": {
+      "value": "user1@example.com"
+    },
+    "passwordValidation": {
+      "validationInfo": "password_hash_1"
+    }
   },
   "links": [
     {
       "rel": [
         "self"
       ],
-      "href": "/api/users/stats?page=29&itemsPerPage=10"
-    },
-    {
-      "rel": [
-        "next"
-      ],
-      "href": "/api/users/stats?page=30&itemsPerPage=10"
-    },
-    {
-      "rel": [
-        "last"
-      ],
-      "href": "/api/users/stats?page=30&itemsPerPage=10"
-    },
-    {
-      "rel": [
-        "prev"
-      ],
-      "href": "/api/users/stats?page=28&itemsPerPage=10"
-    },
-    {
-      "rel": [
-        "first"
-      ],
-      "href": "/api/users/stats?page=1&itemsPerPage=10"
+      "href": "/api/users/1"
     }
   ],
   "recipeLinks": [],
@@ -913,4 +810,1368 @@ Information about the responses:
     false
   ]
 }
-  ```
+```
+
+### Get user stats
+
+> [!NOTE]
+> Returns the user statistic information with the given id.
+
+#### Path Parameters
+
+- **id** - the user's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     404     |  Not Found  |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/users/1/stats
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "user-stats"
+  ],
+  "properties": {
+    "id": {
+      "value": 6
+    },
+    "username": {
+      "value": "postman-username5"
+    },
+    "email": {
+      "value": "example@postman.com5"
+    },
+    "points": {
+      "value": 0
+    },
+    "rank": {
+      "value": 1
+    },
+    "gamesPlayed": {
+      "value": 0
+    },
+    "wins": {
+      "value": 0
+    },
+    "draws": {
+      "value": 0
+    },
+    "losses": {
+      "value": 0
+    }
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/6/stats"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get users stats
+
+> [!NOTE]
+> Returns the users statistic information by ranking.
+>
+> The result is paginated.
+
+#### Query Parameters
+
+- **page** - the page number.
+  - Required: `false`
+  - Type: `number`
+  - Default: `1`
+  - Range: `1-`
+
+- **itemsPerPage** - the number of items to return per page.
+  - Required: `false`
+  - Type: `number`
+  - Default: `10`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     400     | Bad Request |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/users/stats?page=3&itemsPerPage=2
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Links can be used to navigate through the pages.
+>
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "users-stats"
+  ],
+  "properties": {
+    "currentPage": 3,
+    "itemsPerPage": 2,
+    "totalPages": 306,
+    "items": [
+      {
+        "id": {
+          "value": 302
+        },
+        "username": {
+          "value": "user-6649887803439842203"
+        },
+        "email": {
+          "value": "email@5567147137422571053.com"
+        },
+        "points": {
+          "value": 500
+        },
+        "rank": {
+          "value": 6
+        },
+        "gamesPlayed": {
+          "value": 1
+        },
+        "wins": {
+          "value": 1
+        },
+        "draws": {
+          "value": 0
+        },
+        "losses": {
+          "value": 0
+        }
+      },
+      {
+        "id": {
+          "value": 304
+        },
+        "username": {
+          "value": "user-8097313227960329506"
+        },
+        "email": {
+          "value": "email@798740636865958576.com"
+        },
+        "points": {
+          "value": 500
+        },
+        "rank": {
+          "value": 6
+        },
+        "gamesPlayed": {
+          "value": 1
+        },
+        "wins": {
+          "value": 1
+        },
+        "draws": {
+          "value": 0
+        },
+        "losses": {
+          "value": 0
+        }
+      }
+    ]
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/stats?page=3&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "next"
+      ],
+      "href": "/api/users/stats?page=4&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "last"
+      ],
+      "href": "/api/users/stats?page=305&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "prev"
+      ],
+      "href": "/api/users/stats?page=2&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "first"
+      ],
+      "href": "/api/users/stats?page=1&itemsPerPage=2"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Get users stats by search term
+
+> [!NOTE]
+> Returns the users statistic information by search term.
+>
+> The result is paginated.
+
+#### Query Parameters
+
+- **term** - the search term.
+  - Required: `true`
+  - Type: `string`
+
+- **page** - the page number.
+  - Required: `false`
+  - Type: `number`
+  - Default: `1`
+  - Range: `1-`
+
+- **itemsPerPage** - the number of items to return per page.
+  - Required: `false`
+  - Type: `number`
+  - Default: `10`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     400     | Bad Request |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/users/stats/search?term=user&page=3&itemsPerPage=2
+```
+
+### Response Example
+
+> [!IMPORTANT]
+> Links can be used to navigate through the pages.
+>
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "users-stats"
+  ],
+  "properties": {
+    "currentPage": 3,
+    "itemsPerPage": 2,
+    "totalPages": 280,
+    "items": [
+      {
+        "id": {
+          "value": 758
+        },
+        "username": {
+          "value": "user-4464902552321055112"
+        },
+        "email": {
+          "value": "email@4941312777461605655.com"
+        },
+        "points": {
+          "value": 500
+        },
+        "rank": {
+          "value": 6
+        },
+        "gamesPlayed": {
+          "value": 1
+        },
+        "wins": {
+          "value": 1
+        },
+        "draws": {
+          "value": 0
+        },
+        "losses": {
+          "value": 0
+        }
+      },
+      {
+        "id": {
+          "value": 304
+        },
+        "username": {
+          "value": "user-8097313227960329506"
+        },
+        "email": {
+          "value": "email@798740636865958576.com"
+        },
+        "points": {
+          "value": 500
+        },
+        "rank": {
+          "value": 6
+        },
+        "gamesPlayed": {
+          "value": 1
+        },
+        "wins": {
+          "value": 1
+        },
+        "draws": {
+          "value": 0
+        },
+        "losses": {
+          "value": 0
+        }
+      }
+    ]
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/users/stats/search?term=user&page=3&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "next"
+      ],
+      "href": "/api/users/stats/search?term=user&page=4&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "last"
+      ],
+      "href": "/api/users/stats/search?term=user&page=279&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "prev"
+      ],
+      "href": "/api/users/stats/search?term=user&page=2&itemsPerPage=2"
+    },
+    {
+      "rel": [
+        "first"
+      ],
+      "href": "/api/users/stats/search?term=user&page=1&itemsPerPage=2"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Find a game
+
+> [!NOTE]
+> Joins a lobby or creates a new game with the given variant id.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### Body Parameters
+
+- **variantId** - the game variant id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     201     |   Created    |
+|     400     | Bad Request  |
+|     401     | Unauthorized | 
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  http://localhost/api/games \
+  -d '{"variantId":1}'
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Lobby created example.
+>
+> Status: `201 CREATED`
+
+```json
+{
+  "class": [
+    "game",
+    "make-move",
+    "exit-game"
+  ],
+  "properties": {
+    "id": 1,
+    "state": {
+      "name": "finished"
+    },
+    "variant": {
+      "id": 1,
+      "name": "freestyle",
+      "openingRule": "none",
+      "boardSize": 15
+    },
+    "board": {
+      "grid": [],
+      "winner": "B"
+    },
+    "createdAt": "2023-12-09T15:41:13Z",
+    "updatedAt": "2023-12-09T15:41:14Z",
+    "hostId": 7,
+    "guestId": 8
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/1"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "Make Move",
+      "href": "/api/games/1/move",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "col",
+          "type": "text",
+          "value": null
+        },
+        {
+          "name": "row",
+          "type": "number",
+          "value": null
+        }
+      ],
+      "requireAuth": [
+        true
+      ]
+    },
+    {
+      "name": "Exit Game",
+      "href": "/api/games/1/exit",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "properties": {
+        "id": 7,
+        "username": "user-1132257373105219752",
+        "email": "email@1489387210923067713.com"
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/7"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ]
+    },
+    {
+      "properties": {
+        "id": 8,
+        "username": "user-8038795331941020073",
+        "email": "email@1019835312111379755.com"
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/8"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ]
+    }
+  ],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+> [!IMPORTANT]
+> Game created example.
+>
+> Status: `201 CREATED`
+
+```json
+{
+  "class": [
+    "game",
+    "make-move",
+    "exit-game"
+  ],
+  "properties": {
+    "message": "Joined the game successfully with id=87",
+    "id": 87
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/87"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "Make Move",
+      "href": "/api/games/87/move",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "col",
+          "type": "text",
+          "value": null
+        },
+        {
+          "name": "row",
+          "type": "number",
+          "value": null
+        }
+      ],
+      "requireAuth": [
+        true
+      ]
+    },
+    {
+      "name": "Exit Game",
+      "href": "/api/games/87/exit",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get a game
+
+> [!NOTE]
+> Returns the game with the given id.
+
+#### Path Parameters
+
+- **id** - the game's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+|     404     |  Not Found  |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/games/1
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "game",
+    "make-move",
+    "exit-game"
+  ],
+  "properties": {
+    "id": 1,
+    "state": {
+      "name": "finished"
+    },
+    "variant": {
+      "id": 1,
+      "name": "freestyle",
+      "openingRule": "none",
+      "boardSize": 15
+    },
+    "board": {
+      "grid": [],
+      "winner": "B"
+    },
+    "createdAt": "2023-12-09T15:41:13Z",
+    "updatedAt": "2023-12-09T15:41:14Z",
+    "hostId": 7,
+    "guestId": 8
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/1"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "Make Move",
+      "href": "/api/games/1/move",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "col",
+          "type": "text",
+          "value": null
+        },
+        {
+          "name": "row",
+          "type": "number",
+          "value": null
+        }
+      ],
+      "requireAuth": [
+        true
+      ]
+    },
+    {
+      "name": "Exit Game",
+      "href": "/api/games/1/exit",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "properties": {
+        "id": 7,
+        "username": "user-1132257373105219752",
+        "email": "email@1489387210923067713.com"
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/7"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ]
+    },
+    {
+      "properties": {
+        "id": 8,
+        "username": "user-8038795331941020073",
+        "email": "email@1019835312111379755.com"
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/users/8"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/user"
+      ]
+    }
+  ],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Make a game move
+
+> [!NOTE]
+> Makes a move in the game with the given id.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### Path Parameters
+
+- **id** - the game's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### Body Parameters
+
+- **col** - the column of the move.
+  - Required: `true`
+  - Type: `number`
+  - Range: `a-z`
+
+- **row** - the row of the move.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     400     | Bad Request  |
+|     401     | Unauthorized |
+|     404     |  Not Found   |
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  http://localhost/api/games/1/move \
+  -d '{"col":"a","row":1}'
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "game"
+  ],
+  "properties": {
+    "id": 87,
+    "state": {
+      "name": "in_progress"
+    },
+    "variant": {
+      "id": 1,
+      "name": "freestyle",
+      "openingRule": "none",
+      "boardSize": 15
+    },
+    "board": {
+      "grid": [
+        "a7-w"
+      ],
+      "turn": {
+        "player": "B",
+        "timeLeftInSec": {
+          "value": 60
+        }
+      }
+    },
+    "createdAt": "2023-12-18T13:50:34Z",
+    "updatedAt": "2023-12-18T14:00:09Z",
+    "hostId": 895,
+    "guestId": 896
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/87/move"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [
+    {
+      "properties": {
+        "id": 87,
+        "state": {
+          "name": "in_progress"
+        },
+        "variant": {
+          "id": 1,
+          "name": "freestyle",
+          "openingRule": "none",
+          "boardSize": 15
+        },
+        "board": {
+          "grid": [
+            "a7-w"
+          ],
+          "turn": {
+            "player": "B",
+            "timeLeftInSec": {
+              "value": 60
+            }
+          }
+        },
+        "createdAt": "2023-12-18T13:50:34Z",
+        "updatedAt": "2023-12-18T14:00:09Z",
+        "hostId": 895,
+        "guestId": 896
+      },
+      "links": [
+        {
+          "rel": [
+            "self"
+          ],
+          "href": "/api/games/87"
+        }
+      ],
+      "rel": [
+        "https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/game"
+      ]
+    }
+  ],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Exit a game
+
+> [!NOTE]
+> Exits the game with the given id.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### Path Parameters
+
+- **id** - the game's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     401     | Unauthorized |
+|     404     |  Not Found   |
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Authorization: Bearer <TOKEN>" \
+  http://localhost/api/games/87/exit
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "game"
+  ],
+  "properties": {
+    "userId": 895,
+    "gameId": 87,
+    "message": "User with id <895> left the Game with id <87>."
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/87/exit"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get game variants
+
+> [!NOTE]
+> Returns the available game variants.
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/games/variants
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "variants"
+  ],
+  "properties": [
+    {
+      "id": {
+        "value": 1
+      },
+      "name": "FREESTYLE",
+      "openingRule": "NONE",
+      "boardSize": "FIFTEEN"
+    },
+    {
+      "id": {
+        "value": 2
+      },
+      "name": "OMOK",
+      "openingRule": "PRO",
+      "boardSize": "NINETEEN"
+    }
+  ],
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/variants"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+### Check lobby status
+
+> [!NOTE]
+> Checks lobby current status.
+>
+> Serves as a polling endpoint for the client application to check if the user is still waiting in the lobby,
+> or if a second player has joined the lobby.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### Path Parameters
+
+- **id** - the lobby's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     401     | Unauthorized |
+|     404     |  Not Found   |
+|     403     |  Forbidden   |
+
+#### Request Example
+
+```curl
+curl \
+  -X POST \
+  -H "Authorization: Bearer <TOKEN>" \
+  http://localhost/api/lobby/89
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Lobby is still waiting for a second player to join.
+>
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "lobby",
+    "exit-lobby"
+  ],
+  "properties": {
+    "message": "Waiting in lobby with id <91>",
+    "id": 91
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/lobby/91"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "Exit Lobby",
+      "href": "/api/lobby/91/exit",
+      "method": "DELETE",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+> [!IMPORTANT]
+> A second player has joined the lobby.
+>
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "game",
+    "exit-game",
+    "make-move"
+  ],
+  "properties": {
+    "message": "Already in game with id <88>",
+    "id": 88
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/games/88"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [
+    {
+      "name": "Exit Game",
+      "href": "/api/games/88",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [],
+      "requireAuth": [
+        true
+      ]
+    },
+    {
+      "name": "Make Move",
+      "href": "/api/games/88",
+      "method": "POST",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "col",
+          "type": "text",
+          "value": null
+        },
+        {
+          "name": "row",
+          "type": "number",
+          "value": null
+        }
+      ],
+      "requireAuth": [
+        true
+      ]
+    }
+  ],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Exit a lobby
+
+> [!NOTE]
+> Exits the lobby with the given id.
+
+> [!WARNING]
+> Requires authentication. See [Requests](#requests) for more information.
+
+#### Path Parameters
+
+- **id** - the lobby's id.
+  - Required: `true`
+  - Type: `number`
+  - Range: `1-`
+
+#### HTTP Response Status codes
+
+| Status Code | Description  |
+|:-----------:|:------------:|
+|     200     |      OK      |
+|     401     | Unauthorized |
+|     404     |  Not Found   |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/lobby/92/exit
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "lobby-exit"
+  ],
+  "properties": {
+    "lobbyId": 92,
+    "message": "Lobby was exited successfully."
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/lobby/92/exit"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    true
+  ]
+}
+```
+
+### Get system information
+
+> [!NOTE]
+> Returns the system information.
+
+#### HTTP Response Status codes
+
+| Status Code | Description |
+|:-----------:|:-----------:|
+|     200     |     OK      |
+
+#### Request Example
+
+```curl
+curl http://localhost/api/system
+```
+
+#### Response Example
+
+> [!IMPORTANT]
+> Status: `200 OK`
+
+```json
+{
+  "class": [
+    "system-info"
+  ],
+  "properties": {
+    "gameName": "Gomoku Royale API",
+    "version": "0.0.1",
+    "description": "Gomoku Royale is an online multiplayer strategy game where players compete to connect five of their pieces in a row, column or diagonally.",
+    "releaseDate": "18/12/2023",
+    "authors": [
+      {
+        "firstName": "Diogo",
+        "lastName": "Rodrigues",
+        "gitHubUrl": "https://github.com/Diogofmr"
+      },
+      {
+        "firstName": "Tiago",
+        "lastName": "Frazão",
+        "gitHubUrl": "https://github.com/TiagoFrazao01"
+      },
+      {
+        "firstName": "Francisco",
+        "lastName": "Engenheiro",
+        "gitHubUrl": "https://github.com/FranciscoEngenheiro"
+      }
+    ]
+  },
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "/api/system"
+    }
+  ],
+  "recipeLinks": [],
+  "actions": [],
+  "entities": [],
+  "requireAuth": [
+    false
+  ]
+}
+```
+
+## Representations
+
+### Game Representation
+
+> [!IMPORTANT]
+> The `state` property can only be `in_progress` or `finished`.
+>
+> The `winner` property can only be `B` or `W`.
+>
+> The `turn` property can only be `B` or `W`.
+>
+> Both `winner` and `turn` properties might not be present in the representation, depending on the game state.
+> - If the state is `in_progress` the `turn` property is present.
+> - If the state is `finished`, the `turn` property is not present, and:
+    >
+- a draw is represented by the absence of the `winner` property.
+>   - a win is represented by the presence of the `winner` property.
+>
+> The `createdAt` and `updatedAt` properties are in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+> format `YYYY-MM-DDTHH:MM:SSZ`.
+>
+> Moves in the `grid` property are represented as `colrow-player` format where `col` is the column,
+> `row` is the row and `player` is the player that made the move (`w`-White, `b`-Black).
+
+```json
+{
+  "id": 87,
+  "state": {
+    "name": "finished"
+  },
+  "variant": {
+    "id": 1,
+    "name": "freestyle",
+    "openingRule": "none",
+    "boardSize": 15
+  },
+  "board": {
+    "grid": [
+      "a7-w"
+    ],
+    "winner": "B"
+  },
+  "createdAt": "2023-12-18T13:50:34Z",
+  "updatedAt": "2023-12-18T14:00:56Z",
+  "hostId": 895,
+  "guestId": 896
+}
+```
+
+### Paginated Result Representation
+
+> [!IMPORTANT]
+>
+> The `currentPage` property is the current page number.
+>
+> The `itemsPerPage` property is the number of items per page, that could be less or equal to `itemsPerPage` query
+> parameter.
+>
+> The `totalPages` property is the total number of pages that can be transversed with the received `itemsPerPage` query
+> parameter.
+>
+> The `items` property is an array of items of the retrieved page.
+
+```json
+{
+  "currentPage": 1,
+  "itemsPerPage": 10,
+  "totalPages": 57,
+  "items": []
+}
+```
