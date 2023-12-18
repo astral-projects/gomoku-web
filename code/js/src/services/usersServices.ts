@@ -8,7 +8,7 @@ import { RegisterOutput } from './models/users/RegisterOuputModel';
 import { PaginatedResult } from './models/users/PaginatedResultModel';
 import { UserStats } from '../domain/UserStats';
 import { UserStatsOutput } from './models/users/UserStatsOutputModel';
-import { findUri } from '../api/apiRecipes';
+import { findUri, replaceParams } from '../api/apiRecipes';
 
 export async function register(body: RegisterInputModel) {
     return await callApi<RegisterInputModel, RegisterOutput>(await findUri('register'), Method.POST, body);
@@ -27,13 +27,13 @@ export async function me() {
 }
 
 export async function fetchUserStatsByUserId(userId: string) {
-    const uri = `/api/users/${userId}/stats`;
-    return await callApi<unknown, UserStatsOutput>(uri, Method.GET, {});
+    const url = replaceParams(await findUri('user/stats'), { user_id: userId });
+    return await callApi<unknown, UserStatsOutput>(url, Method.GET, {});
 }
 
 export async function fetchUserStatsBySearchTerm(term: string) {
-    const uri = `/api/users/stats/search?term=${term}`;
-    return await callApi<unknown, PaginatedResult<UserStats>>(uri, Method.GET, {});
+    const url = replaceParams(await findUri('users/search'), { q: term });
+    return await callApi<unknown, PaginatedResult<UserStats>>(url, Method.GET, {});
 }
 
 export async function fetchUsersStats(uri?: string) {

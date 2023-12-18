@@ -4,19 +4,21 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Pages](#pages)
-- [Code Structure](#code-structure)
-- [API](#api)
+- [Gomoku - Backend Documentation 🉐](#gomoku---backend-documentation-)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Pages](#pages)
+  - [Code Structure](#code-structure)
+  - [API](#api)
     - [Connection](#connection)
     - [Service](#service)
     - [Recipes](#recipes)
-- [React Context](#react-context)
-- [Webpack Configuration](#webpack-configuration)
-- [Authentication](#authentication)
-- [Tests](#tests)
-- [Implementation Challenges](#implementation-challenges)
-- [Further Improvements](#further-improvements)
+  - [React Context](#react-context)
+  - [Webpack Configuration](#webpack-configuration)
+  - [Authentication](#authentication)
+  - [Tests](#tests)
+    - [Implementation Challenges](#implementation-challenges)
+    - [Further Improvements](#further-improvements)
 
 ---
 
@@ -115,6 +117,7 @@ The frontend code is organized in the following way:
     - `public` - Contains the `index.html` and the `index.css` files;
     - `src`
         - `api` - Exposes generic modules to communicate with the API;
+        - `components` - Contains some React components used globally in the application;
         - `pages` - Contains the React components and pages used in the application;
         - `domain` - Contains the domain classes used in the application;
       - `services` - Contains the services used in the application, the media types used and the input and output

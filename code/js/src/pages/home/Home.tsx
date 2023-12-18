@@ -1,9 +1,13 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { useCurrentUserId } from '../GomokuContainer';
+import { Navigate } from 'react-router-dom';
 
 export function Home() {
+    const user = useCurrentUserId();
     return (
         <div>
+            {user ? <Navigate to="/me" /> : null}
             <h1>Home</h1>
             <p>Welcome to the Gomoku game!</p>
             <ul>
@@ -11,16 +15,7 @@ export function Home() {
                     <Link to="/login">Login</Link>
                 </li>
                 <li>
-                    <Link to="/register">Register</Link>
-                </li>
-                <li>
-                    <Link to="/rankings">Rankings</Link>
-                </li>
-                <li>
-                    <Link to="/logout">Logout</Link>
-                </li>
-                <li>
-                    <Link to="/about">About</Link>
+                    <Link to="/register">Sign up</Link>
                 </li>
             </ul>
         </div>

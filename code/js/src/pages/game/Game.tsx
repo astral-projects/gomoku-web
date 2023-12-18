@@ -7,6 +7,7 @@ import { renderBoard } from './BoardDraw';
 import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
 import { useParams, Link } from 'react-router-dom';
 import { Entity } from '../../services/media/siren/Entity';
+import { UserEntity } from '../../services/models/users/UserEntityOutputModel';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
@@ -86,19 +87,19 @@ function game(
     game: GameOutput,
     dispatch: React.Dispatch<Action>,
     userId: number,
-    users: Entity<unknown>[],
+    users: Entity<UserEntity>[],
     opponent?: string
 ) {
-    const opponentUsername: string = 'sasas';
-    // if (opponent == undefined) {
-    //     if (game.properties.hostId === userId) {
-    //         const opponent = users.find(e => e.properties.id !== game.properties.hostId);
-    //         opponentUsername = opponent ? opponent.properties.username : undefined;
-    //     } else {
-    //         const opponent = users.find(e => e.properties.id !== game.properties.guestId);
-    //         opponentUsername = opponent ? opponent.properties.username : undefined;
-    //     }
-    // }
+    let opponentUsername: string;
+    if (opponent == undefined) {
+        if (game.properties.hostId === userId) {
+            const opponent = users.find(e => e.properties.id !== game.properties.hostId);
+            opponentUsername = opponent ? opponent.properties.username : undefined;
+        } else {
+            const opponent = users.find(e => e.properties.id !== game.properties.guestId);
+            opponentUsername = opponent ? opponent.properties.username : undefined;
+        }
+    }
     const opp = opponent !== undefined ? opponent : opponentUsername;
     console.log('opp' + opp);
     console.log('dentro do gamew');
@@ -176,7 +177,7 @@ function fetchGame(
             dispatch({ type: 'error', message: errorData.detail });
             setIsFetching(false);
         } else if (successData.class.find(c => c == 'game') != undefined) {
-            const users = successData.entities;
+            const users = successData.entities as Entity<UserEntity>[];
             game(successData, dispatch, userId, users, opponent);
             setIsFetching(false);
         }
@@ -273,7 +274,7 @@ export function Game() {
             return <div>Loading game...</div>;
         case 'notYourTurn':
             return (
-                <>
+                <div>
                     <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
                     <div>Turn:Not your turn </div>
                     <div>Player: {username}</div>
@@ -283,12 +284,11 @@ export function Game() {
                             Leave Game
                         </Link>
                     </div>
-                    <div></div>
-                </>
+                </div>
             );
         case 'your-turn':
             return (
-                <>
+                <div>
                     <div>
                         {renderBoard(
                             state.boardSize,
@@ -311,11 +311,11 @@ export function Game() {
                             Leave Game
                         </Link>
                     </div>
-                </>
+                </div>
             );
         case 'game-state':
             return (
-                <>
+                <div>
                     <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
                     <div> {state.message}</div>
                     <div> Player: {username}</div>
@@ -323,7 +323,7 @@ export function Game() {
                     <div>
                         <Link to={'/games'}>Start New Game</Link>
                     </div>
-                </>
+                </div>
             );
     }
 }

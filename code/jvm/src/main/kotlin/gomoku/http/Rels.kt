@@ -16,39 +16,35 @@ object Rels {
 
     val LAST = LinkRelation("last")
 
-    val USER = LinkRelation("$BASE/user")
+    val SYSTEM = LinkRelation("$BASE/system-info")
 
-    val GAME = LinkRelation("$BASE/game")
+    val LOGIN = LinkRelation("$BASE/login")
 
-    val SYSTEM_INFO = LinkRelation("$BASE/system-info")
+    val LOGOUT = LinkRelation("$BASE/logout")
 
-    val SYSTEM_INFO_RECIPE = LinkRelation("$BASE/system")
+    val REGISTER = LinkRelation("$BASE/register")
 
-    val USER_STATS = LinkRelation("$BASE/user-stats")
+    val ME = LinkRelation("$BASE/me")
 
-    val USERS_STATS = LinkRelation("$BASE/users-stats")
+    val USER = LinkRelation("$BASE/users/user")
 
-    val USER_RECIPE = LinkRelation("$BASE/users/{user_id}")
+    val GAMES = LinkRelation("$BASE/find-game")
 
-    val GAME_RECIPE = LinkRelation("$BASE/games/{game_id}")
+    val GAME = LinkRelation("$BASE/games/game")
 
-    val GAME_VARIANTS_RECIPE = LinkRelation("$BASE/games/variants")
+    val MAKE_MOVE = LinkRelation("$BASE/games/game/move")
 
-    val GET_IS_IN_LOBBY_RECIPE = LinkRelation("$BASE/lobbies/{lobby_id}")
+    val EXIT_GAME = LinkRelation("$BASE/games/game/exit-game")
 
-    val GET_USERS_STATS_BY_TERM_RECIPE = LinkRelation("$BASE/users/stats/search?q={query}{&page,itemPerPage}")
+    val VARIANTS = LinkRelation("$BASE/games/variants")
 
-    val GET_USER_STATS_BY_ID_RECIPE = LinkRelation("$BASE/users/{user_id}/stats")
+    val LOBBY = LinkRelation("$BASE/lobbies/lobby")
 
-    val GET_USERS_STATS_RECIPE = LinkRelation("$BASE/users/stats?q={query}{&page,itemPerPage}")
+    val EXIT_LOBBY = LinkRelation("$BASE/lobbies/lobby/exit-lobby")
 
-    val REGISTER_RECIPE = LinkRelation("$BASE/register")
+    val USER_STATS_BY_TERM = LinkRelation("$BASE/users/search")
 
-    val LOGIN_RECIPE = LinkRelation("$BASE/login")
+    val USER_STATS = LinkRelation("$BASE/users/user/stats")
 
-    val LOGOUT_RECIPE = LinkRelation("$BASE/users/logout")
-
-    val FIND_GAME_RECIPE = LinkRelation("$BASE/games")
-
-    val ME_RECIPE = LinkRelation("$BASE/users/home")
+    val USERS_STATS = LinkRelation("$BASE/users/stats")
 }

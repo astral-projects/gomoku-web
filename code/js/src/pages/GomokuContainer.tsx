@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getCookie } from '../pages/utils/getCookies';
-import { Link } from 'react-router-dom';
+import { Navbar } from '../components/NavBar';
 
 type ContextType = {
     userName: string | undefined;
@@ -16,24 +16,6 @@ const GomokuContext = createContext<ContextType>({
     userId: undefined,
     setUserId: () => {},
 });
-
-function Navbar() {
-    const user = useCurrentUserName();
-    return (
-        <nav>
-            <ul style={{ listStyleType: 'none', display: 'flex', justifyContent: 'space-around' }}>
-                <li>{user ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>}</li>
-                <li>{user ? <Link to="/me">Home</Link> : <Link to="/">Home</Link>}</li>
-                <li>
-                    <Link to="/rankings">Rankings</Link>
-                </li>
-                <li>
-                    <Link to="/about">About</Link>
-                </li>
-            </ul>
-        </nav>
-    );
-}
 
 export function GomokuContainer({ children }: { children: React.ReactNode }) {
     const [userName, setUserName] = useState(undefined);
