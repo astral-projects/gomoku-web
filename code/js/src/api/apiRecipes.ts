@@ -1,7 +1,7 @@
 import { promise } from '../index';
 
 export const recipeUris = [];
-const PORT = 4000;
+const PORT = 8088;
 const BASE = `http://localhost:${PORT}`;
 
 export type Recipe = {
@@ -80,4 +80,43 @@ export async function findUri(relName: string) {
     } else {
         console.log('No recipies found');
     }
+}
+
+/**
+ * Replaces the params in the uri with the given params
+ * Example:
+ * /api/users/{userId} with {userId: 1} => /api/users/1
+ * /api/users/{userId}/friends/{friendId} with {userId: 1, friendId: 2} => /api/users/1/friends/2
+ * /api/users/stats?q={query}{&page,itemPerPage} with {query: 'test', page: 1, itemPerPage: 10} => /api/users/stats?q=test&page=1&itemPerPage=10
+ *
+ * @param uri - The uri to replace the params
+ * @param params - The params to replace
+ * @returns
+ */
+export function replaceParams(uri: string, params: { [key: string ]: number | string }) {
+    const paramNames = getParamNames(uri);
+    if (paramNames.length > 0) {
+        paramNames.forEach(paramName => {
+            const paramValue = params[paramName] as string;
+            if (paramValue) {
+                uri = uri.replace(`{${paramName}}`, paramValue);
+            }
+        });
+    }
+    return uri;
+}
+
+/**
+ * Returns the param names of the uri
+ * @param uri - The uri to get the param names
+ * @returns
+ */
+function getParamNames(uri: string) {
+    const paramNames = [];
+    const regex = /{([^}]+)}/g;
+    let match: Array<string> | null;
+    while ((match = regex.exec(uri))) {
+        paramNames.push(match[1]);
+    }
+    return paramNames;
 }

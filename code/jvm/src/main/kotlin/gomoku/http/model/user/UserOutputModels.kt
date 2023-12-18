@@ -8,6 +8,7 @@ import gomoku.domain.user.AuthenticatedUser
 import gomoku.domain.user.User
 import gomoku.domain.user.UserStatsInfo
 import gomoku.http.Rels
+import gomoku.http.UriTemplates
 import gomoku.http.Uris
 import gomoku.http.media.siren.SirenModel
 import gomoku.http.media.siren.siren
@@ -28,19 +29,22 @@ class UserOutputModels {
         siren(HomeOutputModel()) {
             clazz("home")
             link(Uris.Users.home(), Rels.SELF)
-            recipeLink(Uris.System.GET_SYSTEM_INFO, Rels.SYSTEM_INFO_RECIPE)
-            recipeLink(Uris.Users.ME, Rels.ME_RECIPE)
-            recipeLink(Uris.Users.REGISTER, Rels.REGISTER_RECIPE)
-            recipeLink(Uris.Users.TOKEN, Rels.LOGIN_RECIPE)
-            recipeLink(Uris.Users.LOGOUT, Rels.LOGOUT_RECIPE)
-            recipeLink(Uris.Games.FIND_GAME, Rels.FIND_GAME_RECIPE)
-            recipeLink(Uris.Games.GET_BY_ID, Rels.GAME_RECIPE)
-            recipeLink(Uris.Games.GET_VARIANTS, Rels.GAME_VARIANTS_RECIPE)
-            recipeLink(Uris.Lobby.GET_IS_IN_LOBBY, Rels.GET_IS_IN_LOBBY_RECIPE)
-            recipeLink(Uris.Users.GET_BY_ID, Rels.USER_RECIPE)
-            recipeLink(Uris.Users.STATS_BY_TERM, Rels.GET_USERS_STATS_BY_TERM_RECIPE)
-            recipeLink(Uris.Users.STATS_BY_ID, Rels.GET_USER_STATS_BY_ID_RECIPE)
-            recipeLink(Uris.Users.STATS, Rels.GET_USERS_STATS_RECIPE)
+            recipeLink(UriTemplates.SYSTEM_INFO, Rels.SYSTEM)
+            recipeLink(UriTemplates.ME, Rels.ME)
+            recipeLink(UriTemplates.REGISTER, Rels.REGISTER)
+            recipeLink(UriTemplates.LOGIN, Rels.LOGIN)
+            recipeLink(UriTemplates.LOGOUT, Rels.LOGOUT)
+            recipeLink(UriTemplates.GAME, Rels.GAME)
+            recipeLink(UriTemplates.FIND_GAME, Rels.GAMES)
+            recipeLink(UriTemplates.EXIT_GAME, Rels.EXIT_GAME)
+            recipeLink(UriTemplates.MAKE_MOVE, Rels.MAKE_MOVE)
+            recipeLink(UriTemplates.VARIANTS, Rels.VARIANTS)
+            recipeLink(UriTemplates.LOBBY, Rels.LOBBY)
+            recipeLink(UriTemplates.EXIT_LOBBY, Rels.EXIT_LOBBY)
+            recipeLink(UriTemplates.USER, Rels.USER)
+            recipeLink(UriTemplates.USERS_STATS_BY_TERM, Rels.USER_STATS_BY_TERM)
+            recipeLink(UriTemplates.USER_STATS, Rels.USER_STATS)
+            recipeLink(UriTemplates.USERS_STATS, Rels.USERS_STATS)
         }
 
     /**
@@ -160,7 +164,7 @@ class UserOutputModels {
                 }
             }
 
-            entity(SystemInfoOutputModel.serializeFrom(systemInfo), Rels.SYSTEM_INFO) {
+            entity(SystemInfoOutputModel.serializeFrom(systemInfo), Rels.SYSTEM) {
                 clazz("system-info")
                 link(Uris.System.getSystemInfo(), Rels.SELF)
             }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/usersServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { LoginOutput } from '../../services/models/users/LoginOuputModel';
@@ -109,6 +109,9 @@ export function Login() {
                     </div>
                     <div>
                         <button type="submit">Login</button>
+                    </div>
+                    <div>
+                        Dont have an account? <Link to="/register">Sign Up</Link>
                     </div>
                 </fieldset>
                 {state.tag === 'editing' && state.error}

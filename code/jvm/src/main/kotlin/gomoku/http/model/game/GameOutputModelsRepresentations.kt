@@ -156,12 +156,6 @@ class GameOutputModelsRepresentations {
             clazz("game")
             requireAuth()
             link(Uris.Games.makeMove(gameId.value), Rels.SELF)
-            entity(
-                GameOutputModel.serializeFrom(game),
-                Rels.GAME
-            ) {
-                link(Uris.Games.byId(gameId.value), Rels.SELF)
-            }
         }
 
     fun variants(variants: List<GameVariant>) =
