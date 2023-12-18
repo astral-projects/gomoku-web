@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getCookie } from '../pages/utils/getCookies';
+import { Link } from 'react-router-dom';
 
 type ContextType = {
     userName: string | undefined;
@@ -15,6 +16,27 @@ const GomokuContext = createContext<ContextType>({
     userId: undefined,
     setUserId: () => {},
 });
+
+const Navbar = () => {
+    return (
+        <nav>
+            <ul style={{ listStyleType: 'none', display: 'flex', justifyContent: 'space-around' }}>
+                <li>
+                    <Link to="/">Home</Link>
+                </li>
+                <li>
+                    <Link to="/rankings">Rankings</Link>
+                </li>
+                <li>
+                    <Link to="/about">About</Link>
+                </li>
+                <li>
+                    <Link to="/logout">Logout</Link>
+                </li>
+            </ul>
+        </nav>
+    );
+};
 
 export function GomokuContainer({ children }: { children: React.ReactNode }) {
     const [userName, setUserName] = useState(undefined);
@@ -42,6 +64,7 @@ export function GomokuContainer({ children }: { children: React.ReactNode }) {
         <GomokuContext.Provider
             value={{ userName: userName, setUserName: setUserName, userId: userId, setUserId: setUserId }}
         >
+            <Navbar />
             {children}
         </GomokuContext.Provider>
     );
