@@ -16,32 +16,22 @@ type State =
     | { tag: 'loading' }
     | { tag: 'notYourTurn'; boardSize: number; grid: string[]; opponent: string }
     | { tag: 'your-turn'; boardSize: number; grid: string[]; opponent: string; message: string | undefined }
-    | { tag: 'win'; boardSize: number; grid: string[]; opponent: string }
-    | { tag: 'draw'; boardSize: number; grid: string[]; opponent: string }
-    | { tag: 'lost'; boardSize: number; grid: string[]; opponent: string }
+    | { tag: 'game-state'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { tag: 'error'; message: string };
 
-type Action =
+export type Action =
     | { type: 'start-fetching' }
     | { type: 'set-turn'; isYourTurn: boolean; BOARD_SIZE: number; grid: string[]; opponent: string; message?: string }
     | { type: 'set-not-your-turn'; BOARD_SIZE: number; grid: string[]; opponent: string }
-    | { type: 'win'; BOARD_SIZE: number; grid: string[]; opponent: string }
-    | { type: 'draw'; BOARD_SIZE: number; grid: string[]; opponent: string }
-    | { type: 'lose'; BOARD_SIZE: number; grid: string[]; opponent: string }
+    | { type: 'win'; BOARD_SIZE: number; grid: string[]; opponent: string; message: string }
+    | { type: 'draw'; BOARD_SIZE: number; grid: string[]; opponent: string; message: string }
+    | { type: 'lose'; BOARD_SIZE: number; grid: string[]; opponent: string; message: string }
     | { type: 'error'; message: string };
 
 function gameReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'start-fetching':
             return { tag: 'loading' };
-        case 'set-not-your-turn':
-            return {
-                ...state,
-                tag: 'notYourTurn',
-                boardSize: action.BOARD_SIZE,
-                grid: action.grid,
-                opponent: action.opponent,
-            };
         case 'set-turn':
             return {
                 tag: 'your-turn',
@@ -50,10 +40,10 @@ function gameReducer(state: State, action: Action): State {
                 opponent: action.opponent,
                 message: action.message,
             };
-        case 'win':
+        case 'set-not-your-turn':
             return {
                 ...state,
-                tag: 'win',
+                tag: 'notYourTurn',
                 boardSize: action.BOARD_SIZE,
                 grid: action.grid,
                 opponent: action.opponent,
@@ -61,18 +51,29 @@ function gameReducer(state: State, action: Action): State {
         case 'lose':
             return {
                 ...state,
-                tag: 'lost',
+                tag: 'game-state',
                 boardSize: action.BOARD_SIZE,
                 grid: action.grid,
                 opponent: action.opponent,
+                message: action.message,
+            };
+        case 'win':
+            return {
+                ...state,
+                tag: 'game-state',
+                boardSize: action.BOARD_SIZE,
+                grid: action.grid,
+                opponent: action.opponent,
+                message: action.message,
             };
         case 'draw':
             return {
                 ...state,
-                tag: 'draw',
+                tag: 'game-state',
                 boardSize: action.BOARD_SIZE,
                 grid: action.grid,
                 opponent: action.opponent,
+                message: action.message,
             };
         case 'error':
             return { ...state, tag: 'error', message: action.message };
@@ -113,6 +114,7 @@ function game(
                     BOARD_SIZE: game.properties.variant.boardSize,
                     grid: game.properties.board.grid,
                     opponent: opp,
+                    message: 'You won the game!',
                 });
             } else {
                 dispatch({
@@ -120,6 +122,7 @@ function game(
                     BOARD_SIZE: game.properties.variant.boardSize,
                     grid: game.properties.board.grid,
                     opponent: opp,
+                    message: 'You lost the game!',
                 });
             }
         } else {
@@ -129,6 +132,7 @@ function game(
                 BOARD_SIZE: game.properties.variant.boardSize,
                 grid: game.properties.board.grid,
                 opponent: opp,
+                message: 'Draw!',
             });
         }
     } else {
@@ -155,7 +159,14 @@ function game(
     }
 }
 
-function fetchGame(currentGameId, opponent, isFetching, userId, dispatch, setIsFetching) {
+function fetchGame(
+    currentGameId: number,
+    opponent: string,
+    isFetching: boolean,
+    userId: number,
+    dispatch: (action: Action) => void,
+    setIsFetching: (isFetching: boolean) => void
+) {
     if (isFetching) return;
     setIsFetching(true);
     getGame(currentGameId).then(result => {
@@ -172,6 +183,55 @@ function fetchGame(currentGameId, opponent, isFetching, userId, dispatch, setIsF
     });
 }
 
+function handleMakeMove(
+    rowIndex: number,
+    colIndex: number,
+    size: number,
+    grid: string[],
+    opponent: string,
+    currentGameId: number,
+    userId: number,
+    dispatch: (action: Action) => void,
+    isMoveInProgress: boolean,
+    setIsMoveInProgress: (isMoveInProgress: boolean) => void
+) {
+    if (isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
+        return;
+    }
+    setIsMoveInProgress(true);
+    const colLetter = columnIndexToLetter(colIndex - 1);
+    makeMove(currentGameId, { col: colLetter, row: rowIndex }).then(result => {
+        const errorData = result.json as ProblemModel;
+        const successData = result.json as unknown as GameOutput;
+        if (result.contentType === 'application/problem+json') {
+            if (errorData.detail.includes('The game with id') && errorData.detail.includes('is already finished')) {
+                dispatch({
+                    type: 'win',
+                    BOARD_SIZE: size,
+                    grid: grid,
+                    opponent: opponent,
+                    message: 'You won the game!',
+                });
+            } else if (errorData.title == 'Position taken') {
+                dispatch({
+                    type: 'set-turn',
+                    isYourTurn: true,
+                    BOARD_SIZE: size,
+                    grid: grid,
+                    opponent: opponent,
+                    message: errorData.detail,
+                });
+            } else {
+                dispatch({ type: 'error', message: errorData.detail });
+            }
+            setIsMoveInProgress(false);
+        } else if (successData.class.find(c => c == 'game') != undefined) {
+            game(successData, dispatch, userId, undefined, opponent);
+            setIsMoveInProgress(false);
+        }
+    });
+}
+
 export function Game() {
     const [state, dispatch] = React.useReducer(gameReducer, { tag: 'loading' });
     const userId = useCurrentUserId();
@@ -180,38 +240,6 @@ export function Game() {
     const currentGameId = parseInt(gameId);
     const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
     const [isFetching, setIsFetching] = React.useState(false);
-
-    function handleMakeMove(rowIndex: number, colIndex: number, size: number, grid: string[], opponent: string) {
-        if (isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
-            return;
-        }
-        setIsMoveInProgress(true);
-        const colLetter = columnIndexToLetter(colIndex - 1);
-        makeMove(currentGameId, { col: colLetter, row: rowIndex }).then(result => {
-            const errorData = result.json as ProblemModel;
-            const successData = result.json as unknown as GameOutput;
-            if (result.contentType === 'application/problem+json') {
-                if (errorData.detail.includes('The game with id') && errorData.detail.includes('is already finished')) {
-                    dispatch({ type: 'win', BOARD_SIZE: size, grid: grid, opponent: opponent });
-                } else if (errorData.title == 'Position taken') {
-                    dispatch({
-                        type: 'set-turn',
-                        isYourTurn: true,
-                        BOARD_SIZE: size,
-                        grid: grid,
-                        opponent: opponent,
-                        message: errorData.detail,
-                    });
-                } else {
-                    dispatch({ type: 'error', message: errorData.detail });
-                }
-                setIsMoveInProgress(false);
-            } else if (successData.class.find(c => c == 'game') != undefined) {
-                game(successData, dispatch, userId, undefined, opponent);
-                setIsMoveInProgress(false);
-            }
-        });
-    }
 
     function handleLeaveGame(
         gameId: number,
@@ -261,7 +289,19 @@ export function Game() {
         case 'your-turn':
             return (
                 <>
-                    <div>{renderBoard(state.boardSize, state.grid, state.opponent, handleMakeMove)}</div>
+                    <div>
+                        {renderBoard(
+                            state.boardSize,
+                            state.grid,
+                            state.opponent,
+                            currentGameId,
+                            userId,
+                            dispatch,
+                            isMoveInProgress,
+                            setIsMoveInProgress,
+                            handleMakeMove
+                        )}
+                    </div>
                     <div>Turn: Your turn </div>
                     <div>Player: {username}</div>
                     <div> Opponent:{state.opponent}</div>
@@ -273,36 +313,12 @@ export function Game() {
                     </div>
                 </>
             );
-        case 'lost':
+        case 'game-state':
             return (
                 <>
                     <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
-                    <div> You Lost the game... Player: {username}</div>
+                    <div> {state.message}</div>
                     <div> Player: {username}</div>
-                    <div> Opponent:{state.opponent}</div>
-                    <div>
-                        <Link to={'/games'}>Start New Game</Link>
-                    </div>
-                </>
-            );
-        case 'win':
-            return (
-                <>
-                    <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
-                    <div>You won the game! Player: {username}</div>
-                    <div>Player: {username}</div>
-                    <div> Opponent:{state.opponent}</div>
-                    <div>
-                        <Link to={'/games'}>Start New Game</Link>
-                    </div>
-                </>
-            );
-        case 'draw':
-            return (
-                <>
-                    <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
-                    <div>Draw</div>
-                    <div>Player: {username}</div>
                     <div> Opponent:{state.opponent}</div>
                     <div>
                         <Link to={'/games'}>Start New Game</Link>

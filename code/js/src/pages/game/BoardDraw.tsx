@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Action } from './Game';
 
 const cellSize = 30;
 const boardStyle = (boardSize): React.CSSProperties => ({
@@ -31,13 +32,23 @@ export function renderBoard(
     boardSize: number,
     grid: string[],
     opponnet: string,
-    handleIntersectionClick: (
+    currentGameId?: number,
+    userId?: number,
+    dispatch?: (action: Action) => void,
+    isMoveInProgress?: boolean,
+    setIsMoveInProgress?: (isMoveInProgress: boolean) => void,
+    handleIntersectionClick?: (
         rowIndex: number,
         colIndex: number,
         size: number,
         grid: string[],
-        opponent: string
-    ) => void = undefined
+        opponent: string,
+        currentGameId: number,
+        userId: number,
+        dispatch: (action: Action) => void,
+        isMoveInProgress: boolean,
+        setIsMoveInProgress: (isMoveInProgress: boolean) => void
+    ) => void
 ) {
     const parsedGrid = parseGrid(grid);
     return (
@@ -74,7 +85,19 @@ export function renderBoard(
                             style={intersectionStyle}
                             onClick={
                                 handleIntersectionClick
-                                    ? () => handleIntersectionClick(rowIndex, colIndex, boardSize, grid, opponnet)
+                                    ? () =>
+                                          handleIntersectionClick(
+                                              rowIndex,
+                                              colIndex,
+                                              boardSize,
+                                              grid,
+                                              opponnet,
+                                              currentGameId,
+                                              userId,
+                                              dispatch,
+                                              isMoveInProgress,
+                                              setIsMoveInProgress
+                                          )
                                     : undefined
                             }
                         >
