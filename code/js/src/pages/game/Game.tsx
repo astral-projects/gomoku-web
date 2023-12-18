@@ -5,7 +5,7 @@ import { ProblemModel } from '../../services/media/ProblemModel';
 import { GameOutput } from '../../services/models/games/GameOutputModel';
 import { renderBoard } from './BoardDraw';
 import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
@@ -62,7 +62,6 @@ export function Game() {
     const { gameId } = useParams();
     const currentGameId = parseInt(gameId);
     const [isMoveInProgress, setIsMoveInProgress] = React.useState(false);
-    const navigate = useNavigate();
 
     const [isFetching, setIsFetching] = React.useState(false);
 
@@ -162,7 +161,7 @@ export function Game() {
                     if (successData.properties.state.name == 'finished') {
                         if (successData.properties.board.winner != undefined) {
                             const isWin =
-                              successData.properties.board.winner == 'W'
+                                successData.properties.board.winner == 'W'
                                     ? successData.properties.hostId == userId
                                     : successData.properties.guestId == userId;
                             if (isWin) {

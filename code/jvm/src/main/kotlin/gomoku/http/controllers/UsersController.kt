@@ -53,8 +53,7 @@ class UsersController(
         const val DEFAULT_PAGE = "1"
         const val HEADER_SET_COOKIE_NAME = "Set-Cookie"
         const val AUTHORIZATION_COOKIE_NAME = "_autho"
-        const val USER_NAME_COOKIE = "user_name"
-        const val USER_ID_COOKIE = "user_id"
+        const val USER_COOKIE_NAME = "_user"
         const val USER_COOKIE_PROPS = "Path=/"
         const val AUTHORIZATION_COOKIE_PROPS = "HttpOnly; SameSite=Strict; Path=/"
         const val AUTHORIZATION_COOKIE_DELETE_PROPS =
@@ -205,11 +204,7 @@ class UsersController(
                                         // set the _user cookie with username value.
                                         .header(
                                             HEADER_SET_COOKIE_NAME,
-                                            "$USER_NAME_COOKIE=${loggedUser.username}; $USER_COOKIE_PROPS"
-                                        )
-                                        .header(
-                                            HEADER_SET_COOKIE_NAME,
-                                            "$USER_ID_COOKIE=${loggedUser.id}; $USER_COOKIE_PROPS"
+                                            "$USER_COOKIE_NAME=${loggedUser.username}, ${loggedUser.id}; $USER_COOKIE_PROPS"
                                         )
                                         .sirenResponse(
                                             userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)
@@ -246,8 +241,7 @@ class UsersController(
             is Success -> {
                 ResponseEntity.ok()
                     .header(HEADER_SET_COOKIE_NAME, "$AUTHORIZATION_COOKIE_NAME=; $AUTHORIZATION_COOKIE_DELETE_PROPS")
-                    .header(HEADER_SET_COOKIE_NAME, "$USER_NAME_COOKIE=; $USER_COOKIE_DELETE_PROPS")
-                    .header(HEADER_SET_COOKIE_NAME, "$USER_ID_COOKIE=; $USER_COOKIE_DELETE_PROPS")
+                    .header(HEADER_SET_COOKIE_NAME, "$USER_COOKIE_NAME=; $USER_COOKIE_DELETE_PROPS")
                     .sirenResponse(
                         userOutputModels.logout()
                     )
