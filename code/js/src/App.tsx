@@ -49,7 +49,7 @@ const router = createBrowserRouter([
                 path: webRoutes.me,
                 element: (
                     <RequireAuthn>
-                        <Me />
+                        <Me />,
                     </RequireAuthn>
                 ),
             },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUserName } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { Button } from '@mui/material';
@@ -60,7 +60,7 @@ export function Me() {
 
         dispatch({ type: 'play' });
     }
-    
+
     if (state.tag === 'redirect') {
         return <Navigate to={location.state?.source?.pathname || '/games'} />;
     }
@@ -72,9 +72,7 @@ export function Me() {
     return (
         <div>
             <fieldset disabled={state.tag !== 'idle'}>
-                <p>
-                    Hello {userName}! <Link to={'/logout'}>Logout</Link>
-                </p>
+                <p>Hello {userName}!</p>
                 <div>
                     <Button onClick={onClick}>{state.tag === 'idle' ? state.button : 'Loading'}</Button>
                 </div>

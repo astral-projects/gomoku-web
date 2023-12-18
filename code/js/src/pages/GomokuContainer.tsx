@@ -17,48 +17,38 @@ const GomokuContext = createContext<ContextType>({
     setUserId: () => {},
 });
 
-const Navbar = () => {
+function Navbar() {
+    const user = useCurrentUserName();
     return (
         <nav>
             <ul style={{ listStyleType: 'none', display: 'flex', justifyContent: 'space-around' }}>
-                <li>
-                    <Link to="/">Home</Link>
-                </li>
+                <li>{user ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>}</li>
+                <li>{user ? <Link to="/me">Home</Link> : <Link to="/">Home</Link>}</li>
                 <li>
                     <Link to="/rankings">Rankings</Link>
                 </li>
                 <li>
                     <Link to="/about">About</Link>
                 </li>
-                <li>
-                    <Link to="/logout">Logout</Link>
-                </li>
             </ul>
         </nav>
     );
-};
+}
 
 export function GomokuContainer({ children }: { children: React.ReactNode }) {
     const [userName, setUserName] = useState(undefined);
     const [userId, setUserId] = useState(undefined);
 
     useEffect(() => {
-        const cookieName = getCookie('user_name');
+        const cookieName = getCookie('_user');
         if (cookieName) {
-            setUserName(cookieName);
-        }
-        const cookieId = getCookie('user_id');
-        if (cookieId) {
-            setUserId(Number(cookieId));
+            const value = cookieName.split(',');
+            setUserName(value[0]);
+            console.log('setting user name to ' + value[0]);
+            setUserId(parseInt(value[1]));
+            console.log('setting user id to ' + value[1]);
         }
     }, []);
-
-    if (userName !== undefined) {
-        console.log(`Logged in as ${userName}`);
-        console.log(userName);
-    } else {
-        console.log('Not logged in');
-    }
 
     return (
         <GomokuContext.Provider

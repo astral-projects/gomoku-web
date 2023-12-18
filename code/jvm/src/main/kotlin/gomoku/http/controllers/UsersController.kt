@@ -201,10 +201,10 @@ class UsersController(
                                             "$AUTHORIZATION_COOKIE_NAME=${tokenCreationResult.value.tokenValue}; $AUTHORIZATION_COOKIE_PROPS"
 
                                         )
-                                        // set the _user cookie with username value.
+                                        // set the _user cookie with username and id values.
                                         .header(
                                             HEADER_SET_COOKIE_NAME,
-                                            "$USER_COOKIE_NAME=${loggedUser.username}, ${loggedUser.id}; $USER_COOKIE_PROPS"
+                                            "$USER_COOKIE_NAME=${loggedUser.username},${loggedUser.id}; $USER_COOKIE_PROPS"
                                         )
                                         .sirenResponse(
                                             userOutputModels.tokenCreation(loggedUser, tokenCreationResult.value)

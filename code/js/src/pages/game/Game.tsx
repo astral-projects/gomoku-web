@@ -7,7 +7,6 @@ import { renderBoard } from './BoardDraw';
 import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
 import { useParams, Link } from 'react-router-dom';
 import { Entity } from '../../services/media/siren/Entity';
-import { UserEntity } from '../../services/models/users/UserEntitieOutputModel';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
@@ -86,19 +85,19 @@ function game(
     game: GameOutput,
     dispatch: React.Dispatch<Action>,
     userId: number,
-    users: Entity<UserEntity>[],
+    users: Entity<unknown>[],
     opponent?: string
 ) {
-    const opponentUsername: string = 'dsadas';
-    /*if (opponent == undefined) {
-        if (game.properties.hostId === userId) {
-            const opponent = users.find(e => e.properties.id !== game.properties.hostId);
-            opponentUsername = opponent ? opponent.properties.username : undefined;
-        } else {
-            const opponent = users.find(e => e.properties.id !== game.properties.guestId);
-            opponentUsername = opponent ? opponent.properties.username : undefined;
-        }
-    }*/
+    const opponentUsername: string = 'sasas';
+    // if (opponent == undefined) {
+    //     if (game.properties.hostId === userId) {
+    //         const opponent = users.find(e => e.properties.id !== game.properties.hostId);
+    //         opponentUsername = opponent ? opponent.properties.username : undefined;
+    //     } else {
+    //         const opponent = users.find(e => e.properties.id !== game.properties.guestId);
+    //         opponentUsername = opponent ? opponent.properties.username : undefined;
+    //     }
+    // }
     const opp = opponent !== undefined ? opponent : opponentUsername;
     console.log('opp' + opp);
     console.log('dentro do gamew');
@@ -166,7 +165,7 @@ function fetchGame(currentGameId, opponent, isFetching, userId, dispatch, setIsF
             dispatch({ type: 'error', message: errorData.detail });
             setIsFetching(false);
         } else if (successData.class.find(c => c == 'game') != undefined) {
-            const users = successData.entities as Entity<UserEntity>[];
+            const users = successData.entities;
             game(successData, dispatch, userId, users, opponent);
             setIsFetching(false);
         }
