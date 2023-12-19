@@ -1,4 +1,4 @@
-export class Action {
+export type Action = {
     name: string;
     method: string;
     href: string;
@@ -7,7 +7,7 @@ export class Action {
     fields: Field[];
 }
 
-export class Field {
+export type Field = {
     name: string;
     type: string;
     value: string;
