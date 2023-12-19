@@ -8,6 +8,29 @@
 	},
 	"item": [
 		{
+          "name": "Home",
+          "item": [
+            {
+              "name": "Home",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/{{api}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "{{api}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+      {
 			"name": "User",
 			"item": [
 				{
@@ -17,7 +40,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-                          "raw": "{\r\n    \"username\": \"postman-username8\",\r\n    \"email\": \"example@postman.com8\",\r\n    \"password\": \"password\"\r\n}",
+                          "raw": "{\r\n    \"username\": \"postman-username\",\r\n    \"email\": \"example@postman.com\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -54,7 +77,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-                          "raw": "{\r\n    \"username\": \"postman-username8\",\r\n    \"password\": \"password\"\r\n}",
+                          "raw": "{\r\n    \"username\": \"postman-username10\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -76,18 +99,27 @@
                   "response": []
                 },
               {
-                "name": "HomeAuthenticated",
+                "name": "Logout",
                 "request": {
-                  "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                      {
-                        "key": "token",
-                        "value": "{{host_token}}",
-                        "type": "string"
-                      }
+                  "method": "POST",
+                  "header": [],
+                  "url": {
+                    "raw": "{{base_url}}/{{api}}/users/logout",
+                    "host": [
+                      "{{base_url}}"
+                    ],
+                    "path": [
+                      "{{api}}",
+                      "users",
+                      "logout"
                     ]
-                  },
+                  }
+                },
+                "response": []
+              },
+              {
+                "name": "Get home authenticated",
+                "request": {
                   "method": "GET",
                   "header": [],
                   "url": {
@@ -107,6 +139,9 @@
 				{
 					"name": "Get user",
 					"request": {
+                      "auth": {
+                        "type": "noauth"
+                      },
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -122,7 +157,7 @@
 							"variable": [
 								{
                                   "key": "userId",
-                                  "value": "-1"
+                                  "value": "1"
                                 }
                             ]
                         }
@@ -171,7 +206,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-                          "raw": "{{base_url}}/{{api}}/users/stats",
+                          "raw": "{{base_url}}/{{api}}/users/stats?page=3&itemsPerPage=2",
 							"host": [
 								"{{base_url}}"
 							],
@@ -179,6 +214,16 @@
 								"{{api}}",
 								"users",
                               "stats"
+                            ],
+                          "query": [
+                            {
+                              "key": "page",
+                              "value": "3"
+                            },
+                            {
+                              "key": "itemsPerPage",
+                              "value": "2"
+                            }
 							]
 						}
 					},
@@ -190,7 +235,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-                          "raw": "{{base_url}}/{{api}}/users/stats/search?term=pedro",
+                          "raw": "{{base_url}}/{{api}}/users/stats/search?term=user&page=3&itemsPerPage=2",
 							"host": [
 								"{{base_url}}"
 							],
@@ -203,67 +248,28 @@
                           "query": [
                             {
                               "key": "term",
-                              "value": "pedro"
+                              "value": "user"
+                            },
+                            {
+                              "key": "page",
+                              "value": "3"
+                            },
+                            {
+                              "key": "itemsPerPage",
+                              "value": "2"
                             }
 							]
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Logout",
-					"request": {
-                      "auth": {
-                        "type": "bearer",
-                        "bearer": [
-                          {
-                            "key": "token",
-                            "value": "{{host_token}}",
-                            "type": "string"
-                          }
-                        ]
-                      },
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/{{api}}/users/logout",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{api}}",
-								"users",
-								"logout"
-							]
-						}
-					},
-                  "response": []
-                },
-              {
-                "name": "Home",
-                "request": {
-                  "method": "GET",
-                  "header": [],
-                  "url": {
-                    "raw": "{{base_url}}/{{api}}/",
-                    "host": [
-                      "{{base_url}}"
-                    ],
-                    "path": [
-                      "{{api}}",
-                      ""
-                    ]
-                  }
-                },
-					"response": []
-				}
-			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-                      "value": "hDougfjIRAlZD__At4d3clBbNqfLt5r5XAzTPSq1_Qc=",
+                }
+            ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "baxcg_S6rU8Qst_8ZUY0whTmDXHuCn2GPkY_VSxvgBo=",
 						"type": "string"
 					}
 				]
@@ -295,16 +301,6 @@
 				{
 					"name": "Find game",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-                                  "value": "{{guest_token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -350,7 +346,7 @@
                         "variable": [
                           {
                             "key": "gameId",
-                            "value": "2"
+                            "value": "87"
                           }
                         ]
                       }
@@ -360,16 +356,6 @@
               {
                 "name": "Make a Move",
                 "request": {
-                  "auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-                                  "value": "{{guest_token}}",
-                                  "type": "string"
-                                }
-                            ]
-                  },
                   "method": "POST",
                   "header": [
                     {
@@ -401,7 +387,7 @@
                     "variable": [
                       {
                         "key": "gameId",
-                        "value": "4"
+                        "value": "87"
                       }
                     ]
                   }
@@ -409,18 +395,8 @@
                 "response": []
               },
               {
-                "name": "Leave Game",
+                "name": "Exit a Game",
                 "request": {
-                  "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                      {
-                        "key": "token",
-                        "value": "{{guest_token}}",
-									"type": "string"
-								}
-							]
-						},
                   "method": "POST",
 						"header": [],
 						"url": {
@@ -437,7 +413,7 @@
 							"variable": [
 								{
 									"key": "gameId",
-                                  "value": "49"
+                                  "value": "87"
 								}
 							]
 						}
@@ -472,7 +448,7 @@
             "bearer": [
               {
                 "key": "token",
-                "value": "Ww5NCNTnD615ABR4k2s9WLEvZ14AbTyoc5Ag4TdLUCQ=",
+                "value": "xf-6qcvj6wYTQDLa136wHJOhpKkgoSg9kzpKbevvov4=",
                 "type": "string"
               }
             ]
@@ -504,16 +480,6 @@
           {
             "name": "Waiting in lobby",
             "request": {
-              "auth": {
-                "type": "bearer",
-                "bearer": [
-                  {
-                    "key": "token",
-                    "value": "{{host_token}}",
-                    "type": "string"
-                  }
-                ]
-              },
               "method": "GET",
               "header": [],
               "url": {
@@ -529,7 +495,7 @@
                 "variable": [
                   {
                     "key": "lobbyId",
-                    "value": "8"
+                    "value": "92"
 								}
 							]
 						}
@@ -539,16 +505,6 @@
 				{
                   "name": "Exit Lobby",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-                                  "value": "{{guest_token}}",
-									"type": "string"
-								}
-							]
-						},
                       "method": "DELETE",
 						"header": [],
 						"url": {
@@ -565,13 +521,43 @@
 							"variable": [
 								{
                                   "key": "lobbyId",
-                                  "value": "4"
+                                  "value": "92"
 								}
 							]
 						}
 					},
 					"response": []
                 }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xf-6qcvj6wYTQDLa136wHJOhpKkgoSg9kzpKbevvov4=",
+              "type": "string"
+            }
+          ]
+        },
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                ""
+              ]
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                ""
+              ]
+            }
+          }
         ]
       },
       {
@@ -1069,7 +1055,7 @@
 		},
 		{
 			"key": "base_url",
-          "value": "http://localhost:8088"
+          "value": "http://localhost:8080"
 		},
 		{
 			"key": "username",
