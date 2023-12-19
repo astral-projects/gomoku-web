@@ -86,27 +86,42 @@ represented in the file [Rels.kt](../code/jvm/src/main/kotlin/gomoku/http/Rels.k
   is represented as an uri with the following format:
   `https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}`.
   - `self` - the link to the current resource;
-  - `user` - the link to the user resource;
-  - `game` - the link to the game resource;
-  - `system-info` - the link to the system information resource;
-  - `user-stats` - the link to the user statistic information resource;
-  - `users-stats` - the link to the users statistic information resource;
+  - `system-info` - the link to the system information resource template;
+  - `login` - the link to the login resource template;
+  - `logout` - the link to the logout resource template;
+  - `register` - the link to the register resource template;
+  - `me` - the link to the logged-in user resource template;
+  - `users/user` - the link to the user resource template;
+  - `find-game` - the link to the games resource template;
+  - `games/game` - the link to the game resource template;
+  - `games/game/move` - the link to the game move resource template;
+  - `games/variants` - the link to the game variants resource template;
+  - `games/game/exit-game` - the link to the game exit resource template;
+  - `lobbies/lobby` - the link to the lobby resource template;
+  - `lobbies/lobby/exit-lobby` - the link to the lobby exit resource template;
+  - `users/user/search` - the link to the user statistic information resource template;
+  - `users/stats` - the link to the users statistic information resource template;
+  - `users/search` - the link to the users statistic information by search term resource template;
 
-- In the section created for represent the available resources of the API, the link relation is represented as an uri
-  with the following format:
-  `https://github.com/isel-leic-daw/2023-daw-leic51d-14/tree/main/code/jvm/docs/rels/{resource}/{resource}`.
-  - `/users/{user_id}` - the recipe to the user resource;
-  - `/games/{game_id}` - the recipe to the game resource;
-  - `/games/variants` - the recipe to the game variants' resource;
-  - `/lobbies/{lobby_id}` - the recipe to the lobby resource;
-  - `/users/stats/search?q={query}{&page,itemPerPage}` - the recipe to the user's stats resource;
-  - `/users/{user_id}/stats` - the recipe to the user stats resource;
-  - `/users/stats?q={query}{&page,itemPerPage}` - the recipe to the user's stats resource;
-  - `/users` - the recipe to the user's resource;
-  - `/login` - the recipe to the login resource;
-  - `/users/logout` - the recipe to the logout resource;
-  - `/games` - the recipe to the games resource;
-  - `/users/home` - the recipe to the user home authenticated (me) resource;
+## URI Templates
+
+The API uses the following URI templates
+represented in the file [UriTemplates.kt](../code/jvm/src/main/kotlin/gomoku/http/UriTemplates.kt):
+
+If the URI is not documented in the following link, it is the actual URI of the resource.
+- Every URI template that is undocumented in the previous link is a custom URI template created by the API. Every URI
+  template is represented as an uri with a base following format:
+  `/api`.
+- `/users/{user_id}` - the user resource template;
+- `/games/{game_id}` - the game resource template;
+- `/games/{game_id}/move` - the game move resource template;
+- `/games/{game_id}/exit` - the game exit resource template;
+- `/lobby/{lobby_id}` - the lobby resource template;
+- `/lobby/{lobby_id}/exit` - the lobby exit resource template;
+- `/users/{user_id}/stats` - the user statistic information resource template;
+- `/users/stats?q={query}{&page,itemsPerPage}` - the users statistic information resource template;
+- `/users/stats/search?q={query}{&page,itemsPerPage}` - the users statistic information by search term resource
+  template;
 
 ## Navigation Graph
 
