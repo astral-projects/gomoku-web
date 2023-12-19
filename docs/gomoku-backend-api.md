@@ -15,8 +15,8 @@
 - [Navigation Graph](#navigation-graph)
 - [Requests](#requests)
   - [Home](#home)
-    - [User](#user)
-    - [Game](#game)
+  - [User](#user)
+  - [Game](#game)
   - [Lobby](#lobby)
   - [System](#system)
 - [Responses](#responses)
@@ -77,7 +77,7 @@ The following properties were added to the siren representation of the API:
 > **Require Auth**:
 > To indicate if the resource requires authentication or not.
 
-### Link Relations
+## Link Relations
 
 The API uses the following [link relations](https://www.iana.org/assignments/link-relations/link-relations.xhtml)
 represented in the file [Rels.kt](../code/jvm/src/main/kotlin/gomoku/http/Rels.kt):
@@ -232,6 +232,9 @@ curl http://localhost/api/
 >
 > Status: `200 OK`
 
+<details>
+  <summary>Click to expand example</summary>
+
 ```json
 {
   "class": [
@@ -269,6 +272,8 @@ curl http://localhost/api/
   ]
 }
 ```
+
+</details>
 
 ### Register a new user
 
@@ -313,6 +318,9 @@ curl \
 
 > [!IMPORTANT]
 > Status: `201 CREATED`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -368,6 +376,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Login a user
 
 > [!NOTE]
@@ -406,6 +416,9 @@ curl \
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -461,6 +474,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Logout a user
 
 > [!NOTE]
@@ -490,6 +505,9 @@ http://localhost/api/users/logout
 > [!IMPORTANT]
 > Status: `200 OK`
 
+<details>
+  <summary>Click to expand example</summary>
+
 ```json
 {
   "class": [
@@ -514,6 +532,8 @@ http://localhost/api/users/logout
   ]
 }
 ```
+
+</details>
 
 ### Get home authenticated
 
@@ -542,6 +562,9 @@ http://localhost/api/users/home
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -745,6 +768,8 @@ http://localhost/api/users/home
 }
 ```
 
+</details>
+
 ### Get a user
 
 > [!NOTE]
@@ -775,6 +800,9 @@ curl http://localhost/api/users/1
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -812,6 +840,8 @@ curl http://localhost/api/users/1
 }
 ```
 
+</details>
+
 ### Get user stats
 
 > [!NOTE]
@@ -841,6 +871,9 @@ curl http://localhost/api/users/1/stats
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -893,6 +926,8 @@ curl http://localhost/api/users/1/stats
 }
 ```
 
+</details>
+
 ### Get users stats
 
 > [!NOTE]
@@ -933,6 +968,9 @@ curl http://localhost/api/users/stats?page=3&itemsPerPage=2
 > Links can be used to navigate through the pages.
 >
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1045,6 +1083,8 @@ curl http://localhost/api/users/stats?page=3&itemsPerPage=2
 }
 ```
 
+</details>
+
 ### Get users stats by search term
 
 > [!NOTE]
@@ -1089,6 +1129,9 @@ curl http://localhost/api/users/stats/search?term=user&page=3&itemsPerPage=2
 > Links can be used to navigate through the pages.
 >
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1201,6 +1244,8 @@ curl http://localhost/api/users/stats/search?term=user&page=3&itemsPerPage=2
 }
 ```
 
+</details>
+
 ### Find a game
 
 > [!NOTE]
@@ -1241,6 +1286,9 @@ curl \
 > Lobby created example.
 >
 > Status: `201 CREATED`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1355,10 +1403,15 @@ curl \
 }
 ```
 
+</details>
+
 > [!IMPORTANT]
 > Game created example.
 >
 > Status: `201 CREATED`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1420,6 +1473,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Get a game
 
 > [!NOTE]
@@ -1449,6 +1504,9 @@ curl http://localhost/api/games/1
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1563,6 +1621,8 @@ curl http://localhost/api/games/1
 }
 ```
 
+</details>
+
 ### Make a game move
 
 > [!NOTE]
@@ -1614,6 +1674,9 @@ curl \
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1705,6 +1768,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Exit a game
 
 > [!NOTE]
@@ -1742,6 +1807,9 @@ curl \
 > [!IMPORTANT]
 > Status: `200 OK`
 
+<details>
+  <summary>Click to expand example</summary>
+
 ```json
 {
   "class": [
@@ -1769,6 +1837,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Get game variants
 
 > [!NOTE]
@@ -1790,6 +1860,9 @@ curl http://localhost/api/games/variants
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1830,6 +1903,8 @@ curl http://localhost/api/games/variants
   ]
 }
 ```
+
+</details>
 
 ### Check lobby status
 
@@ -1874,6 +1949,9 @@ curl \
 >
 > Status: `200 OK`
 
+<details>
+ <summary>Click to expand example</summary>
+
 ```json
 {
   "class": [
@@ -1912,10 +1990,15 @@ curl \
 }
 ```
 
+</details>
+
 > [!IMPORTANT]
 > A second player has joined the lobby.
 >
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -1977,6 +2060,8 @@ curl \
 }
 ```
 
+</details>
+
 ### Exit a lobby
 
 > [!NOTE]
@@ -2011,6 +2096,9 @@ curl http://localhost/api/lobby/92/exit
 > [!IMPORTANT]
 > Status: `200 OK`
 
+<details>
+  <summary>Click to expand example</summary>
+
 ```json
 {
   "class": [
@@ -2037,6 +2125,8 @@ curl http://localhost/api/lobby/92/exit
 }
 ```
 
+</details>
+
 ### Get system information
 
 > [!NOTE]
@@ -2058,6 +2148,9 @@ curl http://localhost/api/system
 
 > [!IMPORTANT]
 > Status: `200 OK`
+
+<details>
+  <summary>Click to expand example</summary>
 
 ```json
 {
@@ -2104,6 +2197,8 @@ curl http://localhost/api/system
 }
 ```
 
+</details>
+
 ## Representations
 
 ### Game Representation
@@ -2115,7 +2210,7 @@ curl http://localhost/api/system
 >
 > The `turn` property can only be `B` or `W`.
 >
-> Both `winner` and `turn` properties might not be present in the representation, depending on the game state.
+> Both `winner` and `turn` properties might not be present in the representation, depending on the game state:
 > - If the state is `in_progress` the `turn` property is present.
 > - If the state is `finished`, the `turn` property is not present, and:
     >

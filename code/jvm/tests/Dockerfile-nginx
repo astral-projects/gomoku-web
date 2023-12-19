@@ -17,5 +17,6 @@ FROM nginx:alpine
 COPY code/jvm/tests/nginx/nginx.conf /etc/nginx/
 
 # Copy the compiled application to the nginx directory
+# Using the intermediate build stage
 COPY --from=build /app/dist/main.js /opt/isel/daw/app/
 COPY --from=build /app/public/index.html /opt/isel/daw/app/

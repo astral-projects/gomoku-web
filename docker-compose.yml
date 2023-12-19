@@ -27,7 +27,7 @@ services:
       context: .
       dockerfile: code/jvm/tests/Dockerfile-nginx
     ports:
-      - 8088:8088
+      - "8088:8088"
 
   # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
   ubuntu:
