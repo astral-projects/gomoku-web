@@ -6,6 +6,9 @@ import { FindGameOutput } from '../../services/models/games/FindGameOutputModel'
 import { webRoutes } from '../../App';
 import { replacePathVariables } from '../utils/replacePathVariables';
 
+/**
+ * The state of the component can be in one of the following states:
+ */
 type State =
     | { tag: 'loading-variants' }
     | { tag: 'found' }
@@ -14,34 +17,43 @@ type State =
     | { tag: 'in-game'; gameId: number }
     | { tag: 'selecting-variant' };
 
+/**
+ * The action that can be dispatched to the reducer.
+ */
 type Action =
     | { type: 'find' }
     | { type: 'variants-loaded' }
-    | { type: 'error'; message: string }
     | { type: 'join-lobby'; lobbyId: number }
-    | { type: 'leave-lobby' }
     | { type: 'start-game'; gameId: number }
-    | { type: 'select-variant'; variantId: number };
+    | { type: 'select-variant'; variantId: number }
+    | { type: 'error'; message: string };
 
+/**
+ * This function will update the state based on the action.
+ * @param state
+ * @param action
+ * @returns
+ */
 function findGameReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'find':
             return { tag: 'loading-variants' };
         case 'variants-loaded':
             return { tag: 'selecting-variant' };
-        case 'error':
-            return { tag: 'error', message: action.message };
         case 'join-lobby':
             return { tag: 'in-lobby', lobbyId: action.lobbyId };
-        case 'leave-lobby':
-            return { tag: 'selecting-variant' };
         case 'start-game':
             return { tag: 'in-game', gameId: action.gameId };
+        case 'error':
+            return { tag: 'error', message: action.message };
         default:
             return state;
     }
 }
 
+/**
+ * This component will find a game for the user. It will first display a list of available variants. Once the user selects a variant, it will find a game with that variant. If a game is found, it will redirect the user to the game page.
+ */
 export function FindGame() {
     const [state, dispatch] = React.useReducer(findGameReducer, { tag: 'loading-variants' });
     const [variants, setVariants] = React.useState(null);
@@ -68,7 +80,7 @@ export function FindGame() {
                         }
                     }
                 });
-            }, 2000);
+            }, 5000);
             return intervalId;
         },
         [setIsPollingActive, isPollingActive]
@@ -149,6 +161,12 @@ export function FindGame() {
     }
 }
 
+/**
+ * Find a game with the given variant id.The function will dispatch the appropriate action based on the result.
+ * @param variantId
+ * @param dispatch
+ * @param setIsPollingActive
+ */
 function handleFindGame(
     variantId: number,
     dispatch: (action: Action) => void,
@@ -175,6 +193,12 @@ function handleFindGame(
         });
 }
 
+/**
+ * This function will exit the lobby with the given id. The function will dispatch the appropriate action based on the result.
+ * @param lobbyId
+ * @param dispatch
+ * @param setIsPollingActive
+ */
 function handleLeaveLobby(
     lobbyId: number,
     dispatch: (action: Action) => void,
@@ -186,7 +210,7 @@ function handleLeaveLobby(
             dispatch({ type: 'error', message: errorData.detail });
         } else if (result.contentType === 'application/vnd.siren+json') {
             setIsPollingActive(false);
-            dispatch({ type: 'leave-lobby' });
+            dispatch({ type: 'variants-loaded' });
         }
     });
 }

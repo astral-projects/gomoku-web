@@ -26,11 +26,10 @@ export async function fetchRecipes(): Promise<Recipe[]> {
             recipeUris.push({ rel: 'home', href: data.links[0].href });
             return recipeUris;
         } else {
-            console.log('Error during fetch: ' + response.status);
             throw new Error('Error during fetch: ' + response.status);
         }
     } catch (error) {
-        console.log('Error during fetch: ' + error);
+        console.log(error);
         throw error;
     }
 }
@@ -78,6 +77,7 @@ export async function findUri(relName: string) {
             }
         }
     } else {
+        //TODO: throw error
         console.log('No recipies found');
     }
 }
@@ -93,7 +93,7 @@ export async function findUri(relName: string) {
  * @param params - The params to replace
  * @returns
  */
-export function replaceParams(uri: string, params: { [key: string ]: number | string }) {
+export function replaceParams(uri: string, params: { [key: string]: number | string }) {
     const paramNames = getParamNames(uri);
     if (paramNames.length > 0) {
         paramNames.forEach(paramName => {

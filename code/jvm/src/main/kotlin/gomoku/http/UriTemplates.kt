@@ -14,7 +14,7 @@ object UriTemplates {
     const val REGISTER = "$BASE/users"
     const val VARIANTS = "$BASE/games/variants"
     const val LOBBY = "$BASE/lobby/{lobby_id}"
-    const val EXIT_LOBBY = "$BASE/lobbies/{lobby_id}/exit"
+    const val EXIT_LOBBY = "$BASE/lobby/{lobby_id}/exit"
     const val USER_STATS = "$BASE/users/{user_id}/stats"
     const val USERS_STATS = "$BASE/users/stats?q={query}{&page,itemPerPage}"
     const val USERS_STATS_BY_TERM = "$BASE/users/stats/search?q={query}{&page,itemPerPage}"

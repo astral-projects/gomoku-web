@@ -20,8 +20,6 @@ export enum Method {
 export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
     let response: ApiResponse<T>;
     try {
-        // get the uri from the rel
-        // const uriRecipe = findUri(rel);
         const bodyFormat = body ? body : {};
         switch (method) {
             case Method.GET:

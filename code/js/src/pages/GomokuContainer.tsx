@@ -26,9 +26,7 @@ export function GomokuContainer({ children }: { children: React.ReactNode }) {
         if (cookieName) {
             const value = cookieName.split(',');
             setUserName(value[0]);
-            console.log('setting user name to ' + value[0]);
             setUserId(parseInt(value[1]));
-            console.log('setting user id to ' + value[1]);
         }
     }, []);
 
