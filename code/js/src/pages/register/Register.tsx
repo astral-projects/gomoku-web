@@ -122,7 +122,7 @@ export function Register() {
                     />
                 </div>
                 <div>
-                    <button type="submit">Register</button>
+                    <button type="submit">Sign Up</button>
                 </div>
             </fieldset>
             {state.tag === 'editing' && state.error}

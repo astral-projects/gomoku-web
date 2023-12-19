@@ -2,7 +2,7 @@ import { Action } from './Action';
 import { Entity } from './Entity';
 import { Link } from './Link';
 
-export class SirenModel<T> {
+export type SirenModel<T> = {
   class: string[];
   properties: T;
   entities: Entity<unknown>[];
