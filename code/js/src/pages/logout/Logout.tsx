@@ -6,6 +6,7 @@ import { isSuccessful } from '../utils/responseData';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { logout } from '../../services/usersServices';
 import { useEffect } from 'react';
+import { webRoutes } from '../../App';
 
 type State = { tag: 'loading' } | { tag: 'redirect' } | { tag: 'notLoggedIn' };
 
@@ -53,9 +54,9 @@ export function Logout() {
 
     switch (state.tag) {
         case 'redirect':
-            return <Navigate to={location.state?.source?.pathname || '/'} replace={true} />;
+            return <Navigate to={location.state?.source?.pathname || webRoutes.home} replace={true} />;
         case 'notLoggedIn':
-            return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
+            return <Navigate to={location.state?.source?.pathname || webRoutes.login} replace={true} />;
         case 'loading':
             return <div>Loading...</div>;
     }

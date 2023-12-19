@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Action } from './Game';
 
 const cellSize = 30;
-const boardStyle = (boardSize): React.CSSProperties => ({
+const boardStyle = (boardSize: number): React.CSSProperties => ({
     position: 'relative',
     width: `${boardSize * cellSize}px`,
     height: `${boardSize * cellSize}px`,

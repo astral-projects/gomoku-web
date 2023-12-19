@@ -8,6 +8,7 @@ import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
 import { useParams, Link } from 'react-router-dom';
 import { Entity } from '../../services/media/siren/Entity';
 import { UserEntity } from '../../services/models/users/UserEntityOutputModel';
+import { webRoutes } from '../../App';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);
@@ -257,7 +258,7 @@ export function Game() {
     }
 
     React.useEffect(() => {
-        if (state.tag == 'loading' && !isFetching) {
+        if (state.tag == 'loading' && !isFetching && userId != undefined) {
             fetchGame(currentGameId, undefined, isFetching, userId, dispatch, setIsFetching);
         }
         if (state.tag === 'notYourTurn') {
@@ -280,7 +281,7 @@ export function Game() {
                     <div>Player: {username}</div>
                     <div> Opponent:{state.opponent}</div>
                     <div>
-                        <Link to="/games" onClick={() => handleLeaveGame(currentGameId, dispatch, setIsFetching)}>
+                        <Link to={webRoutes.games} onClick={() => handleLeaveGame(currentGameId, dispatch, setIsFetching)}>
                             Leave Game
                         </Link>
                     </div>
@@ -307,7 +308,7 @@ export function Game() {
                     <div> Opponent:{state.opponent}</div>
                     <div>{state.message}</div>
                     <div>
-                        <Link to="/games" onClick={() => handleLeaveGame(currentGameId, dispatch, setIsFetching)}>
+                        <Link to={webRoutes.games} onClick={() => handleLeaveGame(currentGameId, dispatch, setIsFetching)}>
                             Leave Game
                         </Link>
                     </div>
@@ -321,7 +322,7 @@ export function Game() {
                     <div> Player: {username}</div>
                     <div> Opponent:{state.opponent}</div>
                     <div>
-                        <Link to={'/games'}>Start New Game</Link>
+                        <Link to={webRoutes.games}>Start New Game</Link>
                     </div>
                 </div>
             );

@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { register } from '../../services/usersServices';
 import { isSuccessful } from '../utils/responseData';
 import { ProblemModel } from '../../services/media/ProblemModel';
+import { webRoutes } from '../../App';
 
 type State =
     | {
@@ -67,7 +68,7 @@ export function Register() {
     });
     const location = useLocation();
     if (state.tag === 'redirect') {
-        return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
+        return <Navigate to={location.state?.source?.pathname || webRoutes.login} replace={true} />;
     }
     function handleChange(ev: React.FormEvent<HTMLInputElement>) {
         dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: ev.currentTarget.value });
@@ -85,7 +86,7 @@ export function Register() {
                     dispatch({ type: 'error', message: error.detail });
                 } else {
                     dispatch({ type: 'success' });
-                    <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
+                    <Navigate to={location.state?.source?.pathname || webRoutes.login} replace={true} />;
                 }
             }
         );

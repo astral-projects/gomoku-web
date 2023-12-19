@@ -1,14 +1,13 @@
-import API, {ApiResponse} from './apiConnection';
-//import { findUri } from '../api/recipes';
-import {ProblemModel} from '../services/media/ProblemModel';
+import API, { ApiResponse } from './apiConnection';
+import { ProblemModel } from '../services/media/ProblemModel';
 
 const apiConnection = API();
 
 export enum Method {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE',
+    GET = 'GET',
+    POST = 'POST',
+    PUT = 'PUT',
+    DELETE = 'DELETE',
 }
 
 /**
@@ -19,29 +18,29 @@ export enum Method {
  * @param token - optional token for authentication
  */
 export async function callApi<B, T>(uri: string, method: Method, body?: B): Promise<ApiResponse<T | ProblemModel>> {
-  let response: ApiResponse<T>;
-  try {
-    // get the uri from the rel
-    // const uriRecipe = findUri(rel);
-    const bodyFormat = body ? body : {};
-    switch (method) {
-      case Method.GET:
-        response = await apiConnection.getApi(uri);
-        return response;
+    let response: ApiResponse<T>;
+    try {
+        // get the uri from the rel
+        // const uriRecipe = findUri(rel);
+        const bodyFormat = body ? body : {};
+        switch (method) {
+            case Method.GET:
+                response = await apiConnection.getApi(uri);
+                return response;
 
-      case Method.POST:
-        response = await apiConnection.postApi(uri, bodyFormat);
-        return response;
+            case Method.POST:
+                response = await apiConnection.postApi(uri, bodyFormat);
+                return response;
 
-      case Method.PUT:
-        response = await apiConnection.putApi(uri, bodyFormat);
-        return response;
+            case Method.PUT:
+                response = await apiConnection.putApi(uri, bodyFormat);
+                return response;
 
-      case Method.DELETE:
-        response = await apiConnection.deleteApi(uri);
-        return response;
+            case Method.DELETE:
+                response = await apiConnection.deleteApi(uri);
+                return response;
+        }
+    } catch (error) {
+        return (await error) as ApiResponse<ProblemModel>;
     }
-  } catch (error) {
-      return (await error) as ApiResponse<ProblemModel>;
-  }
 }

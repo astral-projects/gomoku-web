@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUserName } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { Button } from '@mui/material';
+import { webRoutes } from '../../App';
 
 type State =
     | { tag: 'loading' }
@@ -55,18 +56,18 @@ export function Me() {
         if (state.tag === 'loading') {
             return;
         } else if (state.tag === 'notLoggedIn') {
-            <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
+            <Navigate to={location.state?.source?.pathname || webRoutes.login} replace={true} />;
         }
 
         dispatch({ type: 'play' });
     }
 
     if (state.tag === 'redirect') {
-        return <Navigate to={location.state?.source?.pathname || '/games'} />;
+        return <Navigate to={location.state?.source?.pathname || webRoutes.games} />;
     }
 
     if (state.tag === 'notLoggedIn') {
-        return <Navigate to={location.state?.source?.pathname || '/login'} replace={true} />;
+        return <Navigate to={location.state?.source?.pathname || webRoutes.login} replace={true} />;
     }
 
     return (

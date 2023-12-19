@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { getVariants, waittingInLobby, findGame, exitLobby } from '../../services/gameServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
+import { webRoutes } from '../../App';
+import { replacePathVariables } from '../utils/replacePathVariables';
 
 type State =
     | { tag: 'loading-variants' }
@@ -131,7 +133,7 @@ export function FindGame() {
             );
         case 'in-game': {
             const gameId = state.gameId;
-            return <Navigate to={`/games/${gameId}`} replace={true} />;
+            return <Navigate to={replacePathVariables(webRoutes.game, [gameId])} />;
         }
 
         case 'error':

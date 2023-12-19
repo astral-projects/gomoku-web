@@ -13,8 +13,9 @@ import { Logout } from './pages/logout/Logout';
 import { UserStats } from './pages/userstats/UserStats';
 import { Rankings } from './pages/Rankings/Rankings';
 import { RequireAuthn } from './pages/AuthContainer';
+import { NotFound } from './pages/notFound/NotFound';
 
-const webRoutes = {
+export const webRoutes = {
     home: '/',
     me: '/me',
     login: '/login',
@@ -97,6 +98,10 @@ const router = createBrowserRouter([
                 path: webRoutes.error,
                 element: <Error />,
             },
+            {
+                path: '*',
+                element: <NotFound />,
+            }
         ],
     },
 ]);

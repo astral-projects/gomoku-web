@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { webRoutes } from '../../App';
 
 export function LoggedHome() {
     return (
@@ -7,27 +8,27 @@ export function LoggedHome() {
             <h1>Home</h1>
             <p>Welcome to the Gomoku game!</p>
             <p>
-                <Link to="/rankings">
+                <Link to={webRoutes.rankings}>
                     <button>Rankings</button>
                 </Link>
             </p>
             <p>
-                <Link to="/games">
+                <Link to={webRoutes.games}>
                     <button>Find Game</button>
                 </Link>
             </p>
             <p>
-                <Link to="/me">
+                <Link to={webRoutes.me}>
                     <button>My Stats</button>
                 </Link>
             </p>
             <p>
-                <Link to="/logout">
+                <Link to={webRoutes.logout}>
                     <button>Logout</button>
                 </Link>
             </p>
             <p>
-                <Link to="/about">
+                <Link to={webRoutes.about}>
                     <button>About</button>
                 </Link>
             </p>

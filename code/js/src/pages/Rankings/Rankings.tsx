@@ -8,6 +8,8 @@ import { isSuccessful } from '../utils/responseData';
 import { PaginatedResult } from '../../services/models/users/PaginatedResultModel.js';
 import './Rankings.css';
 import { getHrefByRel } from '../../services/media/siren/Link';
+import { replacePathVariables } from '../utils/replacePathVariables';
+import { webRoutes } from '../../App';
 
 type State =
     | { tag: 'loading' }
@@ -143,8 +145,7 @@ export function Rankings() {
     switch (state.tag) {
         case 'redirecting': {
             const userId = state.user.id.value;
-            const uri = `/rankings/${userId}`;
-            return <Navigate to={uri} replace={true} />;
+            return <Navigate to={replacePathVariables(webRoutes.userStats, [userId])} replace={true} />;
         }
         case 'loaded':
             return (
@@ -208,7 +209,7 @@ export function Rankings() {
                         Page {state.data.properties.currentPage} of {state.data.properties.totalPages}
                     </p>
                     <p>
-                        <Link to="/">
+                        <Link to={webRoutes.home}>
                             <button>Back to Home</button>
                         </Link>
                     </p>

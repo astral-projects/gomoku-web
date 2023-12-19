@@ -8,6 +8,7 @@ import { Entity } from '../../services/media/siren/Entity';
 import { useSetUserName, useSetUserId } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { isSuccessful } from '../utils/responseData';
+import { webRoutes } from '../../App';
 
 type State =
     | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
@@ -59,7 +60,7 @@ export function Login() {
     const location = useLocation();
 
     if (state.tag === 'redirect') {
-        return <Navigate to={location.state?.source?.pathname || '/me'} replace={true} />;
+        return <Navigate to={location.state?.source?.pathname || webRoutes.me} replace={true} />;
     }
 
     function handleChange(ev: React.FormEvent<HTMLInputElement>) {
@@ -111,7 +112,7 @@ export function Login() {
                         <button type="submit">Login</button>
                     </div>
                     <div>
-                        Dont have an account? <Link to="/register">Sign Up</Link>
+                        Dont have an account? <Link to={webRoutes.register}>Sign Up</Link>
                     </div>
                 </fieldset>
                 {state.tag === 'editing' && state.error}

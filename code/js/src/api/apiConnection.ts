@@ -1,19 +1,19 @@
 export type ApiResponse<T> = {
     contentType: string;
     json: T;
-}
+};
 
 type Options = {
     method: string;
     body?: BodyInit;
-}
+};
 
 export default function () {
     return {
         getApi: getApi,
         postApi: postApi,
         deleteApi: deleteApi,
-        putApi: putApi
+        putApi: putApi,
     };
 
     /**
@@ -81,5 +81,4 @@ export default function () {
         };
         return fetchApi<R>(path, options);
     }
-
 }

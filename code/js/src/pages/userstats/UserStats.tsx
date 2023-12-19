@@ -5,6 +5,7 @@ import {UserStats} from '../../domain/UserStats.js';
 import {ProblemModel} from '../../services/media/ProblemModel.js';
 import {isSuccessful} from '../utils/responseData';
 import {UserStatsOutput} from '../../services/models/users/UserStatsOutputModel';
+import { webRoutes } from '../../App';
 
 type State = { tag: 'loading' } | { tag: 'loaded'; data: UserStats } | { tag: 'error'; message: string };
 
@@ -96,7 +97,7 @@ export function UserStats() {
                             </tr>
                             </tbody>
                         </table>
-                        <Link to="/rankings">
+                        <Link to={webRoutes.rankings}>
                             <button>Back to Rankings</button>
                         </Link>
                     </div>

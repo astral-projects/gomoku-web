@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {useLocation} from 'react-router-dom';
-import {ProblemModel} from '../../services/media/ProblemModel.js';
-import {isSuccessful} from '../utils/responseData';
-import {fetchSystemInfo} from '../../services/systemServices';
-import {SystemOutput, SystemOutputModel} from '../../services/models/system/SystemOutputModel';
+import { ProblemModel } from '../../services/media/ProblemModel.js';
+import { isSuccessful } from '../utils/responseData';
+import { fetchSystemInfo } from '../../services/systemServices';
+import { SystemOutput, SystemOutputModel } from '../../services/models/system/SystemOutputModel';
+import { useReducer } from 'react';
 
 type State = { tag: 'loading' } | { tag: 'loaded'; data: SystemOutputModel } | { tag: 'error'; message: string };
 
@@ -13,47 +13,44 @@ function reducer(state: State, action: Action): State {
     switch (state.tag) {
         case 'loaded':
             if (action.type === 'load') {
-                return {tag: 'loading'};
+                return { tag: 'loading' };
             }
             return state;
 
         case 'loading':
             if (action.type === 'success') {
-                return {tag: 'loaded', data: action.data};
+                return { tag: 'loaded', data: action.data };
             } else if (action.type === 'error') {
-                return {tag: 'error', message: action.message};
+                return { tag: 'error', message: action.message };
             }
             return state;
 
         case 'error':
             if (action.type === 'load') {
-                return {tag: 'loading'};
+                return { tag: 'loading' };
             }
             return state;
     }
 }
 
 export function About() {
-    const [state, dispatch] = React.useReducer(reducer, {tag: 'loading'});
-    const location = useLocation();
-    const userId = location.pathname.split('/')[2];
-    console.log('id: ' + userId);
+    const [state, dispatch] = useReducer(reducer, { tag: 'loading' });
 
     React.useEffect(() => {
-        dispatch({type: 'load'});
+        dispatch({ type: 'load' });
         fetchSystemInfo()
             .then(result => {
                 if (!isSuccessful(result.contentType)) {
                     const errorData = result.json as ProblemModel;
-                    dispatch({type: 'error', message: errorData.detail});
+                    dispatch({ type: 'error', message: errorData.detail });
                 } else {
                     const successData = result.json as SystemOutput;
                     const properties = successData.properties as SystemOutputModel;
-                    dispatch({type: 'success', data: properties});
+                    dispatch({ type: 'success', data: properties });
                 }
             })
             .catch((err: { message: string }) => {
-                dispatch({type: 'error', message: err.message});
+                dispatch({ type: 'error', message: err.message });
             });
     }, []);
 
