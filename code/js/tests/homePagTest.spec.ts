@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-export const port = 8088;
+export const port = 4000;
 export const BASE = `http://localhost:${port}/`;
 
 test('has title', async ({ page }) => {
