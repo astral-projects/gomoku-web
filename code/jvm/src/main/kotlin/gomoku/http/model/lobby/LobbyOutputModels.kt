@@ -55,7 +55,7 @@ class LobbyOutputModels {
                 ) {
                     clazz("lobby")
                     requireAuth()
-                    link(Uris.Lobby.isInLobby(gameWait.id), Rels.SELF)
+                    link(Uris.Lobby.getLobby(gameWait.id), Rels.SELF)
                     action(
                         name = "Exit Lobby",
                         href = Uris.Lobby.exitLobby(gameWait.id),

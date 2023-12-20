@@ -20,14 +20,6 @@ sealed class GettingGameError {
 
 typealias GettingGameResult = Either<GettingGameError, Game>
 
-sealed class GameDeleteError {
-    data object UserIsNotTheHost : GameDeleteError()
-    data object GameIsInProgress : GameDeleteError()
-    data object GameNotFound : GameDeleteError()
-}
-
-typealias GameDeleteResult = Either<GameDeleteError, Boolean>
-
 sealed class GameUpdateError {
     data object UserNotInGame : GameUpdateError()
     data object GameNotFound : GameUpdateError()

@@ -22,12 +22,10 @@ import gomoku.repository.jdbi.transaction.JdbiTransactionManager
 import gomoku.repository.transaction.TransactionManager
 import gomoku.services.game.FindGameSuccess
 import gomoku.services.game.GameCreationError
-import gomoku.services.game.GameDeleteError
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GameUpdateError
 import gomoku.services.game.GameWaitError
 import gomoku.services.game.GamesService
-import gomoku.services.game.GettingGameError
 import gomoku.services.game.LobbyDeleteError
 import gomoku.services.game.NoVariantImplementationFoundException
 import gomoku.services.game.WaitForGameSuccess
@@ -241,24 +239,6 @@ class GameServicesTests {
             }
         }
 
-        // when: the guest deletes the game
-        val deleteGame = gameService.deleteGame(gameId, guest.id)
-
-        // then: the game deletion is not possible, because the guest is not the host
-        when (deleteGame) {
-            is Failure -> assertIs<GameDeleteError.UserIsNotTheHost>(deleteGame.value)
-            is Success -> fail("Unexpected $deleteGame")
-        }
-
-        // when: the host tries to delete the game
-        val deleteGame1 = gameService.deleteGame(gameId, host.id)
-
-        // then: the game deletion is not possible, because the game is still in progress
-        when (deleteGame1) {
-            is Failure -> assertIs<GameDeleteError.GameIsInProgress>(deleteGame1.value)
-            is Success -> fail("Unexpected $deleteGame1")
-        }
-
         // when: the guest exits the game and the game is set to finished
         val gameUpdateResult = gameService.exitGame(gameId, guest.id)
 
@@ -266,33 +246,6 @@ class GameServicesTests {
         when (gameUpdateResult) {
             is Failure -> fail("Unexpected $gameUpdateResult")
             is Success -> assertTrue(gameUpdateResult.value)
-        }
-
-        // when: the host deletes the game
-        val deleteGame2 = gameService.deleteGame(gameId, host.id)
-
-        // then: the game deletion is successful
-        when (deleteGame2) {
-            is Failure -> fail("Unexpected $deleteGame2")
-            is Success -> assertTrue(deleteGame2.value)
-        }
-
-        // and: the game is searched by id again
-        val gameAfterDeletion = gameService.getGameById(gameId)
-
-        // then: the game cannot be found
-        when (gameAfterDeletion) {
-            is Failure -> assertIs<GettingGameError.GameNotFound>(gameAfterDeletion.value)
-            is Success -> fail("Unexpected $gameAfterDeletion")
-        }
-
-        // and: the host tries to delete the game again
-        val deleteGame3 = gameService.deleteGame(gameId, host.id)
-
-        // then: the game cannot be found
-        when (deleteGame3) {
-            is Failure -> assertIs<GameDeleteError.GameNotFound>(deleteGame3.value)
-            is Success -> fail("Unexpected $deleteGame3")
         }
     }
 

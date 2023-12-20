@@ -535,7 +535,7 @@ class UserServiceTests {
 
         assertEquals(actualUsers, ranking.itemsPerPage)
 
-        // when: page is not 0
+        // when: page is not 1
         val page = 2
         val rankingWithOffset = userService.getUserStatsByTerm(
             term = Term(usernameFormat).get(),
@@ -544,7 +544,7 @@ class UserServiceTests {
         )
 
         // then: the statistics is paginated and first offset users are skipped
-        assertEquals(actualUsers, rankingWithOffset.itemsPerPage)
+        assertEquals(0, rankingWithOffset.itemsPerPage)
     }
 
     companion object {

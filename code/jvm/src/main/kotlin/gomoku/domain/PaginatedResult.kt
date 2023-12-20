@@ -29,10 +29,11 @@ data class PaginatedResult<T>(
          * @throws IllegalArgumentException if [page] is negative or [itemsPerPage] is not positive.
          */
         @Throws(IllegalArgumentException::class)
-        fun <T> create(items: List<T>, page: Int = 0, itemsPerPage: Int = 10): PaginatedResult<T> {
+        fun <T> create(items: List<T>, page: Int = 1, itemsPerPage: Int = 10): PaginatedResult<T> {
             require(page > 0) { "page must be a positive number" }
             require(itemsPerPage > 0) { "itemsPerPage must be a positive number" }
-            val filteredItems = items.drop((page - 1) * itemsPerPage).take(itemsPerPage)
+            val offset = (page - 1) * itemsPerPage
+            val filteredItems = items.drop(offset).take(itemsPerPage)
             return create(
                 filteredItems = filteredItems,
                 totalItems = items.size,
@@ -57,10 +58,11 @@ data class PaginatedResult<T>(
             require(itemsPerPage > 0) { "Items per page must be positive" }
 
             val totalPages = if (totalItems == 0) 1 else ceil(totalItems.toDouble() / itemsPerPage).toInt()
-
+            // limit
+            val actualItemsPerPage = if (filteredItems.size < itemsPerPage) filteredItems.size else itemsPerPage
             return PaginatedResult(
                 currentPage = page,
-                itemsPerPage = itemsPerPage,
+                itemsPerPage = actualItemsPerPage,
                 totalPages = totalPages,
                 items = filteredItems
             )

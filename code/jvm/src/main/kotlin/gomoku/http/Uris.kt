@@ -43,12 +43,10 @@ object Uris {
         const val GET_VARIANTS = "$PREFIX/games/variants"
         const val MAKE_MOVE = "$PREFIX/games/{id}/move"
         const val GET_BY_ID = "$PREFIX/games/{id}"
-        const val DELETE_BY_ID = "$PREFIX/games/{id}"
         const val EXIT_GAME = "$PREFIX/games/{id}/exit"
 
         fun byId(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun makeMove(id: Int) = UriTemplate(MAKE_MOVE).expand(id)
-        fun deleteById(id: Int) = UriTemplate(GET_BY_ID).expand(id)
         fun exitGame(id: Int) = UriTemplate(EXIT_GAME).expand(id)
         fun findGame() = URI(FIND_GAME)
         fun getVariants() = URI(GET_VARIANTS)
@@ -58,9 +56,9 @@ object Uris {
      * Associated with Lobbies controller.
      */
     object Lobby {
-        const val GET_IS_IN_LOBBY = "$PREFIX/lobby/{id}"
+        const val GET_LOBBY = "$PREFIX/lobby/{id}"
         const val EXIT_LOBBY = "$PREFIX/lobby/{id}/exit"
-        fun isInLobby(id: Int) = UriTemplate(GET_IS_IN_LOBBY).expand(id)
+        fun getLobby(id: Int) = UriTemplate(GET_LOBBY).expand(id)
         fun exitLobby(id: Int) = UriTemplate(EXIT_LOBBY).expand(id)
     }
 

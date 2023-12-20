@@ -39,7 +39,6 @@ export async function fetchUserStatsByUserId(userId: string) {
 
 export async function fetchUserStatsBySearchTerm(term: string) {
     const uriRecipe = await findUri('users/search');
-    console.log("uri Recipe" + uriRecipe)
     const uri = replaceParams(uriRecipe, {term: term});
     return await callApi<unknown, PaginatedResult<UserStats>>(uri, Method.GET, {});
 }

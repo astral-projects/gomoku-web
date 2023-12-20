@@ -124,23 +124,12 @@ class JdbiGameRepositoryTests {
         assertNotNull(userStayedInGame)
         assertEquals(userStayedInGame, guestId)
 
-        // and: trying to delete a game with the guest id
-        val isGameDeleted = repoGames.deleteGame(createdGameId, guestId)
-
-        // then: guest cannot delete the game
-        assertFalse(isGameDeleted)
-
-        // when: trying to delete a game with the host id
-        val isGameDeletedByHost = repoGames.deleteGame(createdGameId, hostId)
-
-        // then: host can delete the game
-        assertTrue(isGameDeletedByHost)
-
         // when: getting again the game
-        val gameAfterDeleted = repoGames.getGameById(createdGameId)
+        val gameAfterExit = repoGames.getGameById(createdGameId)
 
-        // then: the game is not found
-        assertNull(gameAfterDeleted)
+        // then: the game is finished
+        assertNotNull(gameAfterExit)
+        assertEquals(gameAfterExit.state, GameState.FINISHED)
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
@@ -279,14 +268,6 @@ class JdbiGameRepositoryTests {
         val drawnGame = repoGames.getGameById(game2.id)
         assertNotNull(drawnGame)
         assertSame(drawnGame.state, GameState.FINISHED)
-
-        // when: deleting both games
-        repoGames.deleteGame(game1.id, hostId)
-        repoGames.deleteGame(game2.id, hostId)
-
-        // then: both games are deleted
-        assertNull(repoGames.getGameById(game1.id))
-        assertNull(repoGames.getGameById(game2.id))
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)

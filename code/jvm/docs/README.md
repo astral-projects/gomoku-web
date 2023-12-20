@@ -428,6 +428,11 @@ Below is a visual representation:
 |:------------------------------------------------------------------------------:|
 |                           *Docker Compose Solution*                            |
 
+All dockerfiles were created with the following considerations:
+
+- reduce image size by using multi-stage builds and lightweight base images;
+- optimize image layers by grouping commands, remaining mindful of the cache and the order of the commands
+
 #### Db-tests Service
 
 > [!NOTE]

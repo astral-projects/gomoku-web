@@ -32,7 +32,7 @@ class LobbyController(
      * @param id the id of the lobby.
      * @param user the authenticated user.
      */
-    @GetMapping(Uris.Lobby.GET_IS_IN_LOBBY)
+    @GetMapping(Uris.Lobby.GET_LOBBY)
     fun waitingInLobby(
         @Valid
         @Range(min = 1)
@@ -41,7 +41,7 @@ class LobbyController(
         user: AuthenticatedUser
     ): ResponseEntity<*> {
         val userId = user.user.id
-        val instance = Uris.Lobby.isInLobby(id)
+        val instance = Uris.Lobby.getLobby(id)
         return when (val lobbyIdResult = Id(id)) {
             is Failure -> Problem.invalidLobbyId(instance)
             is Success -> when (val gameWaitResult = lobbyService.waitForGame(lobbyIdResult.value, user.user.id)) {

@@ -79,13 +79,6 @@ class JdbiGameRepository(
             .map { it.toDomainModel() }
             .toList()
 
-    override fun deleteGame(gameId: Id, userId: Id): Boolean =
-        handle.createUpdate("delete from dbo.Games where id = :gameId and host_id = :hostId and state = :state")
-            .bind("gameId", gameId.value)
-            .bind("hostId", userId.value)
-            .bind("state", GameState.FINISHED.name)
-            .execute() == 1
-
     override fun findIfUserIsInGame(userId: Id): Game? =
         handle.createQuery(
             """

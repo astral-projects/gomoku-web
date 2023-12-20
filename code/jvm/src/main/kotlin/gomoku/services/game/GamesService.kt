@@ -5,7 +5,6 @@ import gomoku.domain.game.Game
 import gomoku.domain.game.GameLogic
 import gomoku.domain.game.GameLogic.Companion.toPlayer
 import gomoku.domain.game.GamePoints
-import gomoku.domain.game.GameState
 import gomoku.domain.game.board.BoardDraw
 import gomoku.domain.game.board.BoardRun
 import gomoku.domain.game.board.BoardWin
@@ -131,34 +130,6 @@ class GamesService(
                         success(FindGameSuccess.LobbyCreated(lobbyId.value))
                     }
                 }
-            }
-        }
-
-    /**
-     * Deletes the game with the given id if the user is the host and the game is not in progress.
-     *
-     * **Returns an error**, when:
-     * - The game is not found;
-     * - The user is not the host;
-     * - The game is in progress;
-     * @param gameId the id of the game to delete.
-     * @param userId the id of the user requesting the deletion.
-     */
-    fun deleteGame(gameId: Id, userId: Id): GameDeleteResult =
-        transactionManager.run { transaction ->
-            transaction.setIsolationLevel(TRANSACTION_SERIALIZABLE)
-            val gamesRepository = transaction.gamesRepository
-            val game = gamesRepository.getGameById(gameId)
-                ?: return@run failure(GameDeleteError.GameNotFound)
-            if (game.hostId != userId) {
-                return@run failure(GameDeleteError.UserIsNotTheHost)
-            }
-            if (game.state == GameState.IN_PROGRESS) {
-                return@run failure(GameDeleteError.GameIsInProgress)
-            }
-            when (gamesRepository.deleteGame(gameId, userId)) {
-                false -> failure(GameDeleteError.GameNotFound)
-                true -> success(true)
             }
         }
 

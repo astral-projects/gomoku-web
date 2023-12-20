@@ -182,7 +182,7 @@ class JdbiUserRepositoryTests {
     }
 
     @RepeatedTest(NR_OF_TEST_ITERATIONS)
-    fun `retrieves all users paginated statistic information`() = runWithHandleAndRollback { handle ->
+    fun `retrieves all users paginated statistic in formation`() = runWithHandleAndRollback { handle ->
         // given: a UsersRepository
         val repo = JdbiUsersRepository(handle)
 
@@ -195,7 +195,7 @@ class JdbiUserRepositoryTests {
             repo.storeUser(userName, email, passwordValidationInfo)
         }
 
-        // and: retrieving the first 3 users statistic information
+        // and: retrieving the first 3 users's statistic information
         val itemsPerPage = 3
         val usersRanking = repo.getUsersStats(
             page = PositiveValue(1).get(),
@@ -208,32 +208,35 @@ class JdbiUserRepositoryTests {
 
         // when: comparing with user information
         // then: the users statistic information is correct
-        repeat(3) {
+        repeat(itemsPerPage) {
             val retrievedUserByUsername: User? = repo.getUserByUsername(usersRanking.items[it].username)
             assertNotNull(retrievedUserByUsername)
             assertEquals(usersRanking.items[it].username, retrievedUserByUsername.username)
             assertEquals(usersRanking.items[it].email, retrievedUserByUsername.email)
         }
 
+        // and: a page
+        var page = 1
+
         // when: retrieving all users statistic information
         val secondItemsForPage = nrOfUsers
         val allUsersRanking = repo.getUsersStats(
-            page = PositiveValue(1).get(),
+            page = PositiveValue(page).get(),
             itemsPerPage = PositiveValue(secondItemsForPage).get()
         )
 
         // then: the users statistic is paginated
-        assertEquals(1, allUsersRanking.currentPage)
+        assertEquals(page, allUsersRanking.currentPage)
         assertEquals(secondItemsForPage, allUsersRanking.itemsPerPage)
 
         // when: when retrieving the second page of users statistic information
         val secondPageUsersRanking = repo.getUsersStats(
-            page = PositiveValue(itemsPerPage).get(),
+            page = PositiveValue(++page).get(),
             itemsPerPage = PositiveValue(itemsPerPage).get()
         )
 
-        // then:
-        assertEquals(3, secondPageUsersRanking.currentPage)
+        // then: the users statistic is paginated
+        assertEquals(page, secondPageUsersRanking.currentPage)
         assertEquals(itemsPerPage, secondPageUsersRanking.itemsPerPage)
     }
 
@@ -272,7 +275,7 @@ class JdbiUserRepositoryTests {
 
         // then: the users statistic information is paginated
         assertEquals(1, userStatsByUsername.currentPage)
-        assertEquals(itemsPerPage, userStatsByUsername.itemsPerPage)
+        assertEquals(actualNrOfUsers, userStatsByUsername.itemsPerPage)
 
         // when: comparing with user information
         // then: the users statistic information is correct

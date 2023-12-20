@@ -26,7 +26,7 @@ class GameOutputModelsRepresentations {
         return siren(gameCreation) {
             clazz("lobby")
             requireAuth()
-            link(Uris.Lobby.isInLobby(gameCreation.id), Rels.SELF)
+            link(Uris.Lobby.getLobby(gameCreation.id), Rels.SELF)
             action(
                 name = "Exit Lobby",
                 href = Uris.Lobby.exitLobby(gameCreation.id),
@@ -119,18 +119,6 @@ class GameOutputModelsRepresentations {
     }
 
     /**
-     * Output model representation for deleting a game by id using [SirenModel].
-     *
-     * @param gameId The id of the game to be deleted.
-     */
-    fun deleteById(gameId: Id) =
-        siren(gameId) {
-            clazz("game")
-            requireAuth()
-            link(Uris.Games.deleteById(gameId.value), Rels.SELF)
-        }
-
-    /**
      * Output model representation when user leaves a game using [SirenModel].
      *
      * @param gameId The id of the game to be left.
@@ -142,13 +130,7 @@ class GameOutputModelsRepresentations {
             link(Uris.Games.exitGame(gameId), Rels.SELF)
         }
 
-    /**
-     * Output model representation when user makes a move in a game using [SirenModel].
-     *
-     * @param game The game to be updated.
-     * @param gameId The id of the game to be updated.
-     */
-    //TODO(I CHANGED hERE)
+
     fun makeMove(game: Game, gameId: Id) =
         siren(
             GameOutputModel.serializeFrom(game)

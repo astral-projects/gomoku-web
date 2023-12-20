@@ -53,14 +53,6 @@ interface GamesRepository {
     fun createGame(variantId: Id, hostId: Id, guestId: Id, lobbyId: Id, board: Board): Id?
 
     /**
-     * Deletes a game, only if the user requesting the deletion is the host of the game and the game is not in progress.
-     * @param gameId the id of the game to delete.
-     * @param userId the id of the user requesting the deletion.
-     * @return true if the game was deleted successfully, false otherwise.
-     */
-    fun deleteGame(gameId: Id, userId: Id): Boolean
-
-    /**
      * Adds a user to a lobby given a variant id.
      * @param variantId the id of the variant to be associated.
      * @param userId the id of the user to be added.

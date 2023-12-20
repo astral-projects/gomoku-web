@@ -15,7 +15,6 @@ import gomoku.http.model.game.MoveInputModel
 import gomoku.http.model.game.VariantInputModel
 import gomoku.services.game.FindGameSuccess
 import gomoku.services.game.GameCreationError
-import gomoku.services.game.GameDeleteError
 import gomoku.services.game.GameMakeMoveError
 import gomoku.services.game.GameUpdateError
 import gomoku.services.game.GamesService
@@ -27,7 +26,6 @@ import gomoku.utils.Success
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -86,7 +84,7 @@ class GamesController(
 
                 is Success -> when (gameCreationResult.value) {
                     is FindGameSuccess.LobbyCreated ->
-                        ResponseEntity.created(Uris.Lobby.isInLobby(gameCreationResult.value.id)).sirenResponse(
+                        ResponseEntity.created(Uris.Lobby.getLobby(gameCreationResult.value.id)).sirenResponse(
                             gameOutputModels.findGameLobbyCreated(gameCreationResult.value)
                         )
 
@@ -144,50 +142,6 @@ class GamesController(
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /**
-     * Deletes the game with the given id.
-     * @param id the id of the game.
-     * @param user the authenticated user.
-     */
-    @DeleteMapping(Uris.Games.DELETE_BY_ID)
-    fun deleteById(
-        @Valid
-        @Range(min = 1)
-        @PathVariable
-        id: Int,
-        user: AuthenticatedUser
-    ): ResponseEntity<*> {
-        val userId = user.user.id
-        val instance = Uris.Games.deleteById(id)
-        return when (val gameIdResult = Id(id)) {
-            is Failure -> Problem.invalidGameId(instance)
-
-            is Success -> when (val game = gamesService.deleteGame(gameIdResult.value, userId)) {
-                is Failure -> when (game.value) {
-                    GameDeleteError.GameNotFound -> Problem.gameNotFound(
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-
-                    GameDeleteError.UserIsNotTheHost -> Problem.userIsNotTheHost(
-                        userId = userId,
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-
-                    GameDeleteError.GameIsInProgress -> Problem.gameIsInProgress(
-                        gameId = gameIdResult.value,
-                        instance = instance
-                    )
-                }
-
-                is Success -> ResponseEntity.ok().sirenResponse(
-                    gameOutputModels.deleteById(gameIdResult.value)
-                )
             }
         }
     }
@@ -260,7 +214,7 @@ class GamesController(
             is Failure -> Problem.invalidGameId(instance)
             is Success -> when (val gettingColumnResult = Column(move.col)) {
                 is Failure -> Problem.invalidColumn(instance)
-                is Success -> when (val gettingRowResult = Row(move.row-1)) {
+                is Success -> when (val gettingRowResult = Row(move.row - 1)) {
                     is Failure -> Problem.invalidRow(instance)
                     is Success -> {
                         val square = Square(gettingColumnResult.value, gettingRowResult.value)
