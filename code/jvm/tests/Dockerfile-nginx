@@ -18,6 +18,9 @@ COPY code/js/.prettierrc \
         code/js/public/index.html \
         code/js/.eslintrc.json ./
 
+#ENV PORT 8088
+#EXPOSE $PORT
+
 RUN npm run build
 
 FROM nginx:alpine
