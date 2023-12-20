@@ -43,6 +43,7 @@
 - [Representations](#representations)
   - [Game Representation](#game-representation)
   - [Paginated Result Representation](#paginated-result-representation)
+
 ---
 
 ## Introduction
@@ -99,7 +100,7 @@ represented in the file [Rels.kt](../code/jvm/src/main/kotlin/gomoku/http/Rels.k
   - `games/game/exit-game` - the link to the game exit resource template;
   - `lobbies/lobby` - the link to the lobby resource template;
   - `lobbies/lobby/exit-lobby` - the link to the lobby exit resource template;
-  - `users/user/search` - the link to the user statistic information resource template;
+  - `users/user/stats` - the link to the user statistic information resource template;
   - `users/stats` - the link to the users statistic information resource template;
   - `users/search` - the link to the users statistic information by search term resource template;
 
@@ -109,19 +110,20 @@ The API uses the following URI templates
 represented in the file [UriTemplates.kt](../code/jvm/src/main/kotlin/gomoku/http/UriTemplates.kt):
 
 If the URI is not documented in the following link, it is the actual URI of the resource.
+
 - Every URI template that is undocumented in the previous link is a custom URI template created by the API. Every URI
   template is represented as an uri with a base following format:
   `/api`.
-- `/users/{user_id}` - the user resource template;
-- `/games/{game_id}` - the game resource template;
-- `/games/{game_id}/move` - the game move resource template;
-- `/games/{game_id}/exit` - the game exit resource template;
-- `/lobby/{lobby_id}` - the lobby resource template;
-- `/lobby/{lobby_id}/exit` - the lobby exit resource template;
-- `/users/{user_id}/stats` - the user statistic information resource template;
-- `/users/stats?q={query}{&page,itemsPerPage}` - the users statistic information resource template;
-- `/users/stats/search?q={query}{&page,itemsPerPage}` - the users statistic information by search term resource
-  template;
+  - `/users/{user_id}` - the user resource template;
+  - `/games/{game_id}` - the game resource template;
+  - `/games/{game_id}/move` - the game move resource template;
+  - `/games/{game_id}/exit` - the game exit resource template;
+  - `/lobby/{lobby_id}` - the lobby resource template;
+  - `/lobby/{lobby_id}/exit` - the lobby exit resource template;
+  - `/users/{user_id}/stats` - the user statistic information resource template;
+  - `/users/stats?{&page,itemsPerPage}` - the users statistic information resource template;
+  - `/users/stats/search?term={term}{&page,itemsPerPage}` - the users statistic information by search term resource
+    template;
 
 ## Navigation Graph
 
@@ -2227,10 +2229,8 @@ curl http://localhost/api/system
 >
 > Both `winner` and `turn` properties might not be present in the representation, depending on the game state:
 > - If the state is `in_progress` the `turn` property is present.
-> - If the state is `finished`, the `turn` property is not present, and:
-    >
-- a draw is represented by the absence of the `winner` property.
->   - a win is represented by the presence of the `winner` property.
+> - If the state is `finished`, the `turn` property is not present, as such, a draw is represented by the absence of
+    the `winner` property and a win by the presence of the `winner` property.
 >
 > The `createdAt` and `updatedAt` properties are in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
 > format `YYYY-MM-DDTHH:MM:SSZ`.

@@ -102,7 +102,6 @@ class SquareTest {
         // then: all of them should be one intersection apart from the square
         val oneIntersection = PositiveValue(1).get()
         adjacentSquares.forEach {
-            println(it)
             assertTrue(square.isNIntersectionsApartFrom(it, oneIntersection))
         }
 

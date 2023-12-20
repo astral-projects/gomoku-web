@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { Navigate } from 'react-router-dom';
-import { getVariants, waittingInLobby, findGame, exitLobby } from '../../services/gameServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
-import { webRoutes } from '../../App';
-import { replacePathVariables } from '../utils/replacePathVariables';
+import {Navigate} from 'react-router-dom';
+import {exitLobby, findGame, getVariants, waittingInLobby} from '../../services/gameServices';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {FindGameOutput} from '../../services/models/games/FindGameOutputModel';
+import {webRoutes} from '../../App';
+import {replacePathVariables} from '../utils/replacePathVariables';
 
 /**
  * The state of the component can be in one of the following states:
@@ -62,26 +62,25 @@ export function FindGame() {
     const startPollingLobbyStatus = React.useCallback(
         lobbyId => {
             setIsPollingActive(true);
-            const intervalId = setInterval(() => {
+            return setInterval(() => {
                 if (!isPollingActive) return;
                 waittingInLobby(lobbyId).then(result => {
                     const errorData = result.json as ProblemModel;
                     const successData = result.json as unknown as FindGameOutput;
                     if (result.contentType === 'application/problem+json') {
-                        dispatch({ type: 'error', message: errorData.detail });
+                        dispatch({type: 'error', message: errorData.detail});
                         setIsPollingActive(false);
                     } else if (result.contentType === 'application/vnd.siren+json') {
                         if (successData.class.find(c => c == 'lobby') != undefined) {
-                            dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
+                            dispatch({type: 'join-lobby', lobbyId: successData.properties.id});
                         } else if (successData.class.find(c => c == 'game') != undefined) {
                             const gameId = successData.properties.id;
                             setIsPollingActive(false);
-                            dispatch({ type: 'start-game', gameId: gameId });
+                            dispatch({type: 'start-game', gameId: gameId});
                         }
                     }
                 });
             }, 5000);
-            return intervalId;
         },
         [setIsPollingActive, isPollingActive]
     );
@@ -155,7 +154,6 @@ export function FindGame() {
                     <button onClick={() => dispatch({ type: 'find' })}>Try again</button>
                 </div>
             );
-
         default:
             return <div>Unexpected state</div>;
     }

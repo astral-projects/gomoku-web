@@ -143,8 +143,8 @@ class JdbiUsersRepository(
         FETCH NEXT :limit ROWS ONLY
             """.trimIndent()
         )
-            .bind("offset", (page.value * itemsPerPage.value))
             .bind("limit", itemsPerPage.value)
+            .bind("offset", ((page.value - 1) * itemsPerPage.value))
             .mapTo<JdbiUserAndStatsModel>()
             .map { it.toDomainModel() }.toList()
 
@@ -196,7 +196,7 @@ class JdbiUsersRepository(
         )
             .bind("term", termSQLFormat)
             .bind("limit", itemsPerPage.value)
-            .bind("offset", (page.value * itemsPerPage.value))
+            .bind("offset", ((page.value - 1) * itemsPerPage.value))
             .mapTo<JdbiUserAndStatsModel>()
             .map { it.toDomainModel() }.toList()
 

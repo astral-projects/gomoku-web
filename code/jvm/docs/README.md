@@ -67,7 +67,7 @@ The conceptual model has the following restrictions:
 - `Token` entity:
     - The `created_at` and `last_used_at` attributes represent the seconds since
       the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time), and should be greater than 0.
-    - The `last_used` attribute should be greater than or equal to the `created_at` attribute;
+  - The `last_used_at` attribute should be greater than or equal to the `created_at` attribute;
 
 - `Statistics` entity:
     - The `games_played`, `games_won`, `games_drawn` and `points` attributes should be greater than 0;

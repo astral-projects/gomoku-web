@@ -1,47 +1,51 @@
-import { callApi } from '../api/apiService';
-import { Method } from '../api/apiService';
-import { LoginInputModel } from './models/users/LoginInputModel';
-import { RegisterInputModel } from './models/users/RegisterInputModel';
-import { LoginOutput } from './models/users/LoginOuputModel';
-import { HomeOutput } from './models/users/HomeOutputModel';
-import { RegisterOutput } from './models/users/RegisterOuputModel';
-import { PaginatedResult } from './models/users/PaginatedResultModel';
-import { UserStats } from '../domain/UserStats';
-import { UserStatsOutput } from './models/users/UserStatsOutputModel';
-import { findUri, replaceParams } from '../api/apiRecipes';
+import {callApi, Method} from '../api/apiService';
+import {LoginInputModel} from './models/users/LoginInputModel';
+import {RegisterInputModel} from './models/users/RegisterInputModel';
+import {LoginOutput} from './models/users/LoginOuputModel';
+import {HomeOutput} from './models/users/HomeOutputModel';
+import {RegisterOutput} from './models/users/RegisterOuputModel';
+import {PaginatedResult} from './models/users/PaginatedResultModel';
+import {UserStats} from '../domain/UserStats';
+import {UserStatsOutput} from './models/users/UserStatsOutputModel';
+import {findUri, replaceParams} from '../api/apiRecipes';
+
+const itemsPerPage = 10;
 
 export async function register(body: RegisterInputModel) {
-    return await callApi<RegisterInputModel, RegisterOutput>(await findUri('register'), Method.POST, body);
+    const uriRecipe = await findUri('register')
+    return await callApi<RegisterInputModel, RegisterOutput>(uriRecipe, Method.POST, body);
 }
 
 export async function login(body: LoginInputModel) {
-    return await callApi<LoginInputModel, LoginOutput>(await findUri('login'), Method.POST, body);
+    const uriRecipe = await findUri('login');
+    return await callApi<LoginInputModel, LoginOutput>(uriRecipe, Method.POST, body);
 }
 
 export async function logout() {
-    return await callApi(await findUri('logout'), Method.POST);
+    const uriRecipe = await findUri('logout');
+    return await callApi(uriRecipe, Method.POST);
 }
 
 export async function me() {
-    return await callApi<unknown, HomeOutput>(await findUri('me'), Method.GET);
+    const uriRecipe = await findUri('me');
+    return await callApi<unknown, HomeOutput>(uriRecipe, Method.GET);
 }
 
 export async function fetchUserStatsByUserId(userId: string) {
-    const url = replaceParams(await findUri('user/stats'), { user_id: userId });
+    const uriRecipe = await findUri('user/stats');
+    const url = replaceParams(uriRecipe, {user_id: userId});
     return await callApi<unknown, UserStatsOutput>(url, Method.GET, {});
 }
 
 export async function fetchUserStatsBySearchTerm(term: string) {
-    const url = replaceParams(await findUri('users/search'), { q: term });
-    return await callApi<unknown, PaginatedResult<UserStats>>(url, Method.GET, {});
+    const uriRecipe = await findUri('users/search');
+    console.log("uri Recipe" + uriRecipe)
+    const uri = replaceParams(uriRecipe, {term: term});
+    return await callApi<unknown, PaginatedResult<UserStats>>(uri, Method.GET, {});
 }
 
 export async function fetchUsersStats(uri?: string) {
-    const page = 1;
-    const itemsPerPage = 10;
-    const query = `page=${page}&itemsPerPage=${itemsPerPage}`;
-    const base = `api/users/stats`;
-    const defaultUri = `${base}?${query}`;
-    const actualUri = uri ? uri : defaultUri;
-    return await callApi<unknown, PaginatedResult<UserStats>>(actualUri, Method.GET, {});
+    const uriRecipe = await findUri('users/stats')
+    const uriTemplateExpanded = replaceParams(uriRecipe, {page: 1, itemsPerPage: itemsPerPage});
+    return await callApi<unknown, PaginatedResult<UserStats>>(uri || uriTemplateExpanded, Method.GET, {});
 }

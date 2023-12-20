@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { register } from '../../services/usersServices';
-import { isSuccessful } from '../utils/responseData';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { webRoutes } from '../../App';
+import {Navigate, useLocation} from 'react-router-dom';
+import {register} from '../../services/usersServices';
+import {isSuccessful} from '../utils/responseData';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {webRoutes} from '../../App';
 
 type State =
     | {
@@ -64,7 +64,7 @@ export function Register() {
     console.log('Register');
     const [state, dispatch] = React.useReducer(reduce, {
         tag: 'editing',
-        inputs: { username: '', email: '', password: '', confirmPassword: ' ' },
+        inputs: {username: '', email: '', password: '', confirmPassword: ''},
     });
     const location = useLocation();
     if (state.tag === 'redirect') {

@@ -226,7 +226,7 @@ class UserOutputModels {
                 Rels.NEXT
             )
             link(
-                Uris.Users.stats(paginatedResult.totalPages - 1, paginatedResult.itemsPerPage),
+                Uris.Users.stats(paginatedResult.totalPages, paginatedResult.itemsPerPage),
                 Rels.LAST
             )
         }
@@ -257,7 +257,7 @@ class UserOutputModels {
         termResult: Term
     ): SirenModel<PaginatedResult<UserStatsInfo>> =
         siren(paginatedResult) {
-            clazz("users-stats")
+            clazz("user-stats-by-term")
             requireAuth()
             link(
                 Uris.Users.statsByTerm(
@@ -280,7 +280,7 @@ class UserOutputModels {
                 link(
                     Uris.Users.statsByTerm(
                         termResult.value,
-                        paginatedResult.totalPages - 1,
+                        paginatedResult.totalPages,
                         paginatedResult.itemsPerPage
                     ),
                     Rels.LAST
