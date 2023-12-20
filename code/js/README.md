@@ -79,6 +79,11 @@ The routes are the following:
 - Component: `UserStats`
 - Description: Page displaying detailed statistics for a specific user identified by id
 
+[Lobby Page](./src/pages/lobby/Lobby.tsx)
+- Path: `/lobby/:lobbyId`
+- Component: `Lobby`
+- Description: Page displaying details and status of a specific lobby identified by lobbyId.
+
 [Find Game Page](./src/pages/findGame/FindGame.tsx)
 
 - Path: `/games`

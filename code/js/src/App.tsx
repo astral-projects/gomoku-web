@@ -13,8 +13,8 @@ import { Logout } from './pages/logout/Logout';
 import { UserStats } from './pages/userstats/UserStats';
 import { RequireAuthn } from './pages/AuthContainer';
 import { NotFound } from './pages/notFound/NotFound';
-import { Rankings } from './pages/rankings/Rankings';
 import { Lobby } from './pages/lobby/Lobby';
+import { Rankings } from './pages/Rankings/Rankings';
 
 export const webRoutes = {
     home: '/',
@@ -42,11 +42,11 @@ const router = createBrowserRouter([
         children: [
             {
                 path: webRoutes.home,
-                element: <Home />
+                element: <Home />,
             },
             {
                 path: webRoutes.login,
-                element: <Login />
+                element: <Login />,
             },
             {
                 path: webRoutes.me,
@@ -58,15 +58,15 @@ const router = createBrowserRouter([
             },
             {
                 path: webRoutes.register,
-                element: <Register />
+                element: <Register />,
             },
             {
                 path: webRoutes.rankings,
-                element: <Rankings />
+                element: <Rankings />,
             },
             {
                 path: webRoutes.userStats,
-                element: <UserStats />
+                element: <UserStats />,
             },
             {
                 path: webRoutes.games,
@@ -102,15 +102,15 @@ const router = createBrowserRouter([
             },
             {
                 path: webRoutes.about,
-                element: <About />
+                element: <About />,
             },
             {
                 path: webRoutes.error,
-                element: <Error />
+                element: <Error />,
             },
             {
                 path: '*',
-                element: <NotFound />
+                element: <NotFound />,
             },
         ],
     },

@@ -69,7 +69,7 @@ export type Action =
       }
     | { type: 'win'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { type: 'draw'; boardSize: number; grid: string[]; opponent: string; message: string }
-    | { type: 'lose'; boardSize: number; grid: string[]; opponent: string; message: string }
+    | { type: 'lost'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { type: 'error'; message: string };
 
 /**
@@ -94,7 +94,7 @@ function gameReducer(state: State, action: Action): State {
                 IsYourTurn: action.IsYourTurn,
                 errorMessage: action.errorMessage,
             };
-        case 'lose':
+        case 'lost':
         case 'win':
         case 'draw':
             return {
@@ -154,7 +154,7 @@ function game(
                 });
             } else {
                 dispatch({
-                    type: 'lose',
+                    type: 'lost',
                     boardSize: game.properties.variant.boardSize,
                     grid: game.properties.board.grid,
                     opponent: opp,
