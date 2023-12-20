@@ -79,6 +79,10 @@ export function Register() {
             return;
         }
         dispatch({ type: 'submit' });
+        if (state.inputs.password !== state.inputs.confirmPassword) {
+            dispatch({ type: 'error', message: 'Passwords do not match' });
+            return;
+        }
         register({ username: state.inputs.username, email: state.inputs.email, password: state.inputs.password }).then(
             result => {
                 if (!isSuccessful(result.contentType)) {

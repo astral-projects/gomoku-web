@@ -5,20 +5,20 @@
 ## Table of Contents
 
 - [Gomoku - Backend Documentation 🉐](#gomoku---backend-documentation-)
-  - [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-  - [Pages](#pages)
-  - [Code Structure](#code-structure)
-  - [API](#api)
-    - [Connection](#connection)
-    - [Service](#service)
-    - [Recipes](#recipes)
-  - [React Context](#react-context)
-  - [Webpack Configuration](#webpack-configuration)
-  - [Authentication](#authentication)
-  - [Tests](#tests)
-    - [Implementation Challenges](#implementation-challenges)
-    - [Further Improvements](#further-improvements)
+    - [Table of Contents](#table-of-contents)
+    - [Introduction](#introduction)
+    - [Pages](#pages)
+    - [Code Structure](#code-structure)
+    - [API](#api)
+        - [Connection](#connection)
+        - [Service](#service)
+        - [Recipes](#recipes)
+    - [React Context](#react-context)
+    - [Webpack Configuration](#webpack-configuration)
+    - [Authentication](#authentication)
+    - [Tests](#tests)
+        - [Implementation Challenges](#implementation-challenges)
+        - [Further Improvements](#further-improvements)
 
 ---
 
@@ -125,10 +125,10 @@ The frontend code is organized in the following way:
         - `components` - Contains some React components used globally in the application;
         - `pages` - Contains the React components and pages used in the application;
         - `domain` - Contains the domain classes used in the application;
-      - `services` - Contains the services used in the application, the media types used and the input and output
-        models;
-        - `App.js` - The main component of the application;
-        - `index.js` - The entry point of the application;
+        - `services` - Contains the services used in the application, the media types used and the input and output
+          models;
+            - `App.js` - The main component of the application;
+            - `index.js` - The entry point of the application;
 
 In the `js` folder, there are other files used for the development of the application; that are equally relevant to
 mention:
@@ -150,12 +150,12 @@ by the API, such as `get`, `post`, `put` and `delete`, using a generic `fetchAPI
 
 ```typescript
 export type ApiResponse<T> = {
-    contentType: string;
-    json: T;
+  contentType: string;
+  json: T;
 }
 
 async function fetchApi<T>(path: string, options: Options): Promise<ApiResponse<T>> {
-    // ...
+  // ...
 }
 ```
 
@@ -173,8 +173,8 @@ receives the HTTP method, the URI and the optional request body and returns a `P
 
 ```typescript
 export async function callApi<B, T>(uri: string, method: Method, body?: B)
-    : Promise<ApiResponse<T | ProblemModel>> {
-    // ...
+  : Promise<ApiResponse<T | ProblemModel>> {
+  // ...
 }
 ```
 
@@ -244,7 +244,26 @@ When logging out, the cookie will present an expired token.
 
 The frontend tests use the [Playwright](https://playwright.dev/) framework to test the application in a browser.
 
-TODO()
+Playwright is a powerful, open-source framework developed by Microsoft that enables developers to automate browser tasks
+with ease.
+It supports all modern web browsers including Chromium, Firefox, and WebKit, and allows for testing on
+multiple browser types with a single API.
+
+The tests are located in the [tests](./tests) folder and can be run with the following command inside
+the [js](./) folder:
+
+```shell
+npm run test
+```
+
+Inside the tests folder we have the following files:
+ - [`homePageTest.spec.ts`](./tests/homePageTest.spec.ts) - Contains the tests for the home page;
+ - [`loginPageTest.spec.ts`](./tests/loginPageTest.spec.ts) - Contains the tests for the login page;
+ - [`mePageTest.spec.ts`](./tests/mePageTest.spec.ts) - Contains the tests for the Me page;
+ - [`variantsPageTest.spec.ts`](./tests/variantsPageTest.spec.ts) - Contains the tests for the variants' page;
+
+Sadly, we did not have enough time to implement more tests. We plan to implement more tests for the other pages like
+we say in the [Further Improvements](#further-improvements) section.
 
 ### Implementation Challenges
 
@@ -253,7 +272,10 @@ TODO()
   We had to make some changes to the API, particularly using the siren media type, and integrate it with the frontend,
   was not an easy task.
 
-- **Concurrency** - TODO()
+- **Concurrency** - The concurrency was a challenge because we had to deal with multiple asynchronous operations, such
+  the initial call to the API to obtain the uri templates. We had to do a mechanism to wait for the response of the API
+  and then continue the execution of the application. We resolved this issue by using the `Promise` class that was not
+  easy to understand at first, but we managed to solve the problem.
 
 ### Further Improvements
 
