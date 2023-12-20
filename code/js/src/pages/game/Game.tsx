@@ -337,6 +337,16 @@ export function Game() {
     switch (state.tag) {
         case 'loading':
             return <div>Loading game...</div>;
+
+        case 'error':
+            return (
+                <div>
+                    <div>{state.message}</div>
+                    <div>
+                        <Link to={webRoutes.games}>Start New Game</Link>
+                    </div>
+                </div>
+            );
         case 'notYourTurn':
             return (
                 <div>
