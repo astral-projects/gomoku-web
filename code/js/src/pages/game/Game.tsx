@@ -22,12 +22,20 @@ function columnIndexToLetter(index: number) {
  * @param grid - The grid of the board.
  * @param opponent - The opponent of the game.
  * @param message - The message to be displayed.
-
+ * @param IsYourTurn - The boolean that indicates if it is the turn of the user.
+ * @param errorMessage - The error message to be displayed.
  */
 type State =
     | { tag: 'loading' }
-    | { tag: 'notYourTurn'; boardSize: number; grid: string[]; opponent: string }
-    | { tag: 'your-turn'; boardSize: number; grid: string[]; opponent: string; message: string | undefined }
+    | {
+          tag: 'play';
+          boardSize: number;
+          grid: string[];
+          opponent: string;
+          message: string;
+          IsYourTurn: boolean;
+          errorMessage?: string;
+      }
     | { tag: 'game-state'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { tag: 'error'; message: string };
 /**
@@ -37,11 +45,28 @@ type State =
  * @param grid - The grid of the board.
  * @param opponent - The opponent of the game.
  * @param message - The message to be displayed.
+ * @param errorMessage - The error message to be displayed.
  */
 export type Action =
     | { type: 'start-fetching' }
-    | { type: 'set-turn'; boardSize: number; grid: string[]; opponent: string; message?: string }
-    | { type: 'set-not-your-turn'; boardSize: number; grid: string[]; opponent: string }
+    | {
+          type: 'set-turn';
+          boardSize: number;
+          grid: string[];
+          opponent: string;
+          IsYourTurn: boolean;
+          message: string;
+          errorMessage?: string;
+      }
+    | {
+          type: 'set-not-your-turn';
+          boardSize: number;
+          grid: string[];
+          opponent: string;
+          IsYourTurn: boolean;
+          message: string;
+          errorMessage?: string;
+      }
     | { type: 'win'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { type: 'draw'; boardSize: number; grid: string[]; opponent: string; message: string }
     | { type: 'lose'; boardSize: number; grid: string[]; opponent: string; message: string }
@@ -58,39 +83,19 @@ function gameReducer(state: State, action: Action): State {
         case 'start-fetching':
             return { tag: 'loading' };
         case 'set-turn':
-            return {
-                tag: 'your-turn',
-                boardSize: action.boardSize,
-                grid: action.grid,
-                opponent: action.opponent,
-                message: action.message,
-            };
         case 'set-not-your-turn':
             return {
                 ...state,
-                tag: 'notYourTurn',
+                tag: 'play',
                 boardSize: action.boardSize,
                 grid: action.grid,
                 opponent: action.opponent,
+                message: action.message,
+                IsYourTurn: action.IsYourTurn,
+                errorMessage: action.errorMessage,
             };
         case 'lose':
-            return {
-                ...state,
-                tag: 'game-state',
-                boardSize: action.boardSize,
-                grid: action.grid,
-                opponent: action.opponent,
-                message: action.message,
-            };
         case 'win':
-            return {
-                ...state,
-                tag: 'game-state',
-                boardSize: action.boardSize,
-                grid: action.grid,
-                opponent: action.opponent,
-                message: action.message,
-            };
         case 'draw':
             return {
                 ...state,
@@ -176,6 +181,8 @@ function game(
                 boardSize: game.properties.variant.boardSize,
                 grid: game.properties.board.grid,
                 opponent: opp,
+                IsYourTurn: isYourTurn,
+                message: 'Turn: Your turn',
             });
         } else {
             dispatch({
@@ -183,6 +190,8 @@ function game(
                 boardSize: game.properties.variant.boardSize,
                 grid: game.properties.board.grid,
                 opponent: opp,
+                IsYourTurn: isYourTurn,
+                message: 'Turn: Not your turn',
             });
         }
     }
@@ -237,6 +246,7 @@ function fetchGame(
 function handleMakeMove(
     rowIndex: number,
     colIndex: number,
+    IsYourTurn: boolean,
     size: number,
     grid: string[],
     opponent: string,
@@ -246,7 +256,7 @@ function handleMakeMove(
     isMoveInProgress: boolean,
     setIsMoveInProgress: (isMoveInProgress: boolean) => void
 ) {
-    if (isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
+    if (!IsYourTurn || isMoveInProgress || rowIndex === 0 || colIndex === 0 || rowIndex === size || colIndex === size) {
         return;
     }
     setIsMoveInProgress(true);
@@ -269,7 +279,9 @@ function handleMakeMove(
                     boardSize: size,
                     grid: grid,
                     opponent: opponent,
-                    message: errorData.detail,
+                    IsYourTurn: true,
+                    message: 'Turn: Your turn',
+                    errorMessage: errorData.detail,
                 });
             } else {
                 dispatch({ type: 'error', message: errorData.detail });
@@ -326,7 +338,7 @@ export function Game() {
         if (state.tag == 'loading' && !isFetching && userId != undefined) {
             fetchGame(currentGameId, userId, isFetching, setIsFetching, dispatch);
         }
-        if (state.tag === 'notYourTurn') {
+        if (state.tag === 'play' && !state.IsYourTurn) {
             const interval = setInterval(() => {
                 fetchGame(currentGameId, userId, isFetching, setIsFetching, dispatch, state.opponent);
             }, 5000);
@@ -347,24 +359,7 @@ export function Game() {
                     </div>
                 </div>
             );
-        case 'notYourTurn':
-            return (
-                <div>
-                    <div>{renderBoard(state.boardSize, state.grid, state.opponent)}</div>
-                    <div>Turn:Not your turn </div>
-                    <div>Player: {username}</div>
-                    <div> Opponent:{state.opponent}</div>
-                    <div>
-                        <Link
-                            to={webRoutes.games}
-                            onClick={() => handleLeaveGame(currentGameId, dispatch, setIsFetching)}
-                        >
-                            Leave Game
-                        </Link>
-                    </div>
-                </div>
-            );
-        case 'your-turn':
+        case 'play':
             return (
                 <div>
                     <div>
@@ -372,6 +367,7 @@ export function Game() {
                             state.boardSize,
                             state.grid,
                             state.opponent,
+                            state.IsYourTurn,
                             currentGameId,
                             userId,
                             dispatch,
@@ -380,10 +376,10 @@ export function Game() {
                             handleMakeMove
                         )}
                     </div>
-                    <div>Turn: Your turn </div>
+                    <div>{state.message} </div>
                     <div>Player: {username}</div>
                     <div> Opponent:{state.opponent}</div>
-                    <div>{state.message}</div>
+                    <div>{state.errorMessage}</div>
                     <div>
                         <Link
                             to={webRoutes.games}

@@ -27,11 +27,12 @@ function parseGrid(grid) {
     });
     return parsedGrid;
 }
-
+//função clçoserue
 export function renderBoard(
     boardSize: number,
     grid: string[],
     opponnet: string,
+    IsYourTurn?: boolean,
     currentGameId?: number,
     userId?: number,
     dispatch?: (action: Action) => void,
@@ -40,6 +41,7 @@ export function renderBoard(
     handleIntersectionClick?: (
         rowIndex: number,
         colIndex: number,
+        IsYourTurn: boolean,
         size: number,
         grid: string[],
         opponent: string,
@@ -89,6 +91,7 @@ export function renderBoard(
                                           handleIntersectionClick(
                                               rowIndex,
                                               colIndex,
+                                              IsYourTurn ?? false,
                                               boardSize,
                                               grid,
                                               opponnet,
