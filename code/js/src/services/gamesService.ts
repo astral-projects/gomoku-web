@@ -5,7 +5,7 @@ import {LobbyOutput} from './models/lobby/LobbyOutputModel.js';
 import {GameOutput} from './models/games/GameOutputModel.js';
 import {VariantsInputModel} from './models/games/VariantsInputModel.js';
 import {MoveInputModel} from './models/games/MoveInputModel.js';
-import { findUri, replaceParams } from '../api/apiRecipes';
+import {findUri, replaceParams} from '../api/apiRecipes';
 
 
 export async function findGame(body: VariantsInputModel) {

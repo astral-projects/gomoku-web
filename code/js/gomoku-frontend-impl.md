@@ -182,9 +182,9 @@ Service implementations can be found in the [services](./src/services) folder.
 
 Currently, the following services are implemented:
 
-- [UserService](./src/services/userServices.ts) - Services for user-related operations;
-- [GameService](./src/services/gameServices.ts) - Services for game-related operations;
-- [SystemService](./src/services/systemServices.ts) - Services for system-related operations;
+- [UsersService](./src/services/usersService.ts) - Services for user-related operations;
+- [GamesService](./src/services/gamesService.ts) - Services for game-related operations;
+- [SystemService](./src/services/systemService.ts) - Services for system-related operations;
 
 ### Recipes
 
@@ -249,21 +249,24 @@ with ease.
 It supports all modern web browsers including Chromium, Firefox, and WebKit, and allows for testing on
 multiple browser types with a single API.
 
-The tests are located in the [tests](./tests) folder and can be run with the following command inside
-the [js](./) folder:
+The tests are located in the [tests](./tests) folder and can be run with the following command inside the `js` folder:
 
 ```shell
 npm run test
 ```
 
 Inside the tests folder we have the following files:
- - [`homePageTest.spec.ts`](./tests/homePageTest.spec.ts) - Contains the tests for the home page;
- - [`loginPageTest.spec.ts`](./tests/loginPageTest.spec.ts) - Contains the tests for the login page;
- - [`mePageTest.spec.ts`](./tests/mePageTest.spec.ts) - Contains the tests for the Me page;
- - [`variantsPageTest.spec.ts`](./tests/variantsPageTest.spec.ts) - Contains the tests for the variants' page;
+
+- [`homePageTest.spec.ts`](./tests/homePageTest.spec.ts) - Contains the tests for the [Home](src/pages/home/Home.tsx)
+  page;
+- [`loginPageTest.spec.ts`](./tests/loginPageTest.spec.ts) - Contains the tests for
+  the [Login](src/pages/login/Login.tsx) page;
+- [`mePageTest.spec.ts`](./tests/mePageTest.spec.ts) - Contains the tests for the [Me](src/pages/me/Me.tsx) page;
+- [`variantsPageTest.spec.ts`](./tests/variantsPageTest.spec.ts) - Contains the tests for
+  the [Variants](src/pages/findGame/FindGame.tsx) page;
 
 Sadly, we did not have enough time to implement more tests. We plan to implement more tests for the other pages like
-we say in the [Further Improvements](#further-improvements) section.
+we mention in the [Further Improvements](#further-improvements) section.
 
 ### Implementation Challenges
 
@@ -273,6 +276,7 @@ we say in the [Further Improvements](#further-improvements) section.
   was not an easy task.
 
 - **Concurrency** - The concurrency was a challenge because we had to deal with multiple asynchronous operations, such
+  as
   the initial call to the API to obtain the uri templates. We had to do a mechanism to wait for the response of the API
   and then continue the execution of the application. We resolved this issue by using the `Promise` class that was not
   easy to understand at first, but we managed to solve the problem.

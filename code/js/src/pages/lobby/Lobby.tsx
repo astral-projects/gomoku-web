@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { useCallback, useEffect, useReducer, useState } from 'react';
-import { exitLobby, waittingInLobby } from '../../services/gameServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
-import { Link, Navigate, useParams } from 'react-router-dom';
-import { webRoutes } from '../../App';
-import { replacePathVariables } from '../utils/replacePathVariables';
-import { Button } from '@mui/material';
+import {useCallback, useEffect, useReducer, useState} from 'react';
+import {exitLobby, waittingInLobby} from '../../services/gamesService';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {FindGameOutput} from '../../services/models/games/FindGameOutputModel';
+import {Link, Navigate, useParams} from 'react-router-dom';
+import {webRoutes} from '../../App';
+import {replacePathVariables} from '../utils/replacePathVariables';
+import {Button} from '@mui/material';
 
 type State =
     | { tag: 'loading' }
@@ -85,26 +85,25 @@ export function Lobby() {
     const startPollingLobbyStatus = useCallback(
         lobbyId => {
             setIsPollingActive(true);
-            const intervalId = setInterval(() => {
+            return setInterval(() => {
                 if (!isPollingActive) return;
                 waittingInLobby(lobbyId).then(result => {
                     const errorData = result.json as ProblemModel;
                     const successData = result.json as unknown as FindGameOutput;
                     if (result.contentType === 'application/problem+json') {
-                        dispatch({ type: 'error', message: errorData.detail });
+                        dispatch({type: 'error', message: errorData.detail});
                         setIsPollingActive(false);
                     } else if (result.contentType === 'application/vnd.siren+json') {
                         if (successData.class.find(c => c == 'lobby') != undefined) {
-                            dispatch({ type: 'waiting-in-lobby', lobbyId: successData.properties.id });
+                            dispatch({type: 'waiting-in-lobby', lobbyId: successData.properties.id});
                         } else if (successData.class.find(c => c == 'game') != undefined) {
                             const gameId = successData.properties.id;
                             setIsPollingActive(false);
-                            dispatch({ type: 'start-game', gameId: gameId });
+                            dispatch({type: 'start-game', gameId: gameId});
                         }
                     }
                 });
             }, 3000);
-            return intervalId;
         },
         [setIsPollingActive, isPollingActive]
     );

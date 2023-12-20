@@ -26,7 +26,6 @@ class GameTests {
     @LocalServerPort
     var port: Int = 0
 
-    // TODO("is using database data, should be marked as annotation")
     val variantId = getTestVariantId().value
 
     @Test
@@ -282,7 +281,8 @@ class GameTests {
             .expectStatus().isOk
             .expectBody()
             .jsonPath("$.properties.gameId").isEqualTo(gameId)
-            .jsonPath("$.properties.message").isEqualTo("User with id <$idOfPlayerToken> left the Game with id <$gameId>.")
+            .jsonPath("$.properties.message")
+            .isEqualTo("User with id <$idOfPlayerToken> left the Game with id <$gameId>.")
             .returnResult()
             .responseBody!!
 
@@ -360,5 +360,233 @@ class GameTests {
 
         assertTrue(getVariantsResponse.isNotEmpty())
         assertTrue(variants.toList().find { it.path("id").path("value").asInt() == variantId } != null)
+    }
+
+    @Test
+    fun `can make a move on the board`() {
+        // given: an HTTP client and pushing the variant to the database
+        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
+
+        // and: a random user to be the host
+        val (hostId, hostRegistrationCredentials) = createRandomUser(client)
+
+        // and: a token
+        val hostToken = createToken(client, hostRegistrationCredentials)
+
+        // and: a user tries to find a game
+        findGame(client, hostToken, true)
+
+        // and: guest joins the lobby
+        val (guestId, guestRegistrationCredentials) = createRandomUser(client)
+        val guestToken = createToken(client, guestRegistrationCredentials)
+        val gameId = findGame(client, guestToken, false)
+
+        // when: a user tries to make a move on the board
+        // then: the response is a 200 with the proper body
+        val validMoveCol = "a"
+        val validMoveRow = 7
+        val firstMove = mapOf(
+            "col" to validMoveCol,
+            "row" to validMoveRow
+        )
+        client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $hostToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.id").isEqualTo(gameId)
+            .jsonPath("$.properties.state.name").isEqualTo(GameState.IN_PROGRESS.name.lowercase(Locale.getDefault()))
+            .jsonPath("$.properties.variant.id").isEqualTo(variantId)
+            .jsonPath("$.properties.hostId").isEqualTo(hostId)
+            .jsonPath("$.properties.guestId").isEqualTo(guestId)
+            .jsonPath("$.properties.board.grid").isArray
+            .jsonPath("$.properties.board.grid[0]").isEqualTo("a7-w")
+            .jsonPath("$.properties.board.turn.player").isEqualTo("B")
+            .returnResult()
+            .responseBody!!
+
+        // when: a user tries to make a move on the board again
+        // then: the response is a 400 with the proper body
+        val sameMoveProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $hostToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.notYourTurn, sameMoveProblem.type)
+        assertEquals("Not your turn", sameMoveProblem.title)
+        assertEquals(URI("/api/games/$gameId/move"), sameMoveProblem.instance)
+        assertEquals(400, sameMoveProblem.status)
+
+        // when: the other user tries to make a move an invalid move on the board
+        val invalidMoveCol = "a"
+        val invalidMoveRow = 1001021
+        val invalidMove = mapOf(
+            "col" to invalidMoveCol,
+            "row" to invalidMoveRow
+        )
+
+        // then: the response is a 400 with the proper body
+        val invalidMoveProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $guestToken")
+            .bodyValue(invalidMove)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.invalidMove, invalidMoveProblem.type)
+        assertEquals("Invalid position", invalidMoveProblem.title)
+        assertEquals("The position <$invalidMoveCol, $invalidMoveRow> is invalid", invalidMoveProblem.detail)
+        assertEquals(URI("/api/games/$gameId/move"), invalidMoveProblem.instance)
+        assertEquals(400, invalidMoveProblem.status)
+        assertEquals(mapOf("gameId" to gameId), invalidMoveProblem.data)
+
+        // when: a user tries to make a move on the board in the same position
+        // then: the response is a 400 with the proper body
+        val samePositionProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $guestToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.positionTaken, samePositionProblem.type)
+        assertEquals("Position taken", samePositionProblem.title)
+        assertEquals("The position <$validMoveCol, $validMoveRow> is already taken", samePositionProblem.detail)
+        assertEquals(URI("/api/games/$gameId/move"), samePositionProblem.instance)
+        assertEquals(400, samePositionProblem.status)
+        assertEquals(mapOf("gameId" to gameId), samePositionProblem.data)
+
+        // when: a another user tries to make plays in this game
+        val (outsiderId, outsiderRegistrationCredentials) = createRandomUser(client)
+        val outsiderToken = createToken(client, outsiderRegistrationCredentials)
+
+        // then: the response is a 400 with the proper body
+        val outsiderMoveProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $outsiderToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isNotFound
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.userNotInGame, outsiderMoveProblem.type)
+        assertEquals("User not in game", outsiderMoveProblem.title)
+        assertEquals("The user with id <$outsiderId> is not in the game.", outsiderMoveProblem.detail)
+        assertEquals(URI("/api/games/$gameId/move"), outsiderMoveProblem.instance)
+        assertEquals(404, outsiderMoveProblem.status)
+        assertEquals(
+            mapOf(
+                "userId" to outsiderId,
+                "gameId" to gameId
+            ),
+            outsiderMoveProblem.data
+        )
+
+        // when: a user tries to make a move on game that doesn't exist
+        val nonExistentGameId = newTestId().value
+
+        // then: the response is a 404 with the proper problem
+        val gameNotFoundProblem = client.post().uri("/games/$nonExistentGameId/move")
+            .header("Authorization", "Bearer $guestToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isNotFound
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.gameNotFound, gameNotFoundProblem.type)
+        assertEquals("Game was not found", gameNotFoundProblem.title)
+        assertEquals("The game with id <$nonExistentGameId> was not found", gameNotFoundProblem.detail)
+        assertEquals(URI("/api/games/$nonExistentGameId/move"), gameNotFoundProblem.instance)
+        assertEquals(404, gameNotFoundProblem.status)
+
+        // when: one of the users exists the game
+        // then: the response is a 200 with the proper body
+        val playerToken = if (Random().nextBoolean()) guestToken else hostToken
+        val idOfPlayerToken = if (playerToken == guestToken) guestId else hostId
+        client.post().uri("/games/$gameId/exit")
+            .header("Authorization", "Bearer $playerToken")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.properties.gameId").isEqualTo(gameId)
+            .jsonPath("$.properties.message")
+            .isEqualTo("User with id <$idOfPlayerToken> left the Game with id <$gameId>.")
+            .returnResult()
+            .responseBody!!
+
+        // when: one of the users tries to make a move on a game that is already finished
+        // then: the response is a 400 with the proper problem
+        val gameAlreadyFinishedProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $playerToken")
+            .bodyValue(firstMove)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.gameAlreadyFinished, gameAlreadyFinishedProblem.type)
+        assertEquals("Game already finished", gameAlreadyFinishedProblem.title)
+        assertEquals("The game with id <$gameId> is already finished", gameAlreadyFinishedProblem.detail)
+        assertEquals(URI("/api/games/$gameId/move"), gameAlreadyFinishedProblem.instance)
+        assertEquals(400, gameAlreadyFinishedProblem.status)
+
+        // when: a user tries to make a move on the board with an invalid row
+        val invalidRow = 0
+        // then: the response is a 400 with the proper problem
+        val invalidRowProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $hostToken")
+            .bodyValue(
+                mapOf(
+                    "col" to "a",
+                    "row" to invalidRow
+                )
+            )
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        // because of Spring validation
+        assertEquals(Problem.invalidRequestContent, invalidRowProblem.type)
+        assertEquals("Method argument not valid", invalidRowProblem.title)
+        assertEquals(400, invalidRowProblem.status)
+
+        // when: a user tries to make a move on the board with an invalid column
+        val invalidColumn = "-"
+
+        // then: the response is a 400 with the proper problem
+        val invalidColumnProblem = client.post().uri("/games/$gameId/move")
+            .header("Authorization", "Bearer $hostToken")
+            .bodyValue(
+                mapOf(
+                    "col" to invalidColumn,
+                    "row" to 10
+                )
+            )
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody(Problem::class.java)
+            .returnResult()
+            .responseBody!!
+
+        assertEquals(Problem.invalidColumn, invalidColumnProblem.type)
+        assertEquals("Invalid column", invalidColumnProblem.title)
+        assertEquals("The column must be a letter between a and z", invalidColumnProblem.detail)
+        assertEquals(URI("/api/games/$gameId/move"), invalidColumnProblem.instance)
+        assertEquals(400, invalidColumnProblem.status)
     }
 }

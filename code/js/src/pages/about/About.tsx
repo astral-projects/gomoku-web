@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { ProblemModel } from '../../services/media/ProblemModel.js';
-import { isSuccessful } from '../utils/responseData';
-import { fetchSystemInfo } from '../../services/systemServices';
-import { SystemOutput, SystemOutputModel } from '../../services/models/system/SystemOutputModel';
-import { useReducer } from 'react';
+import {useReducer} from 'react';
+import {ProblemModel} from '../../services/media/ProblemModel.js';
+import {isSuccessful} from '../utils/responseData';
+import {fetchSystemInfo} from '../../services/systemService';
+import {SystemOutput, SystemOutputModel} from '../../services/models/system/SystemOutputModel';
 
 type State = { tag: 'loading' } | { tag: 'loaded'; data: SystemOutputModel } | { tag: 'error'; message: string };
 

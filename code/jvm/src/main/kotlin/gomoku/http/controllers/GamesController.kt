@@ -21,7 +21,6 @@ import gomoku.services.game.GamesService
 import gomoku.services.game.GettingGameError
 import gomoku.services.user.UsersService
 import gomoku.utils.Failure
-import gomoku.utils.NotTested
 import gomoku.utils.Success
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
@@ -198,7 +197,6 @@ class GamesController(
      * @param user the authenticated user.
      */
     @PostMapping(Uris.Games.MAKE_MOVE)
-    @NotTested
     fun makeMove(
         @Valid
         @Range(min = 1)
@@ -261,12 +259,6 @@ class GamesController(
                                         instance = instance
                                     )
                                 }
-
-                                GameMakeMoveError.UserDoesNotBelongToThisGame -> Problem.userDoesntBelongToThisGame(
-                                    userId = userId,
-                                    gameId = gameIdResult.value,
-                                    instance = instance
-                                )
                             }
 
                             is Success -> when (val game = gamesService.getGameById(gameIdResult.value)) {

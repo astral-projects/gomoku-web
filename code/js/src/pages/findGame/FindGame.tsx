@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Navigate } from 'react-router-dom';
-import { findGame, getVariants } from '../../services/gameServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
-import { webRoutes } from '../../App';
-import { replacePathVariables } from '../utils/replacePathVariables';
-import { useEffect, useReducer, useState } from 'react';
+import {useEffect, useReducer, useState} from 'react';
+import {Navigate} from 'react-router-dom';
+import {findGame, getVariants} from '../../services/gamesService';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {FindGameOutput} from '../../services/models/games/FindGameOutputModel';
+import {webRoutes} from '../../App';
+import {replacePathVariables} from '../utils/replacePathVariables';
 
 /**
  * The state of the component can be in one of the following states:

@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useSetUserId, useSetUserName } from '../GomokuContainer';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { isSuccessful } from '../utils/responseData';
-import { logUnexpectedAction } from '../utils/logUnexpetedAction';
-import { logout } from '../../services/usersServices';
-import { useEffect } from 'react';
-import { webRoutes } from '../../App';
+import {useEffect} from 'react';
+import {Navigate, useLocation} from 'react-router-dom';
+import {useSetUserId, useSetUserName} from '../GomokuContainer';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {isSuccessful} from '../utils/responseData';
+import {logUnexpectedAction} from '../utils/logUnexpetedAction';
+import {logout} from '../../services/usersService';
+import {webRoutes} from '../../App';
 
 type State = { tag: 'loading' } | { tag: 'redirect' } | { tag: 'notLoggedIn' };
 

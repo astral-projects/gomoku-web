@@ -1,15 +1,15 @@
 import * as React from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
-import { login } from '../../services/usersServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { LoginOutput } from '../../services/models/users/LoginOuputModel';
-import { Id, User, Username } from '../../domain/User';
-import { Entity } from '../../services/media/siren/Entity';
-import { useSetUserName, useSetUserId } from '../GomokuContainer';
-import { logUnexpectedAction } from '../utils/logUnexpetedAction';
-import { isSuccessful } from '../utils/responseData';
-import { webRoutes } from '../../App';
-import { useReducer } from 'react';
+import {useReducer} from 'react';
+import {Link, Navigate, useLocation} from 'react-router-dom';
+import {login} from '../../services/usersService';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {LoginOutput} from '../../services/models/users/LoginOuputModel';
+import {Id, User, Username} from '../../domain/User';
+import {Entity} from '../../services/media/siren/Entity';
+import {useSetUserId, useSetUserName} from '../GomokuContainer';
+import {logUnexpectedAction} from '../utils/logUnexpetedAction';
+import {isSuccessful} from '../utils/responseData';
+import {webRoutes} from '../../App';
 
 type State =
     | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }

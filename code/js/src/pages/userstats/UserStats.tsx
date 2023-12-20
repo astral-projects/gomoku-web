@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {Link, useLocation} from 'react-router-dom';
-import {fetchUserStatsByUserId} from '../../services/usersServices';
+import {fetchUserStatsByUserId} from '../../services/usersService';
 import {UserStats} from '../../domain/UserStats.js';
 import {ProblemModel} from '../../services/media/ProblemModel.js';
 import {isSuccessful} from '../utils/responseData';
 import {UserStatsOutput} from '../../services/models/users/UserStatsOutputModel';
-import { webRoutes } from '../../App';
+import {webRoutes} from '../../App';
 
 type State = { tag: 'loading' } | { tag: 'loaded'; data: UserStats } | { tag: 'error'; message: string };
 

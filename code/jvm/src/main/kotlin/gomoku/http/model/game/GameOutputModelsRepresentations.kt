@@ -130,7 +130,6 @@ class GameOutputModelsRepresentations {
             link(Uris.Games.exitGame(gameId), Rels.SELF)
         }
 
-
     fun makeMove(game: Game, gameId: Id) =
         siren(
             GameOutputModel.serializeFrom(game)

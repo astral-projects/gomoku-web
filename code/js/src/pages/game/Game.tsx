@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { exitGame, getGame } from '../../services/gameServices';
-import { makeMove } from '../../services/gameServices';
-import { ProblemModel } from '../../services/media/ProblemModel';
-import { GameOutput } from '../../services/models/games/GameOutputModel';
-import { renderBoard } from './BoardDraw';
-import { useCurrentUserId, useCurrentUserName } from '../GomokuContainer';
-import { useParams, Link } from 'react-router-dom';
-import { Entity } from '../../services/media/siren/Entity';
-import { UserEntity } from '../../services/models/users/UserEntityOutputModel';
-import { webRoutes } from '../../App';
-import { useEffect } from 'react';
+import {useEffect} from 'react';
+import {exitGame, getGame, makeMove} from '../../services/gamesService';
+import {ProblemModel} from '../../services/media/ProblemModel';
+import {GameOutput} from '../../services/models/games/GameOutputModel';
+import {renderBoard} from './BoardDraw';
+import {useCurrentUserId, useCurrentUserName} from '../GomokuContainer';
+import {Link, useParams} from 'react-router-dom';
+import {Entity} from '../../services/media/siren/Entity';
+import {UserEntity} from '../../services/models/users/UserEntityOutputModel';
+import {webRoutes} from '../../App';
 
 function columnIndexToLetter(index: number) {
     return String.fromCharCode(97 + index);

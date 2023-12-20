@@ -1,4 +1,4 @@
-import { findUri } from '../api/apiRecipes';
+import {findUri} from '../api/apiRecipes';
 import {callApi, Method} from '../api/apiService';
 import {SystemOutput} from './models/system/SystemOutputModel';
 

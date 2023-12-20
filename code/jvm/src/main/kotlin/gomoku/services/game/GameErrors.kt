@@ -32,7 +32,6 @@ typealias GameUpdateResult = Either<GameUpdateError, Boolean>
 sealed class GameMakeMoveError {
     class MoveNotValid(val error: MakeMoveError) : GameMakeMoveError()
     data object UserNotInGame : GameMakeMoveError()
-    data object UserDoesNotBelongToThisGame : GameMakeMoveError()
     data object GameNotFound : GameMakeMoveError()
     data object VariantNotFound : GameMakeMoveError()
 }

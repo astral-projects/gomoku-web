@@ -944,4 +944,24 @@ class UserTests {
         assertEquals("Invalid search term length", shortSearchTermProblem.title)
         assertEquals(400, shortSearchTermProblem.status)
     }
+
+    @Test
+    fun `can get home page`() {
+        // given: an HTTP client
+        val client = WebTestClient.bindToServer().baseUrl("http://localhost:$port/api").build()
+
+        // when: getting the home page
+        // then: the response is a 200 with the proper representation
+        client.get().uri("/")
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().value("Content-Type") {
+                assertEquals("application/vnd.siren+json", it)
+            }
+            .expectBody()
+            .jsonPath("$.properties.message").isEqualTo("Welcome to Gomoku API.")
+            .jsonPath("$.recipeLinks").isArray
+            .jsonPath("$.links[0].rel").isEqualTo("self")
+            .jsonPath("$.links[0].href").isEqualTo("/api/")
+    }
 }
