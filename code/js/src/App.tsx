@@ -42,37 +42,37 @@ const router = createBrowserRouter([
         children: [
             {
                 path: webRoutes.home,
-                element: <Home />,
+                element: <Home />
             },
             {
                 path: webRoutes.login,
-                element: <Login />,
+                element: <Login />
             },
             {
                 path: webRoutes.me,
                 element: (
                     <RequireAuthn>
-                        <Me />,
+                        <Me />
                     </RequireAuthn>
                 ),
             },
             {
                 path: webRoutes.register,
-                element: <Register />,
+                element: <Register />
             },
             {
                 path: webRoutes.rankings,
-                element: <Rankings />,
+                element: <Rankings />
             },
             {
                 path: webRoutes.userStats,
-                element: <UserStats />,
+                element: <UserStats />
             },
             {
                 path: webRoutes.games,
                 element: (
                     <RequireAuthn>
-                        <FindGame />,
+                        <FindGame />
                     </RequireAuthn>
                 ),
             },
@@ -80,7 +80,7 @@ const router = createBrowserRouter([
                 path: webRoutes.lobby,
                 element: (
                     <RequireAuthn>
-                        <Lobby />,
+                        <Lobby />
                     </RequireAuthn>
                 ),
             },
@@ -96,21 +96,21 @@ const router = createBrowserRouter([
                 path: webRoutes.logout,
                 element: (
                     <RequireAuthn>
-                        <Logout />,
+                        <Logout />
                     </RequireAuthn>
                 ),
             },
             {
                 path: webRoutes.about,
-                element: <About />,
+                element: <About />
             },
             {
                 path: webRoutes.error,
-                element: <Error />,
+                element: <Error />
             },
             {
                 path: '*',
-                element: <NotFound />,
+                element: <NotFound />
             },
         ],
     },

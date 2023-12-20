@@ -3,7 +3,7 @@ import { useCallback, useEffect, useReducer, useState } from 'react';
 import { exitLobby, waittingInLobby } from '../../services/gameServices';
 import { ProblemModel } from '../../services/media/ProblemModel';
 import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
-import { Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { webRoutes } from '../../App';
 import { replacePathVariables } from '../utils/replacePathVariables';
 import { Button } from '@mui/material';
@@ -161,7 +161,10 @@ export function Lobby() {
         case 'error':
             return (
                 <div className="container">
-                    <h1>Error: {state.message}</h1>
+                    You dont belong to this lobby
+                    <p>
+                        <Link to={webRoutes.home}>Go back Home</Link>
+                    </p>
                 </div>
             );
         case 'redirectHome':

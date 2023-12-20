@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {Navigate, useLocation} from 'react-router-dom';
-import {register} from '../../services/usersServices';
-import {isSuccessful} from '../utils/responseData';
-import {ProblemModel} from '../../services/media/ProblemModel';
-import {webRoutes} from '../../App';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { register } from '../../services/usersServices';
+import { isSuccessful } from '../utils/responseData';
+import { ProblemModel } from '../../services/media/ProblemModel';
+import { webRoutes } from '../../App';
 
 type State =
     | {
@@ -64,7 +64,7 @@ export function Register() {
     console.log('Register');
     const [state, dispatch] = React.useReducer(reduce, {
         tag: 'editing',
-        inputs: {username: '', email: '', password: '', confirmPassword: ''},
+        inputs: { username: '', email: '', password: '', confirmPassword: '' },
     });
     const location = useLocation();
     if (state.tag === 'redirect') {
@@ -99,30 +99,35 @@ export function Register() {
     return (
         <form onSubmit={handleSubmit}>
             <fieldset disabled={state.tag !== 'editing'}>
-                <div>
-                    <label htmlFor="username">Username</label>
-                    <input id="username" type="text" name="username" value={username} onChange={handleChange} />
-                </div>
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input id="email" type="text" name="email" value={email} onChange={handleChange} />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input id="password" type="password" name="password" value={password} onChange={handleChange} />
-                </div>
-                <div>
-                    <label htmlFor="confirmPassword">Confirm Password</label>
-                    <input
-                        id="confirmPassword"
-                        type="password"
-                        name="confirmPassword"
-                        value={confirmPassword}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <button type="submit">Sign Up</button>
+                <div className="container">
+                    <div>
+                        <label htmlFor="username">Username</label>
+                        <input id="username" type="text" name="username" value={username} onChange={handleChange} />
+                    </div>
+                    <div>
+                        <label htmlFor="email">Email</label>
+                        <input id="email" type="text" name="email" value={email} onChange={handleChange} />
+                    </div>
+                    <div>
+                        <label htmlFor="password">Password</label>
+                        <input id="password" type="password" name="password" value={password} onChange={handleChange} />
+                    </div>
+                    <div>
+                        <label htmlFor="confirmPassword">Confirm Password</label>
+                        <input
+                            id="confirmPassword"
+                            type="password"
+                            name="confirmPassword"
+                            value={confirmPassword}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div>
+                        <button type="submit">Sign Up</button>
+                        <p>
+                            Already have an account? <Link to={webRoutes.login}> Login </Link>
+                        </p>
+                    </div>
                 </div>
             </fieldset>
             {state.tag === 'editing' && state.error}

@@ -110,11 +110,11 @@ export function FindGame() {
             return (
                 <div>
                     Select a variant:
-                    <select
-                        onChange={e => handleFindGame(parseInt(e.target.value), dispatch)}
+                    <select className='variants'
                         style={{ display: 'block', margin: '10px 0' }}
+                        onChange={e => handleFindGame(parseInt(e.target.value), dispatch)}
                     >
-                        <option value=""> -- select an option -- </option>
+                        <option value="variants"> -- select a variant -- </option>
                         {variants &&
                             variants.map(variant => (
                                 <option key={variant.id} value={variant.id.value}>

@@ -9,6 +9,7 @@ import { useSetUserName, useSetUserId } from '../GomokuContainer';
 import { logUnexpectedAction } from '../utils/logUnexpetedAction';
 import { isSuccessful } from '../utils/responseData';
 import { webRoutes } from '../../App';
+import { useReducer } from 'react';
 
 type State =
     | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
@@ -54,7 +55,7 @@ function reduce(state: State, action: Action): State {
 }
 
 export function Login() {
-    const [state, dispatch] = React.useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
+    const [state, dispatch] = useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
     const setUserId = useSetUserId();
     const setUserName = useSetUserName();
     const location = useLocation();
