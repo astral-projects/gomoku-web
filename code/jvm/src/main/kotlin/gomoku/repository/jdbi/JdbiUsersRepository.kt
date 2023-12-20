@@ -135,7 +135,7 @@ class JdbiUsersRepository(
     override fun getUsersStats(page: PositiveValue, itemsPerPage: PositiveValue): PaginatedResult<UserStatsInfo> {
         val result: List<UserStatsInfo> = handle.createQuery(
             """
-        SELECT id, username, email, points, RANK() OVER (ORDER BY points DESC) AS rank, games_played, games_won, games_drawn
+        SELECT id, username, email, points, row_number() OVER (ORDER BY points DESC) AS rank, games_played, games_won, games_drawn
         FROM dbo.Users AS users
         INNER JOIN dbo.Statistics AS stats ON users.id = stats.user_id
         ORDER BY points DESC
@@ -164,11 +164,18 @@ class JdbiUsersRepository(
     override fun getUserStats(userId: Id): UserStatsInfo? =
         handle.createQuery(
             """
-                select id, username, email, points, rank() over(order by points desc) as rank, games_played, games_won, games_drawn
-                from dbo.Users as users 
-                inner join dbo.Statistics as stats 
-                on users.id = stats.user_id
-                where users.id = :user_id
+            WITH RankedUsers AS (
+                SELECT users.id, users.username, users.email, stats.points, 
+                       row_number() OVER (ORDER BY stats.points DESC) as rank, 
+                       stats.games_played, stats.games_won, stats.games_drawn
+                FROM dbo.Users AS users 
+                INNER JOIN dbo.Statistics AS stats 
+                ON users.id = stats.user_id
+            )
+            SELECT *
+            FROM RankedUsers
+            WHERE id = :user_id
+
             """.trimIndent()
         )
             .bind("user_id", userId.value)
@@ -183,13 +190,17 @@ class JdbiUsersRepository(
         val termSQLFormat = "%${term.value}%"
         val result = handle.createQuery(
             """
-            SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won, 
-                   RANK() OVER (ORDER BY stats.points DESC) as rank, 
+            WITH RankedUsers AS (
+                SELECT stats.points, stats.games_drawn, stats.games_played, stats.games_won, 
+                   ROW_NUMBER() OVER (ORDER BY stats.points DESC) as rank, 
                    users.id, users.username, users.email
-            FROM dbo.Statistics AS stats
-            INNER JOIN dbo.Users AS users ON stats.user_id = users.id
-            WHERE users.username LIKE :term
-            ORDER BY stats.points DESC
+                FROM dbo.Statistics AS stats
+                INNER JOIN dbo.Users AS users ON stats.user_id = users.id
+                ORDER BY stats.points DESC
+            )
+            SELECT *
+            FROM RankedUsers
+            WHERE username LIKE :term
             OFFSET :offset
             LIMIT :limit;
             """.trimIndent()

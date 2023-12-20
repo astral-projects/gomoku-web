@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { fetchUsersStats, fetchUserStatsBySearchTerm } from '../../services/usersServices';
 import { UserStats } from '../../domain/UserStats.js';
@@ -74,7 +74,7 @@ export function Rankings() {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch({ type: 'load' });
         fetchUsersStats()
             .then(result => {
@@ -91,7 +91,7 @@ export function Rankings() {
             });
     }, []);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // Set a timer to update debouncedSearchTerm after x milliseconds of no changes
         const timerId = setTimeout(() => {
             if (searchTerm.length >= 4) {
@@ -104,7 +104,7 @@ export function Rankings() {
         };
     }, [searchTerm]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (state.tag === 'loaded') {
             dispatch({ type: 'load' });
             fetchUserStatsBySearchTerm(debouncedSearchTerm)
@@ -193,13 +193,13 @@ export function Rankings() {
                             </button>
                             <button
                                 onClick={goToNextPage}
-                                disabled={state.data.properties.currentPage === state.data.properties.totalPages - 1}
+                                disabled={state.data.properties.currentPage === state.data.properties.totalPages}
                             >
                                 Next
                             </button>
                             <button
                                 onClick={goToLastPage}
-                                disabled={state.data.properties.currentPage === state.data.properties.totalPages - 1}
+                                disabled={state.data.properties.currentPage === state.data.properties.totalPages}
                             >
                                 Last
                             </button>
