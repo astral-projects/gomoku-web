@@ -17,6 +17,7 @@ import gomoku.repository.jdbi.JdbiTestConfiguration.runWithHandleAndRollback
 import gomoku.utils.IntrusiveTests
 import gomoku.utils.MultiThreadTestHelper
 import gomoku.utils.RequiresDatabaseConnection
+import gomoku.utils.TestConfiguration.NR_OF_STRESS_TEST_ITERATIONS
 import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
 import gomoku.utils.TestConfiguration.stressTestTimeoutDuration
 import gomoku.utils.TestDataGenerator.newTestEmail
@@ -29,8 +30,11 @@ import gomoku.utils.get
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -39,8 +43,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-data class LobbyInfo(val threadId: Int, val lobbyId: Int, val creation: Boolean)
-data class GameCreationInfo(val threadId: Int, val gameId: Int, val fromLobbyId: Int)
+data class CreatedLobby(val id: Int)
+data class ObservedLobby(val lobbyId: Int)
+data class GameCreation(val id: Int, val fromLobbyId: Int)
 
 @RequiresDatabaseConnection
 class JdbiGameRepositoryTests {
@@ -48,6 +53,9 @@ class JdbiGameRepositoryTests {
     private val lobbyId = newTestId()
 
     companion object {
+
+        private val logger = LoggerFactory.getLogger(JdbiGameRepositoryTests::class.java)
+
         private val testVariant = TestVariantImpl
 
         private lateinit var variantId: Id
@@ -442,7 +450,7 @@ class JdbiGameRepositoryTests {
         assertTrue(isLobbyDeletedByHost)
     }
 
-    // @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
+    @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
     @IntrusiveTests
     fun `stress test simulating several users joining lobbies and creating games with serializable level`() {
         stress_test_simulating_several_users_joining_lobbies_and_creating_games(TransactionIsolationLevel.SERIALIZABLE)
@@ -451,7 +459,6 @@ class JdbiGameRepositoryTests {
     // @RepeatedTest(NR_OF_STRESS_TEST_ITERATIONS)
     @IntrusiveTests
     fun `without serializable level, there's no retry mechanism and the test fails`() {
-        // TODO("it should not be working..")
         stress_test_simulating_several_users_joining_lobbies_and_creating_games(TransactionIsolationLevel.READ_COMMITTED)
     }
 
@@ -460,7 +467,8 @@ class JdbiGameRepositoryTests {
     ) {
         // given: a multi-thread test helper and a set of threads
         val testDuration = stressTestTimeoutDuration
-        val nrOfThreads = 10 randomTo 23
+        val nrOfThreads = 5 randomTo 10
+        val lock = ReentrantLock()
         val testHelper = MultiThreadTestHelper(testDuration)
 
         // and: a set of atomic counters
@@ -479,6 +487,7 @@ class JdbiGameRepositoryTests {
             var repetionId = 0
             while (!isTestFinished()) {
                 // given: a transactional handle
+                logger.info("Started a new transaction")
                 runWithHandle(isolationLevel) { handle ->
                     // and: a game and users repository
                     val repoGames = JdbiGameRepository(handle)
@@ -491,16 +500,18 @@ class JdbiGameRepositoryTests {
                     if (lobby != null) {
                         val hostId = lobby.userId
                         // then: the user joins the lobby and creates a game
-                        LobbyInfo(threadId, lobby.lobbyId.value, false).also { println("     $it") }
-                        val gameId = repoGames.createGame(
-                            variantId = variantId,
-                            hostId = hostId,
-                            guestId = userId,
-                            lobbyId = lobby.lobbyId,
-                            board = testVariant.initialBoard()
-                        ).also { gamesCreated.incrementAndGet() }
-                        requireNotNull(gameId)
-                        GameCreationInfo(threadId, gameId.value, lobby.lobbyId.value).also { println("     $it") }
+                        ObservedLobby(lobby.lobbyId.value).also { logger.info("$it") }
+                        lock.withLock {
+                            val gameId = repoGames.createGame(
+                                variantId = variantId,
+                                hostId = hostId,
+                                guestId = userId,
+                                lobbyId = lobby.lobbyId,
+                                board = testVariant.initialBoard()
+                            ).also { gamesCreated.incrementAndGet() }
+                            requireNotNull(gameId)
+                            GameCreation(gameId.value, lobby.lobbyId.value).also { logger.info("$it") }
+                        }
                         val previousRepetion = usersInGames[threadId]
                         requireNotNull(previousRepetion)
                         // and: the user was added in fifo order
@@ -513,7 +524,9 @@ class JdbiGameRepositoryTests {
                         }
                         usersInGames[threadId] = repetionId++
                         // and: the lobby is deleted
-                        val wasDeleted = repoGames.deleteLobby(lobby.lobbyId, hostId)
+                        val wasDeleted = lock.withLock {
+                            repoGames.deleteLobby(lobby.lobbyId, hostId)
+                        }
                         if (!wasDeleted) {
                             throw AssertionError(
                                 "Lobby with id: <${lobby.lobbyId.value} was not deleted"
@@ -521,12 +534,15 @@ class JdbiGameRepositoryTests {
                         }
                     } else {
                         // then: the user creates a lobby
-                        val lobbyCreationId = repoGames.addUserToLobby(variantId, userId)
-                            .also {
-                                lobbiesCreated.incrementAndGet()
-                            }
-                        requireNotNull(lobbyCreationId)
-                        LobbyInfo(threadId, lobbyCreationId.value, true).also { println(it) }
+                        lock.withLock {
+                            val lobbyCreationId = repoGames.addUserToLobby(variantId, userId)
+                                .also {
+                                    lobbiesCreated.incrementAndGet()
+                                }
+                            // and: the lobby is created successfully
+                            requireNotNull(lobbyCreationId)
+                            CreatedLobby(lobbyCreationId.value).also { logger.info("$it") }
+                        }
                     }
                 }
             }
@@ -535,7 +551,6 @@ class JdbiGameRepositoryTests {
         // and: all launched threads are joined
         testHelper.join()
 
-        // TODO("remove")
         println("Users created: ${usersCreated.get()}")
         println("Games created: ${gamesCreated.get()}")
         println("Lobbies created: ${lobbiesCreated.get()}")

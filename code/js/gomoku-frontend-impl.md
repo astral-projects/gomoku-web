@@ -129,6 +129,7 @@ The frontend code is organized in the following way:
           models;
             - `App.js` - The main component of the application;
             - `index.js` - The entry point of the application;
+  - `tests` - Contains the tests of the application;
 
 In the `js` folder, there are other files used for the development of the application; that are equally relevant to
 mention:

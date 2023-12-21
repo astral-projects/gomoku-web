@@ -1,6 +1,5 @@
-package gomoku
+package gomoku.domain
 
-import gomoku.domain.PaginatedResult
 import gomoku.utils.TestConfiguration.NR_OF_TEST_ITERATIONS
 import gomoku.utils.TestDataGenerator.randomTo
 import org.junit.jupiter.api.RepeatedTest
