@@ -1,10 +1,10 @@
-import {promise} from '../index';
+import { promise } from '../index';
 
 export const recipeUris = [];
 
 // const PORT = process.env.PORT || 4000
 
-const PORT = 8088;
+const PORT = 4000;
 const BASE = `http://localhost:${PORT}`;
 
 export type Recipe = {

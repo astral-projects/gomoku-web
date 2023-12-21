@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {useEffect, useReducer, useState} from 'react';
-import {Navigate} from 'react-router-dom';
-import {findGame, getVariants} from '../../services/gamesService';
-import {ProblemModel} from '../../services/media/ProblemModel';
-import {FindGameOutput} from '../../services/models/games/FindGameOutputModel';
-import {webRoutes} from '../../App';
-import {replacePathVariables} from '../utils/replacePathVariables';
+import { useEffect, useReducer, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { findGame, getVariants } from '../../services/gamesService';
+import { ProblemModel } from '../../services/media/ProblemModel';
+import { FindGameOutput } from '../../services/models/games/FindGameOutputModel';
+import { webRoutes } from '../../App';
+import { replacePathVariables } from '../utils/replacePathVariables';
 
 /**
  * The state of the component can be in one of the following states:
@@ -53,6 +53,33 @@ function findGameReducer(state: State, action: Action): State {
 }
 
 /**
+ * Find a game with the given variant id.The function will dispatch the appropriate action based on the result.
+ * @param variantId
+ * @param dispatch
+ * @param setIsPollingActive
+ */
+function handleFindGame(variantId: number, dispatch: (action: Action) => void) {
+    findGame({ variantId: variantId })
+        .then(result => {
+            const errorData = result.json as ProblemModel;
+            const successData = result.json as unknown as FindGameOutput;
+            if (result.contentType === 'application/problem+json') {
+                dispatch({ type: 'error', message: errorData.detail });
+            } else if (result.contentType === 'application/vnd.siren+json') {
+                if (successData.class.find(c => c == 'lobby') != undefined) {
+                    dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
+                } else if (successData.class.find(c => c == 'game') != undefined) {
+                    const gameId = successData.properties.id;
+                    dispatch({ type: 'start-game', gameId: gameId });
+                }
+            }
+        })
+        .catch((err: { message: string }) => {
+            dispatch({ type: 'error', message: err.message });
+        });
+}
+
+/**
  * This component will find a game for the user. It will first display a list of available variants. Once the user selects a variant, it will find a game with that variant. If a game is found, it will redirect the user to the game page.
  */
 export function FindGame() {
@@ -78,39 +105,13 @@ export function FindGame() {
         }
     });
 
-    /**
-     * Find a game with the given variant id.The function will dispatch the appropriate action based on the result.
-     * @param variantId
-     * @param dispatch
-     * @param setIsPollingActive
-     */
-    function handleFindGame(variantId: number, dispatch: (action: Action) => void) {
-        findGame({ variantId: variantId })
-            .then(result => {
-                const errorData = result.json as ProblemModel;
-                const successData = result.json as unknown as FindGameOutput;
-                if (result.contentType === 'application/problem+json') {
-                    dispatch({ type: 'error', message: errorData.detail });
-                } else if (result.contentType === 'application/vnd.siren+json') {
-                    if (successData.class.find(c => c == 'lobby') != undefined) {
-                        dispatch({ type: 'join-lobby', lobbyId: successData.properties.id });
-                    } else if (successData.class.find(c => c == 'game') != undefined) {
-                        const gameId = successData.properties.id;
-                        dispatch({ type: 'start-game', gameId: gameId });
-                    }
-                }
-            })
-            .catch((err: { message: string }) => {
-                dispatch({ type: 'error', message: err.message });
-            });
-    }
-
     switch (state.tag) {
         case 'selecting-variant':
             return (
                 <div>
                     Select a variant:
-                    <select className='variants'
+                    <select
+                        className="variants"
                         style={{ display: 'block', margin: '10px 0' }}
                         onChange={e => handleFindGame(parseInt(e.target.value), dispatch)}
                     >

@@ -27,7 +27,7 @@ function columnIndexToLetter(index: number) {
 type State =
     | { tag: 'loading' }
     | {
-          tag: 'play';
+          tag: 'playing';
           boardSize: number;
           grid: string[];
           opponent: string;
@@ -43,6 +43,7 @@ type State =
  * @param boardSize - The size of the board.
  * @param grid - The grid of the board.
  * @param opponent - The opponent of the game.
+ * @param IsYourTurn - The boolean that indicates if it is the turn of the user.
  * @param message - The message to be displayed.
  * @param errorMessage - The error message to be displayed.
  */
@@ -85,7 +86,7 @@ function gameReducer(state: State, action: Action): State {
         case 'set-not-your-turn':
             return {
                 ...state,
-                tag: 'play',
+                tag: 'playing',
                 boardSize: action.boardSize,
                 grid: action.grid,
                 opponent: action.opponent,
@@ -337,7 +338,7 @@ export function Game() {
         if (state.tag == 'loading' && !isFetching && userId != undefined) {
             fetchGame(currentGameId, userId, isFetching, setIsFetching, dispatch);
         }
-        if (state.tag === 'play' && !state.IsYourTurn) {
+        if (state.tag === 'playing' && !state.IsYourTurn) {
             const interval = setInterval(() => {
                 fetchGame(currentGameId, userId, isFetching, setIsFetching, dispatch, state.opponent);
             }, 5000);
@@ -358,7 +359,7 @@ export function Game() {
                     </div>
                 </div>
             );
-        case 'play':
+        case 'playing':
             return (
                 <div>
                     <div>
