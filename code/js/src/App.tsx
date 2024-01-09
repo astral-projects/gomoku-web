@@ -14,7 +14,7 @@ import { UserStats } from './pages/userstats/UserStats';
 import { RequireAuthn } from './pages/AuthContainer';
 import { NotFound } from './pages/notFound/NotFound';
 import { Lobby } from './pages/lobby/Lobby';
-import { Rankings } from './pages/Rankings/Rankings';
+import { Rankings } from './pages/rankings/Rankings';
 
 export const webRoutes = {
     home: '/',

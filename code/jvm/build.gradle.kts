@@ -108,8 +108,17 @@ task<Exec>("composeUp") {
     dependsOn("extractUberJar")
 }
 
+task<Exec>("composeStart") {
+    commandLine("docker-compose", "up", "-d")
+    dependsOn("extractUberJar")
+}
+
 task<Exec>("composeDown") {
     commandLine("docker-compose", "down")
+}
+
+task<Exec>("composeStop") {
+    commandLine("docker-compose", "stop")
 }
 
 val compileKotlin: KotlinCompile by tasks
