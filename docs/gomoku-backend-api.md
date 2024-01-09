@@ -3,7 +3,8 @@
 > This document contains the HTTP API documentation required for a frontend client application to use this API.
 
 > **Note**: This documentation does not contain any information about the internal backend implementation. To learn more
-> about the backend implementation, please refer to the [backend documentation](../code/jvm/docs/README.md).
+> about the backend implementation, please refer to
+> the [backend documentation](../code/jvm/docs/gomoku-backend-impl.md).
 
 ## Table of Contents
 
@@ -1117,6 +1118,7 @@ curl http://localhost/api/users/stats?page=3&itemsPerPage=2
 - **term** - the search term.
   - Required: `true`
   - Type: `string`
+  - Length Range: `4-`
 
 - **page** - the page number.
   - Required: `false`

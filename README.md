@@ -11,7 +11,7 @@ This project is divided into two phases:
 
 - The first phase consists of the development of the **backend service**.
   - [Backend documentation](code/jvm/docs/gomoku-backend-impl.md)
-    - [Backend API documentation](docs/gomoku-backend-api.md)
+  - [Backend API documentation](docs/gomoku-backend-api.md)
 - The second phase consists of the development of a **browser-based frontend application**, which will use the backend
   service developed in the first phase.
   - [Frontend documentation](code/js/gomoku-frontend-impl.md)
