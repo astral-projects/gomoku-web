@@ -1,0 +1,41 @@
+/* CSS for the containers of the app */
+div .home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2%;
+}
+
+/* CSS for the page titles */
+div .home-container h1 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 3rem;
+    margin: 1rem auto;
+}
+
+/* CSS for the page image */
+.logo {
+    width: 20rem;
+    margin: 1rem auto;
+}
+
+/* CSS for the page text */
+div .home-container p {
+    font-family: 'Roboto', sans-serif;
+    margin: 1rem auto;
+}
+
+/* CSS for the page footer list */
+div .home-container ul {
+    list-style-type: none;
+    margin: 1rem auto;
+}
+
+/* CSS for the page footer list items */
+div .home-container li {
+    font-family: 'Roboto', sans-serif;
+    padding-left: 2rem;
+    padding-bottom: 5px;
+
+}

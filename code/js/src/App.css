@@ -1,0 +1,58 @@
+/* CSS for the navbar */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-items: center;
+    background-color: #F0EBD8;
+    border-radius: 10px;
+    max-width: 100%;
+    height: 12vh;
+}
+
+/* CSS for the navbar gomoku logo */
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+nav img {
+    padding: 40%;
+    width: 5rem;
+    height: 5rem;
+    animation: rotate 4s linear infinite;
+}
+
+nav img::before,
+nav img::after {
+    content: '';
+    position: absolute;
+    top: 40px;
+    width: 52px;
+    height: 80px;
+    border-radius: 50px 50px 0 0;
+}
+
+nav img::before {
+    left: 50px;
+    transform: rotate(-45deg);
+    transform-origin: 0 100%;
+}
+
+nav img::after {
+    left: 0;
+    transform: rotate(45deg);
+    transform-origin: 100% 100%;
+}
+
+/* CSS for the navbar text */
+nav h1 {
+    align-self: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 3rem;
+    margin: 1rem auto;
+}
+
+
+
+

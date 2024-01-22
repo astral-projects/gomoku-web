@@ -15,6 +15,8 @@ import { RequireAuthn } from './pages/AuthContainer';
 import { NotFound } from './pages/notFound/NotFound';
 import { Lobby } from './pages/lobby/Lobby';
 import { Rankings } from './pages/rankings/Rankings';
+import './App.css';
+import './pages/home/Home.css';
 
 export const webRoutes = {
     home: '/',

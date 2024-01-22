@@ -1,0 +1,8 @@
+/* CSS for the background image */
+body {
+    background: fixed;
+    background-color: #3E5C76;    
+    resize: both;
+    overflow: auto;
+}
+
