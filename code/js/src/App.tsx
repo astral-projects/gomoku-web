@@ -15,7 +15,9 @@ import { RequireAuthn } from './pages/AuthContainer';
 import { NotFound } from './pages/notFound/NotFound';
 import { Lobby } from './pages/lobby/Lobby';
 import { Rankings } from './pages/rankings/Rankings';
-import './App.css';
+import { GoogleCallback } from './components/GoogleCallback';
+import './components/NavBar.css';
+import './pages/login/Login.css';
 import './pages/home/Home.css';
 
 export const webRoutes = {
@@ -31,6 +33,7 @@ export const webRoutes = {
     userStats: '/rankings/:id',
     game: '/games/:gameId',
     lobby: '/lobby/:lobbyId',
+    googleCallback: '/googlecallback',
 };
 
 const router = createBrowserRouter([
@@ -109,6 +112,10 @@ const router = createBrowserRouter([
             {
                 path: webRoutes.error,
                 element: <Error />,
+            },
+            {
+                path: '/googlecallback',
+                element: <GoogleCallback />,
             },
             {
                 path: '*',

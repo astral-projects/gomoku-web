@@ -7,6 +7,7 @@ import {isSuccessful} from '../utils/responseData';
 import {logUnexpectedAction} from '../utils/logUnexpetedAction';
 import {logout} from '../../services/usersService';
 import {webRoutes} from '../../App';
+import Cookies from 'js-cookie';
 
 type State = { tag: 'loading' } | { tag: 'redirect' } | { tag: 'notLoggedIn' };
 
@@ -43,6 +44,8 @@ export function Logout() {
                 } else {
                     setUserId(undefined);
                     setUserName(undefined);
+                    Cookies.remove('_email');
+                    Cookies.remove('_username');
                     dispatch({ type: 'success' });
                 }
             })

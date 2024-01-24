@@ -37,13 +37,13 @@
     "@mui/icons-material": "^5.15.5",
     "@mui/material": "^5.15.5",
     "@mui/styled-engine-sc": "^6.0.0-alpha.6",
-    "@types/js-cookie": "^3.0.6",
     "html-webpack-plugin": "^5.5.4",
     "js-cookie": "^3.0.5",
     "react": "^17.0.0 || ^18.0.0",
     "react-cookie": "^6.1.1",
     "react-dom": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.18.0",
+    "react-social-icons": "^6.10.0",
     "styled-components": "^6.1.1"
   },
   "peerDependencies": {

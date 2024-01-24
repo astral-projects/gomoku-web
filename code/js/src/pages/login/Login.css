@@ -1,0 +1,102 @@
+/** Style for the login page. */
+.container-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 5rem;
+}
+
+.container-login .login-form {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #001a3c;
+    border-radius: 40px;
+    background-color: #748cab;
+    padding: 0 10rem 40px;
+}
+
+.container-login .login-form h2 {
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.container-login .login-form .login-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    width: 100%;
+    border: 2px solid #001a3c;
+    border-radius: 10px;
+    padding-left: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.container-login .login-form .top-label {
+    padding-left: 10px;
+}
+
+.container-login .login-form .login-input input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    outline: none;
+    background-color: #748cab;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.container-login .login-form p {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1rem;
+    margin-bottom: 3rem;
+    margin-top: -1rem;
+}
+
+.container-login .login-form button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    outline: none;
+    background-color: #D79B01;
+    border-radius: 50px;
+    font-size: 1rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+.container-login .login-form button:hover {
+    background-color: #9b6f02;
+    color: #000000;
+}
+
+.container-login .login-form .sign-in-with p {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.container-login .login-form .sign-in-with .login-icons {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: -1rem;
+}
+
+.container-login .login-form .login-text {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+
