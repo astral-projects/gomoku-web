@@ -4,21 +4,19 @@
 
 ## Table of Contents
 
-- [Gomoku - Backend Documentation 🉐](#gomoku---backend-documentation-)
-    - [Table of Contents](#table-of-contents)
-    - [Introduction](#introduction)
-    - [Pages](#pages)
-    - [Code Structure](#code-structure)
-    - [API](#api)
-        - [Connection](#connection)
-        - [Service](#service)
-        - [Recipes](#recipes)
-    - [React Context](#react-context)
-    - [Webpack Configuration](#webpack-configuration)
-    - [Authentication](#authentication)
-    - [Tests](#tests)
-        - [Implementation Challenges](#implementation-challenges)
-        - [Further Improvements](#further-improvements)
+- [Introduction](#introduction)
+- [Pages](#pages)
+- [Code Structure](#code-structure)
+- [API](#api)
+    - [Connection](#connection)
+    - [Service](#service)
+    - [Recipes](#recipes)
+- [React Context](#react-context)
+- [Webpack Configuration](#webpack-configuration)
+- [Authentication](#authentication)
+- [Tests](#tests)
+- [Implementation Challenges](#implementation-challenges)
+- [Further Improvements](#further-improvements)
 
 ---
 
@@ -269,7 +267,7 @@ Inside the tests folder we have the following files:
 Sadly, we did not have enough time to implement more tests. We plan to implement more tests for the other pages like
 we mention in the [Further Improvements](#further-improvements) section.
 
-### Implementation Challenges
+## Implementation Challenges
 
 - **API Integration** - The API integration was a challenge because the API was not fully implemented, at least the way
   we wanted it to be, and the documentation was updated regularly.
@@ -282,7 +280,7 @@ we mention in the [Further Improvements](#further-improvements) section.
   and then continue the execution of the application. We resolved this issue by using the `Promise` class that was not
   easy to understand at first, but we managed to solve the problem.
 
-### Further Improvements
+## Further Improvements
 
 - **Add css** - We planned to add css to the application, but we did not have enough time to do it.
 - **Add more tests** - We only implemented the basic tests for the application, but we could add more tests to improve
